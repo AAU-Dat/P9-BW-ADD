@@ -1,0 +1,6 @@
+/.github/configurations/ @Daniel-Runge
+/.github/CODEOWNERS @Daniel-Runge
+/.github/dependabot.yaml @Daniel-Runge
+
+/.idea/ @Daniel-Runge
+/.vscode/ @Daniel-Runge

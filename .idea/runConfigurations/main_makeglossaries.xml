@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="main makeglossaries" type="MAKEINDEX_RUN_CONFIGURATION" factoryName="LaTeX configuration factory" activateToolWindowBeforeRun="false">
+    <texify-makeindex>
+      <program>MAKEGLOSSARIES</program>
+      <main-file>$PROJECT_DIR$/report/src/main.tex</main-file>
+      <command-line-args />
+      <work-dir>$PROJECT_DIR$/report/out</work-dir>
+    </texify-makeindex>
+    <method v="2" />
+  </configuration>
+</component>

@@ -1,0 +1,46 @@
+{
+  "latex-workshop.latex.outDir": "%WORKSPACE_FOLDER%/report/out",
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "pdflatex -> biber -> makeglossaries -> pdflatex * 2",
+      "tools": [
+        "pdflatex",
+        "biber",
+        "makeglossaries",
+        "pdflatex",
+        "pdflatex"
+      ]
+    }
+  ],
+  "latex-workshop.latex.tools": [
+    {
+      "name": "pdflatex",
+      "command": "pdflatex",
+      "args": [
+        "--shell-escape",
+        "-synctex=1",
+        "-output-directory=%OUTDIR%",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "%DOC%"
+      ]
+    },
+    {
+      "name": "makeglossaries",
+      "command": "makeglossaries",
+      "args": [
+        "-d",
+        "%OUTDIR%",
+        "%DOCFILE%"
+      ]
+    },
+    {
+      "name": "biber",
+      "command": "biber",
+      "args": [
+        "--output-directory=%OUTDIR%",
+        "%DOCFILE%"
+      ]
+    }
+  ]
+}

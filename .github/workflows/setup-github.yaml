@@ -1,0 +1,19 @@
+name: Setup GitHub repository
+on:
+  create:
+
+jobs:
+  configure-github:
+    name: Configure GitHub branch protection
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PAT_GITHUB_TOKEN }} # secrets.GITHUB_TOKEN
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup GitHub Pages for repository
+        run: gh api -X POST /repos/${{ github.repository }}/pages --input .github/configurations/pages.json
+      - name: Setup ruleset for repository
+        run: gh api -X POST /repos/${{ github.repository }}/rulesets --input .github/configurations/rulesets.json
+      - name: Disable this workflow
+        run: gh workflow disable --repo ${{ github.repository }} "${{ github.workflow }}"

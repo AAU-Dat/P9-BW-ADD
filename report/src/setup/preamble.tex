@@ -1,0 +1,41 @@
+%! Author = Runge
+%! Date = 29-12-2023
+
+% Packages
+\RequirePackage{setup/clrscode4e}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsbsy}
+\usepackage{mathrsfs}
+\usepackage{dsfont}
+\usepackage{bbold}
+\usepackage{booktabs}
+\usepackage{tikz}
+
+% Packages with options set
+\usepackage[hidelinks]{hyperref}
+\usepackage[textsize=small,obeyDraft]{todonotes}
+\usepackage[newfloat, outputdir=../out]{minted}
+\usepackage[backend=biber,
+    bibencoding=utf8,
+    maxbibnames=20,
+    style=ieee,
+    citestyle=numeric-comp,
+    url=false
+]{biblatex}
+\usepackage[acronym]{glossaries}
+
+% Package setup
+\setlength{\marginparwidth}{2cm} % todonotes width
+\setminted{linenos, autogobble, breaklines, fontsize=\footnotesize, style=friendly, xleftmargin=1em, numbersep=5pt}
+\addbibresource{bib/main.bib}
+
+% Other setup and options
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newfloat{algorithm}{htb!}{lop}
+\floatname{algorithm}{Algorithm}
+\newcommand{\algorithmautorefname}{Algorithm}
+
+\makeglossaries

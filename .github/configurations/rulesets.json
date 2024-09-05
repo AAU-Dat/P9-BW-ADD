@@ -1,0 +1,25 @@
+{
+  "name": "preconfigured ruleset",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": [
+        "refs/heads/main",
+        "refs/heads/master"
+      ],
+      "exclude": [
+        "refs/heads/dev*"
+      ]
+    }
+  },
+  "rules": [
+    {
+      "type": "commit_author_email_pattern",
+      "parameters": {
+        "operator": "contains",
+        "pattern": "github"
+      }
+    }
+  ]
+}
