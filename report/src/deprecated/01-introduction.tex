@@ -1,0 +1,124 @@
+%! Author = Runge
+%! Date = 29-12-2023
+
+\section{Introduction}\label{sec:introduction}
+In this section we present some introductory ways to use the tools within \LaTeX\ in general, and this template in particular.
+For example, this is a citation~\cite{goossens1993}, while this is a multi-citation\cite{goossens1993,greenwade1993}.
+
+
+The column width of the IEEE template is 3.5 inches, so if you generate your plots with this width or less, the output will be the best.
+For example, \autoref{lst:graph-gen} contains the code to generate the image in \autoref{fig:figure} using Python with matplotlib, and exported as pgf (\TeX).
+
+
+\begin{listing}[htb!]
+    \begin{minted}{python}
+        import matplotlib.pyplot as plt
+
+        plt.rcParams.update({
+            "pgf.texsystem": "pdflatex",
+            "font.family": "serif",  # use serif/main font for text elements
+            "pgf.preamble": "\n".join([
+                 r"\usepackage[utf8x]{inputenc}",
+                 r"\usepackage[T1]{fontenc}",
+            ]),
+        })
+
+        fig, ax = plt.subplots(figsize=(3.5, 3.5))
+
+        ax.plot(range(5))
+        ax.text(0.5, 3., "serif")
+        ax.text(0.5, 2., "monospace")
+        ax.text(2.5, 2., "sans-serif")
+        ax.set_xlabel(r"µ is not $\mu$")
+
+        fig.tight_layout(pad=.5)
+        fig.savefig("graph.pgf")
+    \end{minted}
+    \caption{Code to generate the graph.pgf}
+    \label{lst:graph-gen}
+\end{listing}
+
+\subsection{Tables and Figures}\label{subsec:tables-and-figures}
+
+
+\begin{figure}[htb!]
+    \centering
+    \input{figures/graph.pgf}
+    \caption{An example graph drawn using Python's matplotlib library.}
+    \label{fig:figure}
+\end{figure}
+
+\begin{table*}[htb!]
+    \centering
+    \caption{Example of a pretty, twocolumn table.}
+    \begin{tabular}{lccccc}
+        \toprule
+        & \multicolumn{5}{l}{\textit{\textbf{Klasser}}} \\[3pt]
+        \textit{\textbf{Hændelser}} &
+        Reservation &
+        Gæst &
+        Borgerforening &
+        Kalender &
+        Betaling \\[3pt] \midrule
+        Anmodet     & \checkmark & \checkmark & \checkmark &            &            \\[3pt]
+        Godkendt    & \checkmark &            & \checkmark &            &            \\[3pt]
+        Afvist      & \checkmark &            & \checkmark &            &            \\[3pt]
+        Redigeret   & \checkmark & \checkmark & \checkmark &            &            \\[3pt]
+        Annulleret  & \checkmark & \checkmark & \checkmark &            & \checkmark \\[3pt]
+        Betalt      &            &            &            &            & \checkmark \\[3pt]
+        Refunderet  &            &            &            &            & \checkmark \\[3pt]
+        Kvitteret   &            & \checkmark & \checkmark &            &            \\[3pt]
+        Registreret & \checkmark &            &            & \checkmark &            \\[3pt]
+        Påmindet    &            & \checkmark & \checkmark &            &            \\ \bottomrule
+    \end{tabular}
+    \label{tab:table}
+\end{table*}
+
+
+\subsection{Algorithms, Theorems, and Proofs}\label{subsec:algorithsm-theorems-and-proofs}
+
+
+
+
+There are a few different things outside the normal figure and table floats that are very relevant when writing a scientific paper or article.
+For example, you may wish to typeset theorems as in \autoref{the:pytagoras}.
+
+
+\begin{theorem}[Pythagorean theorem]
+    \label{pythagorean}
+    This is a theorem about right triangles and can be summarized in the next
+    equation
+    \[ x^2 + y^2 = z^2 \]
+    \label{the:pytagoras}
+\end{theorem}
+
+
+Or ref like Theorem~\ref{the:pytagoras} Similarly, for proofs:
+
+
+\begin{proof}
+    To prove it by contradiction try and assume that the statement is false, proceed from there and at some point you will arrive to a contradiction.
+\end{proof}
+
+
+Note that proofs are not a numbered environment, and as such can't be referenced by default.
+
+\begin{algorithm}[htb!]
+    \begin{codebox}
+        \Procname{$\proc{Insertion-Sort}(A, n)$}
+        \li \For $i \gets 2$ \To $n$
+        \li \Do
+        $\id{key} \gets A[i]$
+        \li \Comment{Insert $A[i]$ into the sorted subarray $A[1 \subarr i-1]$.}
+        \li $j \gets i-1$
+        \li \While $j > 0$ and $A[j] > \id{key}$
+        \li \Do
+        $A[j+1] \gets A[j]$
+        \li $j \gets j-1$
+        \End
+        \li $A[j+1] \gets \id{key}$
+        \End
+    \end{codebox}
+    \caption{Test}
+    \label{alg:algorithm}
+\end{algorithm}

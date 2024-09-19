@@ -26,7 +26,8 @@ To prepare your Windows machine to write and compile LaTeX in IntelliJ, follow t
 - [ ] Install Python
   - Install the Pygments Python package
   - You will most likely have to add the installation location to your PATH environment variable.
-- [ ] Clone the repository with IntelliJ and you are ready to work
+- [ ] Clone the repository with IntelliJ
+- [ ] Add a folder: `report/out`, and you are ready to work
 
 Additional recommendations:
 
