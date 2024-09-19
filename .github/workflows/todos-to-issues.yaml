@@ -12,4 +12,4 @@ jobs:
         with:
           AUTO_ASSIGN: true
           ORG_PROJECTS: https://github.com/orgs/AAU-Dat/projects/11
-          PROJECTS_SECRET: ${{ secrets.PAT_GITHUB_TOKEN }}
+          PROJECTS_SECRET: ${{ secrets.PAT_FROM_DRP }}
