@@ -7,7 +7,7 @@ jobs:
     name: Configure GitHub branch protection
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ secrets.PAT_GITHUB_TOKEN }} # secrets.GITHUB_TOKEN
+      GH_TOKEN: ${{ secrets.PAT_FROM_DRP }} # secrets.GITHUB_TOKEN
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
