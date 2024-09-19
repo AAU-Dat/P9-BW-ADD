@@ -1,0 +1,15 @@
+name: "Run TODO to Issue"
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: TODO to Issue
+        uses: alstr/todo-to-issue-action@master
+        with:
+          AUTO_ASSIGN: true
+          ORG_PROJECTS: https://github.com/orgs/AAU-Dat/projects/11
+          PROJECTS_SECRET: ${{ secrets.PAT_GITHUB_TOKEN }}
