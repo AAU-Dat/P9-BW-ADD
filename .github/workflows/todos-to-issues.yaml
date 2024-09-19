@@ -1,15 +1,15 @@
 name: "Run TODO to Issue"
 on:
   push:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: TODO to Issue
         uses: alstr/todo-to-issue-action@master
         with:
           AUTO_ASSIGN: true
-          ORG_PROJECTS: https://github.com/orgs/AAU-Dat/projects/11
-          PROJECTS_SECRET: ${{ secrets.PAT_FROM_DRP }}
