@@ -12,6 +12,17 @@
 \usepackage{bbold}
 \usepackage{booktabs}
 \usepackage{tikz}
+\usepackage{bbm}
+\usetikzlibrary{positioning}
+
+\tikzset{%
+  zeroarrow/.style = {-stealth,dashed},
+  onearrow/.style = {-stealth,solid},
+  c/.style = {circle,draw,solid,minimum width=2em,
+        minimum height=2em},
+  t/.style = {rectangle,draw,solid,minimum width=2em,
+        minimum height=2em}
+}
 
 % Packages with options set
 \usepackage[hidelinks]{hyperref}
@@ -37,5 +48,9 @@
 \newfloat{algorithm}{htb!}{lop}
 \floatname{algorithm}{Algorithm}
 \newcommand{\algorithmautorefname}{Algorithm}
-
+\makeatletter
+\newcommand*\bigcdot{\mathpalette\bigcdot@{.5}}
+\newcommand*\bigcdot@[2]{\mathbin{\vcenter{\hbox{\scalebox{#2}{$\m@th#1\bullet$}}}}}
+\makeatother
 \makeglossaries
+
