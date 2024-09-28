@@ -31,6 +31,7 @@ jobs:
           retention-days: 5
 
   push-to-repository:
+    needs: compile-pdf
     name: Push PDF to repository in the docs folder
     runs-on: ubuntu-latest
     steps:
@@ -46,11 +47,3 @@ jobs:
           git add ./docs
           git commit -m "Added by compile-pdf GitHub Action"
           git push
-
-#  deploy:
-#    needs: compile-pdf
-#    name: Deploy pdf to GitHub Pages
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Deploy to GitHub Pages
-#        uses: actions/
