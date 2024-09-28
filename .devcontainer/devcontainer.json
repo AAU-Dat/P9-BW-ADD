@@ -1,0 +1,23 @@
+{
+  "name": "Stormpy",
+//  "image": "movesrwth/stormpy:stable",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "runArgs": ["--name", "stormpy-devcontainer"],
+  "customizations": {
+    "jetbrains": {
+      "plugins": [
+        "nl.rubensten.texifyidea",
+        "com.firsttimeinforever.intellij.pdf.viewer.intellij-pdf-viewer"
+      ]
+    },
+    "vscode": {
+      "extensions": [
+        "James-Yu.latex-workshop",
+        "ms-vscode-remote.vscode-remote-extensionpack",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}
