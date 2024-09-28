@@ -1,0 +1,56 @@
+name: Compile PDF
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 12 * * 3"
+
+jobs:
+  compile-pdf:
+    name: Compile PDF with texlive image
+    runs-on: ubuntu-latest
+    container:
+      image: texlive/texlive:latest
+    defaults:
+      run:
+        working-directory: ./report/src
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Compile pdf
+        run: |
+          pdflatex -file-line-error -interaction=nonstopmode -synctex=0 -output-format=pdf -shell-escape main.tex
+          biber main
+          makeglossaries main
+          pdflatex -file-line-error -interaction=nonstopmode -synctex=0 -output-format=pdf -shell-escape main.tex
+          pdflatex -file-line-error -interaction=nonstopmode -synctex=0 -output-format=pdf -shell-escape main.tex
+      - name: Upload pdf artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: report
+          path: ./report/src/main.pdf
+          retention-days: 5
+
+  push-to-repository:
+    name: Push PDF to repository in the docs folder
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Download PDF
+        uses: actions/download-artifact@v4
+        with:
+          name: report
+          path: ./docs
+      - name: Push to repository
+        run: |
+          git add ./docs
+          git commit -m "Added by compile-pdf GitHub Action"
+          git push
+
+#  deploy:
+#    needs: compile-pdf
+#    name: Deploy pdf to GitHub Pages
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Deploy to GitHub Pages
+#        uses: actions/
