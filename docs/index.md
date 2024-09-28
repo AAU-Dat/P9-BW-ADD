@@ -1,4 +1,6 @@
-# GitHub Page
-Delete this when you add an actual page to this folder.
+# Baum-Welch With Algebraic Decision Diagrams
 
-The recommendation would be either Writerside documentation, or the report/article.
+<iframe width="100%" height="800" border="0" src="main.pdf"></iframe>
+
+
+<object data="main.pdf" width="100%" height="100%" type='application/pdf'></object>
