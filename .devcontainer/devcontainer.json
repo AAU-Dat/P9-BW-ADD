@@ -1,6 +1,6 @@
 {
   "name": "Stormpy",
-//  "image": "movesrwth/stormpy:stable",
+//  "image": "ghcr.io/aau-dat/p9-bw-add:main",
   "build": {
     "dockerfile": "Dockerfile"
   },
