@@ -1,0 +1,1000 @@
+\section{HMM Example}
+\subsection{Setup}
+We have a simple HMM with, two hidden states \( S_1 \) and \( S_2 \), two observation symbols: \( O_1 \) and \( O_2 \) and an observation sequence \( O = \{ O_1, O_2, O_1 \} \).
+
+The HMM parameters are:
+
+\textbf{Transition matrix} \( A \) (probability of moving from one state to another):
+  \[
+  A = \begin{bmatrix}
+  0.6 & 0.4 \\
+  0.5 & 0.5
+  \end{bmatrix}
+  \]
+\textbf{Emission matrix} \( B \) (probability of emitting observation given a state):
+  \[
+  B = \begin{bmatrix}
+  0.7 & 0.3 \\
+  0.4 & 0.6
+  \end{bmatrix}
+  \]
+\textbf{Initial state probability vector} \( \pi \) (probability of starting in each state):
+  \[
+  \pi = \begin{bmatrix} 0.8 & 0.2 \end{bmatrix}
+  \]
+\subsection{Expectation step}
+In the expectation step we calculate $\alpha$ and $\beta$.
+\subsubsection{Forward step $\alpha$}
+
+We first compute the forward probabilities \( \alpha_t(i) \), which represent the probability of being in state \( i \) at time \( t \) after observing the first \( t \) symbols.
+
+\paragraph{Initialization at \( (t = 1 \))}
+  \[
+  \alpha_1 = \pi \circ B_{y1}
+  \]
+  Where \( B_{y1} \) is the first column of the emission matrix, corresponding to observation \( O_1 \) 
+  
+  (i.e., \( B_{y1} = \begin{bmatrix} 0.7 \\ 0.4 \end{bmatrix} \)) and \( \circ \) represents the Hadamard product. So, we get:
+  \[
+  \alpha_1 = \begin{bmatrix} 0.8 \\ 0.2 \end{bmatrix} \circ \begin{bmatrix} 0.7 \\ 0.4 \end{bmatrix} = \begin{bmatrix} 0.56 \\ 0.08 \end{bmatrix}
+  \]
+
+\paragraph{Induction (for \( t = 2, 3, \dots, T \))}
+
+  For subsequent timesteps, we compute:
+  \[
+  \alpha_{t+1} = B_{yt+1} \circ  (A^T \alpha_t)
+  \]
+  Where \( A^T \) is the transpose of the transition matrix. Let’s apply this to compute the forward probabilities for \( t = 2 \) and \( t = 3 \):
+
+  \textbf{At \( t = 2 \) (observation \( O_2 \))}:
+  \[
+  \alpha_2 = B_{y2} \circ (A^T \alpha_1)
+  \]
+  We have:
+  \[
+  B(y2) = \begin{bmatrix} 0.3 \\ 0.6 \end{bmatrix}
+  \]
+  and 
+  \[
+  A^T = \begin{bmatrix} 0.6 & 0.5 \\ 0.4 & 0.5 \end{bmatrix} 
+  \]
+
+  We get:
+  \[
+  \alpha_2 = \begin{bmatrix} 0.3 \\ 0.6 \end{bmatrix} \circ \left(\begin{bmatrix} 0.6 & 0.5 \\ 0.4 & 0.5 \end{bmatrix} \cdot \begin{bmatrix} 0.56 \\ 0.08 \end{bmatrix}\right) = \begin{bmatrix} 0.1128 \\ 0.1584 \end{bmatrix}
+  \]
+
+  \textbf{At \( t = 3 \) (observation \( O_1 \))}:
+  \[
+  \alpha_2 = B_{y1} \circ (A^T \alpha_2)
+  \]
+  We get: 
+  \[
+  \alpha_3 = \begin{bmatrix} 0.7 \\ 0.4 \end{bmatrix} \circ \left( \begin{bmatrix} 0.6 & 0.5 \\ 0.4 & 0.5 \end{bmatrix} \cdot \begin{bmatrix} 0.1 \\ 0.1584 \end{bmatrix} \right)= \begin{bmatrix} 0.102816 \\ 0.049728 \end{bmatrix}
+  \]
+
+\subsubsection{Backward step $\beta$}
+
+The backward probabilities \( \beta_t(i) \) represent the probability of observing the rest of the sequence starting from time \( t+1 \), given that the system is in state \( i \) at time \( t \).
+
+\textbf{Initialization (at \( t = T = 3\))}
+  \[
+  \beta_T = \mathbf{1} = \begin{bmatrix} 1 \\ 1 \end{bmatrix}
+  \]
+
+\paragraph{Induction (for \( t = T-1, T-2, \dots, 1 \))}
+  
+  For earlier timesteps, we compute:
+  \[
+  \beta_t = A (\beta_{t+1} \circ B_{yt+1})
+  \]
+
+  \textbf{At \( t = 2 \) (observation \( O_1 \))}:
+  \[
+  \beta_2 = A (\beta_3 \circ B_{y1})
+  \]
+  \[
+  B_{y1} = \begin{bmatrix} 0.7 \\ 0.4 \end{bmatrix}, \quad \beta_3 = \begin{bmatrix} 1 \\ 1 \end{bmatrix}
+  \]
+  We get:
+  \[
+  \beta_2 = \begin{bmatrix} 0.6 & 0.4 \\ 0.5 & 0.5 \end{bmatrix} \cdot \left(\begin{bmatrix}
+    1 \\ 1
+  \end{bmatrix} \circ \begin{bmatrix}
+    0.7 \\ 0.4 \end{bmatrix}\right) 
+\] 
+\[
+\beta_2 = \begin{bmatrix} 0.6 & 0.4 \\ 0.5 & 0.5 \end{bmatrix} \cdot \begin{bmatrix} 0.7 \\ 0.4 \end{bmatrix} = \begin{bmatrix} 0.58 \\ 0.55 \end{bmatrix}
+  \]
+
+  \textbf{At \( t = 1 \) (observation \( O_2 \))}:
+  \[
+  \beta_1 = A (\beta_2 \circ B_{y2}) 
+  \]
+  We have:
+  \[
+  B_{y2} = \begin{bmatrix} 0.3 \\ 0.6 \end{bmatrix}, \quad \beta_2 = \begin{bmatrix} 0.58 \\ 0.55 \end{bmatrix}
+  \]
+  \[
+  \beta_1 = \begin{bmatrix} 0.6 & 0.4 \\ 0.5 & 0.5 \end{bmatrix} \cdot \left(\begin{bmatrix} 0.3 \\ 0.6 \end{bmatrix} \circ \begin{bmatrix} 0.58 \\ 0.55 \end{bmatrix}\right) 
+  \]
+  \[
+  \beta_1 = \begin{bmatrix} 0.6 & 0.4 \\ 0.5 & 0.5 \end{bmatrix} \cdot \begin{bmatrix} 0.174 \\ 0.33 \end{bmatrix} = \begin{bmatrix} 0.2364 \\ 0.252\end{bmatrix}
+  \]
+
+\subsection{Step 3: Compute \( \gamma \) and \( \xi \)}
+
+\subsubsection{Compute $\gamma$}
+We can compute $\gamma$ by 
+\[
+\gamma_t = (\mathbbm{1}^T \bigcdot \alpha_T)^{-1} \bigcdot (\alpha_t \circ \beta_t)
+\]
+%Explanation of Each Term:
+%\begin{itemize}
+    %\item $\alpha_t$: The forward probability vector at time $t$, which represents the probability of observing the first $t$ observations and being in each state $i$ at time $t$.
+    %\item $\beta_t$: The backward probability vector at time $t$, which represents the probability of observing the remaining observations from time $t+1$ onwards, given that the system is in state $i$ at time $t$. 
+    %\item $1^T \alpha_T$: This is the sum of all elements of $\alpha_T$, i.e., the total probability of observing the entire sequence up to time $T$. This acts as a normalization factor. Mathematically: $1^T \alpha_T = \sum_i \alpha_T(i)$. This sum gives the overall probability of the observation sequence, also denoted as $P(O |\theta)$ (the likelihood of the observation sequence given the model).
+    %\item $(1^T\alpha_T)^{-1}$: This is the inverse of the total probability, which normalizes the Hadamard product to ensure that $\gamma_t$ represents a probability distribution.
+%\end{itemize}
+
+\[
+\alpha_T = 
+    \begin{bmatrix}
+        0.089628 \\ 0.053328
+    \end{bmatrix}
+\]
+
+\[
+    \mathbbm{1}^T \bigcdot \alpha_T = 0.089628 + 0.053328 = 0.152544
+\]
+This is the total probability of oberserving our sequence $O = \{O_1, O_2, O_1\}$
+
+Now we can compute $\gamma_t$ for each time stamp.
+
+\textbf{At t=1}:
+We have 
+\[
+    \alpha_1 = \begin{bmatrix}
+        0.56 \\ 0.08
+    \end{bmatrix}, \quad \beta_1 = \begin{bmatrix}
+        0.2364 \\ 0.252
+    \end{bmatrix}
+\]
+We take the Hadamard product of this.
+\[
+\alpha_1 \circ \beta_1 = \begin{bmatrix}
+    0.56 \cdot 0.2364 \\ 0.08 \cdot 0.252 
+\end{bmatrix} = \begin{bmatrix}
+    0.132384 \\ 0.02016
+\end{bmatrix}
+\]
+
+We normalize the first part and take the scalar product.
+\[
+\gamma_1 = \cfrac{1}{0.152544} \bigcdot \begin{bmatrix}
+    0.132384 \\ 0.02016
+\end{bmatrix} = \begin{bmatrix}
+    0.8678414 \\ 0.1321589
+\end{bmatrix}
+\]
+
+\textbf{At t = 2}:
+
+We have:
+\[
+\alpha_2 = \begin{bmatrix}
+    0.1074 \\ 0.1584
+\end{bmatrix}, \quad \beta_2 = \begin{bmatrix}
+    0.58 \\ 0.55
+\end{bmatrix}
+\]
+
+The Hadamard product is:
+\[
+\alpha_2 \circ \beta_2 = \begin{bmatrix}
+    0.1074 \cdot 0.58 \\ 0.1584 \cdot 0.55
+\end{bmatrix} = \begin{bmatrix}
+    0.062292 \\ 0.08712
+\end{bmatrix}
+\]
+
+We normalize the first part and take the scalar product.
+\[
+\gamma_2 = \cfrac{1}{0.152544} \bigcdot \begin{bmatrix}
+    0.062292 \\ 0.08712 \end{bmatrix} = \begin{bmatrix}
+        0.42888609 \\ 0.57111391
+    \end{bmatrix}
+\]
+
+\textbf{At t = 3}
+
+We have: 
+\[
+\alpha_3 = \begin{bmatrix}
+    0.089628 \\ 0.053328
+\end{bmatrix}, \quad \beta_3 = \begin{bmatrix}
+    1 \\ 1
+\end{bmatrix}
+\]
+The Hadamard product is:
+\[
+\alpha_3 \circ \beta_3 = \begin{bmatrix}
+0.089628 \\ 0.053328
+\end{bmatrix}
+\]
+We normalize the first part and take the scalar product.
+\[
+\gamma_3 = \cfrac{1}{0.152544} \bigcdot \begin{bmatrix}
+    0.089628 \\ 0.053328 \end{bmatrix} = \begin{bmatrix}
+        0.67400881 \\ 0.32599119
+    \end{bmatrix}
+\]
+
+
+\subsubsection{Calculating $\xi$}
+We calculate $\xi$ by
+\[
+\xi_t = ((\mathbbm{1}^T\alpha_T)^{-1} \bigcdot A) \circ (\alpha_t \otimes (\beta_{t+1} \circ B_{yt+1})^T)
+\]
+
+We start by calculating $((\mathbbm{1}^T\alpha_T)^{-1} \bigcdot A)$:
+From before, we have 
+\[
+(\mathbbm{1}^T\alpha_T)^{-1} = \cfrac{1}{0.152544} = 6.996
+\]
+We have:
+\[
+  A = \begin{bmatrix}
+  0.6 & 0.4 \\
+  0.5 & 0.5
+  \end{bmatrix}
+\]
+We get:
+\[
+8.996 \bigcdot A = \begin{bmatrix}
+    6.996 \cdot 0.6 & 6.996 \cdot 0.4 \\ 6.996 \cdot 0.5 & 6.996 \cdot 0.5
+\end{bmatrix} = \begin{bmatrix}
+    4.198 & 2.798 \\ 3.498 & 3.498
+\end{bmatrix}
+\]
+We can now calculate $\alpha_1 \otimes (\beta_2 \circ B_{y2})^T$.
+We have 
+:
+\[
+\alpha_1 = \begin{bmatrix}
+    0.56 \\ 0.08
+\end{bmatrix}, \quad \beta_2 = \begin{bmatrix}
+    0.58 \\ 0.55
+\end{bmatrix}, \quad B_{y2} = \begin{bmatrix}
+    0.3 \\ 0.6
+\end{bmatrix}
+\]
+We calculate $\beta_2 \circ B_{y2}$:
+\[
+\beta_2 \circ B_{y2} = \begin{bmatrix}
+    0.58 \\ 0.55
+\end{bmatrix} \circ \begin{bmatrix}
+    0.3 \\ 0.6
+\end{bmatrix} = \begin{bmatrix}
+    0.174 \\ 0.33
+\end{bmatrix}
+\]
+Outer product:
+\[
+\alpha_1 \otimes (\beta_2 \circ B_{y2})^T = \begin{bmatrix}
+    0.56 \\ 0.08
+\end{bmatrix} \otimes \begin{bmatrix}
+    0.174 & 0.33
+\end{bmatrix} \] \[ = \begin{bmatrix}
+    0.09744 & 0.1848 \\ 0.01392 & 0.0264
+\end{bmatrix}
+\]
+
+We can now calculate $\xi_1$
+\[
+\xi_1 = \begin{bmatrix}
+    4.198 & 2.798 \\ 3.498 & 3.498
+\end{bmatrix} \circ \begin{bmatrix}
+    0.09744 & 0.1848 \\ 0.01392 & 0.0264
+\end{bmatrix} \] \[ \xi_1 = \begin{bmatrix}
+    0.38325991 & 0.03650094 \\ 0.60572687 & 0.08653241
+\end{bmatrix}
+\]
+
+\textbf{At t=2}:
+
+We have:
+\[
+B_{y1} = \begin{bmatrix}
+    0.7 \\ 0.4
+\end{bmatrix}, \quad \alpha_2 = \begin{bmatrix}
+    0.1074 \\ 0.1584
+\end{bmatrix}, \quad \beta_3 = \begin{bmatrix}
+    1 \\ 1
+\end{bmatrix}
+\]
+Hadamard product for $\beta_3 \circ B_{y1}$
+\[
+\beta_3 \circ B_{y1} = \begin{bmatrix}
+    1 \\ 1
+\end{bmatrix} \circ \begin{bmatrix}
+    0.7 \\ 0.4
+\end{bmatrix} = \begin{bmatrix}
+    0.7 \\ 0.4
+\end{bmatrix}
+\]
+
+Outer product:
+\[
+\alpha_2 \otimes \begin{bmatrix}
+    0.7 & 0.4
+\end{bmatrix} = \begin{bmatrix}
+    0.07518 & 0.04296 \\ 0.11088 & 0.06336
+\end{bmatrix}
+\]
+
+We can now calculate $\xi_2$:
+\[
+\xi_2 = 
+\begin{bmatrix}
+    4.198 & 2.798 \\ 3.498 & 3.498
+\end{bmatrix} \circ \begin{bmatrix}
+    0.07518 & 0.04296 \\ 0.11088 & 0.06336
+\end{bmatrix} 
+\] 
+
+\[ 
+\xi_2 = \begin{bmatrix}
+    0.07341938 & 0.06873304 \\ 0.03726872 & 0.0523348
+\end{bmatrix}
+\]
+
+\textbf{At t=3}:
+
+We have:
+\[
+B_{y1} = \begin{bmatrix}
+    0.7 \\ 0.4
+\end{bmatrix}, \quad \alpha_3 = \begin{bmatrix}
+    0.089628 \\ 0.053328
+\end{bmatrix}, \quad \beta_3 = \begin{bmatrix}
+    1 \\ 1
+\end{bmatrix}
+\]
+Hadamard product for $\beta_3 \circ B_{y1}$
+\[
+\beta_3 \circ B_{y1} = \begin{bmatrix}
+    1 \\ 1
+\end{bmatrix} \circ \begin{bmatrix}
+    0.7 \\ 0.4
+\end{bmatrix} = \begin{bmatrix}
+    0.7 \\ 0.4
+\end{bmatrix}
+\]
+
+Outer product:
+\[
+\alpha_3 \otimes \begin{bmatrix}
+    0.7 & 0.4
+\end{bmatrix} = \begin{bmatrix}
+    0.062740 & 0.035852 \\ 0.037329 & 0.021331
+\end{bmatrix}
+\]
+
+We can now calculate $\xi_3$:
+\[
+\xi_2 = 
+\begin{bmatrix}
+    4.198 & 2.798 \\ 3.498 & 3.498
+\end{bmatrix} \circ \begin{bmatrix}
+    0.062740 & 0.035852 \\ 0.037329 & 0.021331
+\end{bmatrix} 
+\] 
+
+\[ \xi_3 = \begin{bmatrix}
+    0.2839837 & 0.09127753 \\ 0.13480176 & 0.06519824
+\end{bmatrix}
+\]
+
+
+\subsection{Update values}
+\[
+\hat{\pi} = \gamma_1 = \begin{bmatrix}
+    0.86784141 \\ 0.1321589
+\end{bmatrix}
+\]
+
+\[
+\hat{A} = (\mathbbm{1} \oslash \gamma) \bullet \xi 
+\]
+
+\[
+\hat{B} = (\mathbbm{1} \oslash \gamma) \bullet (\sum_{t=1}^T \gamma_t \otimes \mathbbm{1}_{yt}^T)
+\]
+
+When referring to $\gamma$, we use the sum of the probabilities:
+\[
+\gamma = \sum_{t=1}^T \gamma_t
+\]
+and $\xi$:
+\[
+\xi = \sum_{t=1}^T \xi_t
+\]
+We therefore calculate:
+\[
+\gamma = \begin{bmatrix}
+    0.86784141 \\ 0.1321589
+\end{bmatrix}
++ \begin{bmatrix}
+    0.42888609  \\ 0.57111391
+\end{bmatrix} + \begin{bmatrix}
+    0.67400881 \\ 0.32599119
+\end{bmatrix} = \begin{bmatrix}
+    1.97073631 \\ 1.02926369
+\end{bmatrix}
+\]
+
+And
+\[
+\xi = \begin{bmatrix}
+    0.38325991 & 0.03650094 \\
+    0.60572687 & 0.08653241
+\end{bmatrix} + \begin{bmatrix}
+    0.07341938 & 0.06873304 \\
+ 0.03726872 & 0.0523348  
+\end{bmatrix}
+\]
+
+\[ + \begin{bmatrix}
+    0.2830837  & 0.09127753 \\ 
+ 0.13480176 & 0.06519824
+\end{bmatrix} = \begin{bmatrix}
+    0.739763   & 0.19651152 \\
+    0.77779736 & 0.20406545
+\end{bmatrix}
+\]
+
+We can now calculate 
+\[
+\mathbbm{1} \oslash \gamma = \begin{bmatrix}
+    \cfrac{1}{2.0923} \\ \cfrac{1}{1.1352}
+\end{bmatrix}
+\]
+
+We can now calculate $\hat{A}$
+\[
+\hat{A} = \begin{bmatrix}
+    \cfrac{1}{2.0923} \\ \cfrac{1}{1.1352}
+\end{bmatrix} \bullet \begin{bmatrix}
+    0.9897 & 0.7370 \\ 0.5670 & 0.3888
+\end{bmatrix} = \begin{bmatrix}
+    0.37537391 & 0.19092437 \\ 0.39467348 & 0.198226353
+\end{bmatrix}
+\]
+
+We calculate $\hat{B}$
+We first calculate the sum of the outer products:
+\[
+\sum_{t=1}^T \gamma_t \otimes \mathbbm{1}_{yt}^T 
+\]
+\textbf{At t = 1}:
+\[
+\gamma_1 \otimes \begin{bmatrix}
+    1 & 0 \end{bmatrix} = \begin{bmatrix}
+        0.86784141 \\ 0.1321589    
+    \end{bmatrix} \otimes \begin{bmatrix}
+        1 & 0 \end{bmatrix} = \begin{bmatrix}
+            0.86784141 & 0.13215859 \\
+        0 & 0           
+        \end{bmatrix}
+\]
+
+\textbf{At t = 2}:
+\[
+\gamma_2 \otimes \begin{bmatrix}
+    0 & 1 \end{bmatrix} = \begin{bmatrix}
+        0.42888609 \\ 0.57111391
+    \end{bmatrix} \otimes \begin{bmatrix}
+        0 & 1 \end{bmatrix} = \begin{bmatrix}
+            0 & 0 \\ 0.42888609 & 0.57111391
+        \end{bmatrix}
+\]
+\textbf{At t = 3}:
+\[
+\gamma_3 \otimes \begin{bmatrix}
+    1 & 0 \end{bmatrix} = \begin{bmatrix}
+        0.67400881 \\ 0.32599119
+    \end{bmatrix} \otimes \begin{bmatrix}
+        1 & 0 \end{bmatrix} = \begin{bmatrix}
+            0.67400881 & 0.32599119 \\ 0 & 0
+        \end{bmatrix}
+\]
+We summearize these to get:
+\[
+    \begin{bmatrix}
+        0.86784141 & 0.13215859 \\
+    0 & 0           
+    \end{bmatrix} + \begin{bmatrix}
+        0 & 0 \\ 0.42888609 & 0.57111391
+    \end{bmatrix} +
+\] 
+
+\[ \begin{bmatrix}
+        0.67400881 & 0.32599119 \\ 0 & 0
+    \end{bmatrix} = \begin{bmatrix}    
+        1.54185022 & 0.45814978 \\
+        0.42888609 & 0.57111391
+    \end{bmatrix}
+\]
+
+\[
+\hat{b} = \begin{bmatrix}
+    \cfrac{1}{2.0923} \\ \cfrac{1}{1.1352}
+\end{bmatrix} \bullet \begin{bmatrix}    
+    1.54185022 & 0.45814978 \\
+    0.42888609 & 0.57111391
+\end{bmatrix}
+\] 
+\[ = \begin{bmatrix}
+    0.78237266 & 0.23247645 \\
+    0.41669214 & 0.55487618
+\end{bmatrix}
+\]
+
+
+\subsection{ADD representation}
+As we only need one bit to represent the the rows and columns with one bit, we only need one variable for the them, as $x_1$ is the variable for rows and $y_1$ is the variable for column.
+
+We first make the matrices into ADD representation.
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[
+level 1/.style={sibling distance=55mm},
+level 2/.style={sibling distance=20mm},
+level 3/.style={sibling distance=15mm},
+level 4/.style={sibling distance=7mm}
+]
+\node[c] {$x_1$}
+    child{ node[c]  {$y_1$} edge from parent[zeroarrow]
+            child{ node[t] {0.7} 
+            }
+            child{ node [t] {0.3} edge from parent[onearrow]
+            }
+    }
+    child{ node[c] {$y_1$} edge from parent[onearrow]
+        child{ node[t] {0.4} edge from parent[zeroarrow]
+        }
+        child{ node[t] {0.6} edge from parent[onearrow]}
+    }
+;
+    \end{tikzpicture}
+    \caption{B-matrix representation in ADD}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[
+level 1/.style={sibling distance=55mm},
+level 2/.style={sibling distance=20mm},
+level 3/.style={sibling distance=15mm},
+level 4/.style={sibling distance=7mm}
+]
+\node[c] {$x_1$}
+    child{ node[c]  {$y_1$} edge from parent[zeroarrow]
+            child{ node[t] {0.6} 
+            }
+            child{ node [t] {0.4} edge from parent[onearrow]
+            }
+    }
+    child{ node[c] {$y_1$} edge from parent[onearrow]
+        child{ node[t] {0.5} edge from parent[zeroarrow]
+        }
+        child{ node[t] {0.5} edge from parent[onearrow]}
+    }
+;
+    \end{tikzpicture}
+    \caption{A-matrix representation in ADD}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[node distance=1cm and 1cm]
+        \node[c] (a) {$x_1$};
+        \node[c] (b) [below left=of a] {$y_1$};
+        \node[t] (final-1) [below left=of b] {0.6};
+        \node[t] (final-2) [below right=of b] {0.4};
+        \node[t] (final-3) [right=of final-2] {0.5};
+
+        \draw[zeroarrow] (a) -- (b);
+        \draw[zeroarrow] (b) -- (final-1);
+        \draw[onearrow] (b) -- (final-2);
+        \draw[onearrow] (a) -- (final-3);
+        
+    \end{tikzpicture}
+    \caption{A-matrix representation in ADD caption reduced}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}
+    \node[c] {$x_1$}
+            child{ node[t] {0.8} edge from parent[zeroarrow] 
+            }
+            child{ node [t] {0.2} edge from parent[onearrow]
+            }
+            ;
+    \end{tikzpicture}
+    \caption{$\pi$-matrix representation in ADD}
+\end{figure}
+
+We can now use the ADD representation to calculate $\alpha$ and $\beta$.
+
+When using ADD's it is important to remember, if we need to take a row from a matrix, we fix the input to the ADD by setting the x-variables to the desired row. An example is taking the third row of a matrix with 8 rows, we set, $x_1 = 1, x_2 = 1, x_3 = 0$ and $x_4 = 0$. if we need to take the second column, we set $y_1 = 1, y_2 = 0$ and $y_3 = 0, y_4 = 0$.
+Hadamard product is row-wise multiplication of the matrices. So to calculate the Hadamard product of two matrices, we set the x-variables to the same row in both matrices and multiply the corresponding nodes in the ADDs.
+To calculate a Hadamard product in ADD, we multiply the corresponding nodes in the ADDs, as shown in the following figure.
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[level 1/.style={sibling distance=30mm},
+        level 2/.style={sibling distance=20mm},
+        level 3/.style={sibling distance=15mm},
+        level 4/.style={sibling distance=7mm}]
+        \node[c] {$x_1$}
+        child{ node[c]  {$y_1$} edge from parent[zeroarrow]
+                child{ node[t] {a} 
+                }
+                child{ node [t] {b} edge from parent[onearrow]
+                }
+        }
+        child{ node[c] {$y_1$} edge from parent[onearrow]
+            child{ node[t] {c} edge from parent[zeroarrow]
+            }
+            child{ node[t] {d} edge from parent[onearrow]}
+        }
+    ;
+    \end{tikzpicture}
+    \caption{Matrix A in ADD}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[level 1/.style={sibling distance=30mm},
+        level 2/.style={sibling distance=20mm},
+        level 3/.style={sibling distance=15mm},
+        level 4/.style={sibling distance=7mm}]
+        \node[c] {$x_1$}
+        child{ node[c]  {$y_1$} edge from parent[zeroarrow]
+                child{ node[t] {e} 
+                }
+                child{ node [t] {f} edge from parent[onearrow]
+                }
+        }
+        child{ node[c] {$y_1$} edge from parent[onearrow]
+            child{ node[t] {g} edge from parent[zeroarrow]
+            }
+            child{ node[t] {h} edge from parent[onearrow]}
+        }
+    ;
+    \end{tikzpicture}
+    \caption{Matrix B in ADD}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[level 1/.style={sibling distance=50mm},
+        level 2/.style={sibling distance=30mm},
+        level 3/.style={sibling distance=40mm},
+        level 4/.style={sibling distance=20mm}]
+        \node[c] {$x_1$}
+        child{ node[c]  {$y_1$} edge from parent[zeroarrow]
+                child{ node[t] {$a \cdot e$} 
+                }
+                child{ node [t] {$b \cdot f$} edge from parent[onearrow]
+                }
+        }
+        child{ node[c] {$y_1$} edge from parent[onearrow]
+            child{ node[t] {$c \cdot g$} edge from parent[zeroarrow]
+            }
+            child{ node[t] {$d \cdot h$} edge from parent[onearrow]}
+        }
+    ;
+    \end{tikzpicture}
+    \caption{Hadamard product of A and B in ADD}
+\end{figure}
+
+
+Matrix multiplication is done by fixing the input to the first matrix and the output to the second matrix. We then sum the result of the Hadamard product of the rows of the first matrix and the columns of the second matrix. This is shown in the following figure.
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[level 1/.style={sibling distance=50mm},
+        level 2/.style={sibling distance=30mm},
+        level 3/.style={sibling distance=40mm},
+        level 4/.style={sibling distance=20mm}]
+        \node[c] {$x_1$}
+        child{ node[c]  {$y_1$} edge from parent[zeroarrow]
+                child{ node[t] {$a \cdot e + b \cdot g$} 
+                }
+                child{ node [t] {$a \cdot f + b \cdot h$} edge from parent[onearrow]
+                }
+        }
+        child{ node[c] {$y_1$} edge from parent[onearrow]
+            child{ node[t] {$c \cdot e + d \cdot g$} edge from parent[zeroarrow]
+            }
+            child{ node[t] {$c \cdot f + d \cdot h$} edge from parent[onearrow]}
+        }
+    ;
+    \end{tikzpicture}
+    \caption{Matrix multiplication of A and B in ADD}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[level 1/.style={sibling distance=50mm},
+        level 2/.style={sibling distance=30mm},
+        level 3/.style={sibling distance=40mm},
+        level 4/.style={sibling distance=20mm}]
+        \node[c] {$x_1$}
+        child{ node[c]  {$y_1$} edge from parent[zeroarrow]
+                child{ node[t] {$\lambda \cdot a$} 
+                }
+                child{ node [t] {$\lambda \cdot b$} edge from parent[onearrow]
+                }
+        }
+        child{ node[c] {$y_1$} edge from parent[onearrow]
+            child{ node[t] {$\lambda \cdot c$} edge from parent[zeroarrow]
+            }
+            child{ node[t] {$\lambda \cdot d$} edge from parent[onearrow]}
+        }
+    ;
+    \end{tikzpicture}
+    \caption{Scalar product in ADD}
+\end{figure}
+
+\begin{figure*}
+    \centering
+    \begin{tikzpicture}[
+        level 1/.style={sibling distance=80mm},
+        level 2/.style={sibling distance=40mm},
+        level 3/.style={sibling distance=20mm},
+        level 4/.style={sibling distance=10mm}
+        ]
+    \node[c] {$x_1$}
+        child{ node[c]  {$y_1$} edge from parent[zeroarrow]
+                child{ node[c] {$x_2$} 
+                        child{ node[c] {$y_2$} 
+                            child{ node[t] {$a \cdot e$}}
+                            child{ node[t] {$a \cdot f$} edge from parent[onearrow]} 
+                        }
+                        child{ node[c] {$y_2$} edge from parent[onearrow]
+                            child{ node[t] {$a \cdot g$} edge from parent[zeroarrow]}
+                            child{ node[t] {$a \cdot h$}} 
+                        }
+                }
+                child{ node [c] {$x_2$} edge from parent[onearrow]
+                        child{ node[c] {$y_2$}  edge from parent[zeroarrow]
+                            child{ node[t] {$b \cdot e$}} 
+                            child{ node[t] {$b \cdot f$} edge from parent[onearrow]} 
+                        }
+                        child{ node[c] {$y_2$} edge from parent[onearrow]
+                            child{ node[t] {$b \cdot g$} edge from parent[zeroarrow]} 
+                            child{ node[t] {$b \cdot h$}} 
+                        }
+                }
+        }
+        child{ node[c] {$y_1$} edge from parent[onearrow]
+                child{ node [c] {$x_2$} edge from parent[zeroarrow]
+                        child{ node[c] {$y_2$} 
+                            child{ node[t] {$c \cdot e$}} 
+                            child{ node[t] {$c \cdot f$} edge from parent[onearrow]} 
+                        }
+                        child{ node[c] {$y_2$} edge from parent[onearrow]
+                            child{ node[t] {$c \cdot g$} edge from parent[zeroarrow]} 
+                            child{ node[t] {$c \cdot h$}}  
+                        }
+                }
+                child{ node [c] {$x_2$} edge from parent[onearrow]
+                        child{ node[c] {$y_2$} edge from parent[zeroarrow]
+                            child{ node[t] {$d \cdot e$}} 
+                            child{ node[t] {$d \cdot f$} edge from parent[onearrow]} 
+                        }
+                        child{ node[c] {$y_2$} edge from parent[onearrow]
+                            child{ node[t] {$d \cdot g$} edge from parent[zeroarrow]} 
+                            child{ node[t] {$d \cdot h$}} 
+                        }
+                }
+        }
+    ;
+    \end{tikzpicture}        
+    \caption{Kroneker product in ADD}
+\end{figure*}
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[level 1/.style={sibling distance=50mm},
+        level 2/.style={sibling distance=30mm},
+        level 3/.style={sibling distance=40mm},
+        level 4/.style={sibling distance=20mm}]
+        \node[c] {$x_1$}
+        child{ node[c]  {$y_1$} edge from parent[zeroarrow]
+                child{ node[t] {$\cfrac{a}{f}$} 
+                }
+                child{ node [t] {$\cfrac{b}{f}$} edge from parent[onearrow]
+                }
+        }
+        child{ node[c] {$y_1$} edge from parent[onearrow]
+            child{ node[t] {$\cfrac{c}{g}$} edge from parent[zeroarrow]
+            }
+            child{ node[t] {$\cfrac{d}{h}$} edge from parent[onearrow]}
+        }
+    ;
+    \end{tikzpicture}
+    \caption{Hadamard division of A and B in ADD}
+\end{figure}
+
+\begin{figure*}
+    \centering
+    \begin{tikzpicture}[
+        level 1/.style={sibling distance=80mm},
+        level 2/.style={sibling distance=40mm},
+        level 3/.style={sibling distance=20mm},
+        level 4/.style={sibling distance=10mm}
+        ]
+    \node[c] {$x_1$}
+        child{ node[c]  {$y_1$} edge from parent[zeroarrow]
+                child{ node[c] {$x_2$} 
+                        child{ node[c] {$y_2$} 
+                            child{ node[t] {$a \cdot e$}}
+                            child{ node[t] {$a \cdot f$} edge from parent[onearrow]} 
+                        }
+                        child{ node[c] {$y_2$} edge from parent[onearrow]
+                            child{ node[t] {$c \cdot g$} edge from parent[zeroarrow]}
+                            child{ node[t] {$c \cdot h$}} 
+                        }
+                }
+                child{ node [c] {$x_2$} edge from parent[onearrow]
+                        child{ node[c] {$y_2$}  edge from parent[zeroarrow]
+                            child{ node[t] {$b \cdot e$}} 
+                            child{ node[t] {$b \cdot f$} edge from parent[onearrow]} 
+                        }
+                        child{ node[c] {$y_2$} edge from parent[onearrow]
+                            child{ node[t] {$d \cdot g$} edge from parent[zeroarrow]} 
+                            child{ node[t] {$d \cdot h$}} 
+                        }
+                }
+        }
+        child{ node[c] {$y_1$} edge from parent[onearrow]
+                child{ node [c] {$x_2$} edge from parent[zeroarrow]
+                        child{ node[c] {$y_2$} 
+                            child{ node[t] {0}} 
+                            child{ node[t] {0} edge from parent[onearrow]} 
+                        }
+                        child{ node[c] {$y_2$} edge from parent[onearrow]
+                            child{ node[t] {0} edge from parent[zeroarrow]} 
+                            child{ node[t] {0}}  
+                        }
+                }
+                child{ node [c] {$x_2$} edge from parent[onearrow]
+                        child{ node[c] {$y_2$} edge from parent[zeroarrow]
+                            child{ node[t] {0}} 
+                            child{ node[t] {0} edge from parent[onearrow]} 
+                        }
+                        child{ node[c] {$y_2$} edge from parent[onearrow]
+                            child{ node[t] {0} edge from parent[zeroarrow]} 
+                            child{ node[t] {0}} 
+                        }
+                }
+        }
+    ;
+    \end{tikzpicture}        
+    \caption{Katri-Rao in ADD}
+\end{figure*}
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[level 1/.style={sibling distance=50mm},
+        level 2/.style={sibling distance=30mm},
+        level 3/.style={sibling distance=40mm},
+        level 4/.style={sibling distance=20mm}]
+        \node[c] {$y_1$}
+        child{ node[c]  {$x_1$} edge from parent[zeroarrow]
+                child{ node[t] {a} 
+                }
+                child{ node [t] {c} edge from parent[onearrow]
+                }
+        }
+        child{ node[c] {$y_1$} edge from parent[onearrow]
+            child{ node[t] {b} edge from parent[zeroarrow]
+            }
+            child{ node[t] {d} edge from parent[onearrow]}
+        }
+    ;
+    \end{tikzpicture}
+    \caption{transpose in ADD}
+\end{figure}
+
+%To calculate $\alpha_1$ we can use the following formula:
+%\[
+%\alpha_1 = \pi \circ B_{y1}
+%\]
+%We can now calculate $\alpha_1$:
+%\[
+%\alpha_1 = \pi_{ADD}(0) \cdot B_{y1}(0) + \pi_{ADD}(1) \cdot B_{y1}(1) = 0.8 \cdot 0.7 + 0.2 \cdot 0.4 = 0.56
+%\]
+%\begin{figure}
+%    \centering
+%    \begin{tikzpicture}[ node distance=1cm and 1cm]
+%        \node[c] (a) {$x_1$};
+%        \node[t] (final-1) [below left=of a] {0.56};
+%        \node[t] (final-2) [below right=of a] {0.08};
+%
+%        \draw[zeroarrow] (a) -- (final-1);
+%        \draw[onearrow] (a) -- (final-2);
+%    \end{tikzpicture}
+%    \caption{$\alpha_1$-matrix representation in ADD}
+%\end{figure}
+
+%\begin{figure}
+%    \centering
+%    \begin{tikzpicture}[ node distance=1cm and 1cm]
+%        \node[c] (a) {$x_1$};
+%        \node[t] (final-1) [below left=of a] {0.1128};
+%        \node[t] (final-2) [below right=of a] {0.1584};
+%
+%        \draw[zeroarrow] (a) -- (final-1);
+%        \draw[onearrow] (a) -- (final-2);
+%    \end{tikzpicture}
+%    \caption{$\alpha_2$-matrix representation in ADD}
+%\end{figure}
+
+%\begin{figure}
+%    \centering
+%    \begin{tikzpicture}[ node distance=1cm and 1cm]
+%        \node[c] (a) {$x_1$};
+%        \node[t] (final-1) [below left=of a] {0.102816};
+%        \node[t] (final-2) [below right=of a] {0.049728};
+%
+%        \draw[zeroarrow] (a) -- (final-1);
+%        \draw[onearrow] (a) -- (final-2);
+%    \end{tikzpicture}
+%    \caption{$\alpha_3$-matrix representation in ADD}
+%\end{figure}
+
+%\begin{figure}
+%    \centering
+%    \begin{tikzpicture}[ node distance=1cm and 1cm]
+%        \node[c] (a) {$x_1$};
+%        \node[t] (final-1) [below left=of a] {0.2364};
+%        \node[t] (final-2) [below right=of a] {0.252};
+%
+%        \draw[zeroarrow] (a) -- (final-1);
+%        \draw[onearrow] (a) -- (final-2);
+%    \end{tikzpicture}
+%    \caption{$\beta_1$-matrix representation in ADD}
+%\end{figure}
+
+%\begin{figure}
+%    \centering
+%    \begin{tikzpicture}[ node distance=1cm and 1cm]
+%        \node[c] (a) {$x_1$};
+%        \node[t] (final-1) [below left=of a] {0.58};
+%        \node[t] (final-2) [below right=of a] {0.55};
+%
+%        \draw[zeroarrow] (a) -- (final-1);
+%        \draw[onearrow] (a) -- (final-2);
+%    \end{tikzpicture}
+%    \caption{$\beta_2$-matrix representation in ADD}
+%\end{figure}
+
+%\begin{figure}
+%    \centering
+%    \begin{tikzpicture}[ node distance=1cm and 1cm]
+%        \node[c] (a) {$x_1$};
+%        \node[t] (final-1) [below left=of a] {1};
+%        \node[t] (final-2) [below right=of a] {1};
+%
+%        \draw[zeroarrow] (a) -- (final-1);
+%        \draw[onearrow] (a) -- (final-2);
+%    \end{tikzpicture}
+%    \caption{$\beta_3$-matrix representation in ADD}
+%\end{figure}
