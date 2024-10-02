@@ -1,7 +1,7 @@
 {
-  "name": "Stormpy",
-  "image": "movesrwth/stormpy:stable",
-  "runArgs": ["--name", "stormpy-devcontainer"],
+  "name": "LaTeX",
+  "image": "texlive/texlive:latest",
+  "runArgs": ["--name", "LaTeX-devcontainer"],
   "customizations": {
     "jetbrains": {
       "plugins": [
