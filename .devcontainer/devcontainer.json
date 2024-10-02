@@ -1,7 +1,7 @@
 {
-  "name": "Stormpy",
-  "image": "movesrwth/stormpy:stable",
-  "runArgs": ["--name", "stormpy-devcontainer"],
+  "name": "Storm",
+  "image": "movesrwth/storm:stable",
+  "runArgs": ["--name", "storm-devcontainer"],
   "customizations": {
     "jetbrains": {
       "plugins": [
