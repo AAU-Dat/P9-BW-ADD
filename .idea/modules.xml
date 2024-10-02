@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/BW-ADD.iml" filepath="$PROJECT_DIR$/BW-ADD.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/CuPAAL.iml" filepath="$PROJECT_DIR$/.idea/CuPAAL.iml" />
       <module fileurl="file://$PROJECT_DIR$/report/report.iml" filepath="$PROJECT_DIR$/report/report.iml" />
     </modules>
   </component>
