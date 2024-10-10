@@ -1,0 +1,45 @@
+\section{Definitions}\label{sec:definitions}
+\begin{definition}
+    A Markov chain is a tuple $\mathcal{M} = (S, \mathcal{L}, \mathcal{l}, \tau, \pi)$, where:
+    \begin{itemize}
+        \item $S$ is a finite set of states.
+        \item $\mathcal{L}$ is a finite set of labels.
+        \item $\mathcal{l}: S \rightarrow \mathcal{L}$ is a labeling function, which assigns a label to each state.
+        \item $\tau: S \rightarrow \mathcal{D}(S)$ is a transition function. The model moves from state $s$ to state $s'$ with probability $\tau(s, s')$.
+        \item $\pi$: is the initial distribution, the model starts in state $s$ with probability $\pi(s)$.
+    \end{itemize}
+\end{definition}
+
+Intuitively, a Markov chain is a model that starts in a state $s$ with probability $\pi(s)$, and then transitions to a new state $s'$ with probability $\tau(s, s')$. The model continues to transition between states according to the transition function.
+
+
+\begin{definition}
+    A \textbf{Hidden Markov Model} (HMM) is a tuple $\mathcal{M} = (S, \mathcal{L}, \mathcal{l}, \tau,  pi)$, where $S, \mathcal{L}, \tau, \pi$
+    are defined as above, and:
+    \begin{itemize}
+        \item $\mathcal{l}: S \rightarrow D(\mathcal{L})$ is the emission function. The model emits a label $l$ in state $s$ with probability $\mathcal{l}(s, l)$.  
+    \end{itemize}
+\end{definition}
+
+Intuitively, an HMM is a model that starts in a state $s$ with probability $\pi(s)$, then emits a label $l$ with probability $\mathcal{l}(s, l)$, and transitions to a new state $s'$ with probability $\tau(s, s')$. The model continues to emit labels and transition between states according to the emission and transition functions.
+
+\begin{definition}
+    A \textbf{Markov Decision Process} (MDP) is a tuple $\mathcal{M} = (S, \mathcal{L}, \mathcal{l}, A, \{\tau_a\}_{a \in A}, \pi)$ where $S, \mathcal{L}, \mathcal{l}, \pi$ are defined as above, and:
+    \begin{itemize}
+        \item $A$ is a finite nonempty set of actions.
+        \item $\tau_a: S \rightarrow \mathcal{D}(S)$ is a transition function for each action $a \in A$. The model moves from state $s$ to state $s'$ with probability $\tau_a(s, s')$ when action $a$ is taken.
+    \end{itemize}
+\end{definition}
+
+Intuitively, an MDP is a model that starts in a state $s$ with probability $\pi(s)$, then emits a label $\mathcal{l}(s)$ and, it can recieve an action $a \in A$ and transition to a new state $s'$ with probability $\tau_a(s, s')$. 
+
+\subsection{Continuous-Time}
+In the previous definitions, the models are discrete-time models, meaning that the time between each transition is fixed. Meaning that the model transitions from state $s$ to state $s'$ at time $t$ with probability $\tau(s, s')$. In continuous-time models, the time between each transition is not fixed, and the model transitions from state $s$ to state $s'$ at time $t$ with rate $\tau(s, s')$.
+Meaning it is possible for the model to transition from state $s$ to state $s'$ at any time $t$ with rate $\tau(s, s')$.
+\begin{definition}
+    A \textbf{Continuous-Time Markov Chain} (CTMC) is a tuple $\mathcal{M} = (S, \mathcal{L}, \mathcal{l}, R, \pi)$, where $S, \mathcal{L}, \mathcal{l}, \pi$ are defined as above, and:
+    \begin{itemize}
+        \item $R: S \times S \rightarrow \mathbb{R}^+$ is the rate function. The model transitions from state $s$ to state $s'$ with rate $R(s, s')$.
+    \end{itemize}
+\end{definition}
+The rate function $R$ is a function that assigns a rate to each pair of states. A transition from state $s$ to state $s'$ can only occur if the model is in state $s$ and the rate $R(s, s') > 0$. If two or more transitions are possible from state $s$, we have a race condition, the first transition to be triggered determines the next state.
