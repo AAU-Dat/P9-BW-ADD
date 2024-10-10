@@ -34,12 +34,75 @@ Intuitively, an HMM is a model that starts in a state $s$ with probability $\pi(
 Intuitively, an MDP is a model that starts in a state $s$ with probability $\pi(s)$, then emits a label $\mathcal{l}(s)$ and, it can recieve an action $a \in A$ and transition to a new state $s'$ with probability $\tau_a(s, s')$. 
 
 \subsection{Continuous-Time}
-In the previous definitions, the models are discrete-time models, meaning that the time between each transition is fixed. Meaning that the model transitions from state $s$ to state $s'$ at time $t$ with probability $\tau(s, s')$. In continuous-time models, the time between each transition is not fixed, and the model transitions from state $s$ to state $s'$ at time $t$ with rate $\tau(s, s')$.
-Meaning it is possible for the model to transition from state $s$ to state $s'$ at any time $t$ with rate $\tau(s, s')$.
+In the previous definitions, the models are discrete-time models, where time advances in fixed, regular steps. For example, in a discrete-time Markov chain, the system transitions between states at each step or tick of a clock, and the probability of moving from one state to another is governed by the transition function $\tau(s, s')$. This means that transitions can only happen at specific time intervals (e.g., after every second, every minute, etc.).
+
+In contrast, continuous-time models allow transitions to occur at any time, rather than at fixed intervals. The time between transitions is variable and follows a continuous distribution. This introduces the concept of transition rates rather than discrete transition probabilities.
+
 \begin{definition}
     A \textbf{Continuous-Time Markov Chain} (CTMC) is a tuple $\mathcal{M} = (S, \mathcal{L}, \mathcal{l}, R, \pi)$, where $S, \mathcal{L}, \mathcal{l}, \pi$ are defined as above, and:
     \begin{itemize}
-        \item $R: S \times S \rightarrow \mathbb{R}^+$ is the rate function. The model transitions from state $s$ to state $s'$ with rate $R(s, s')$.
+        \item $R: S \times S \rightarrow \mathbb{R}_{\geq 0}$ is the rate function. The model transitions from state $s$ to state $s'$ with rate $R(s, s')$.
     \end{itemize}
 \end{definition}
-The rate function $R$ is a function that assigns a rate to each pair of states. A transition from state $s$ to state $s'$ can only occur if the model is in state $s$ and the rate $R(s, s') > 0$. If two or more transitions are possible from state $s$, we have a race condition, the first transition to be triggered determines the next state.
+For two states $s$ and $s'$, $R(s, s')$ gives the rate at which the system moves from state $s$ to state $s'$. A higher rate means a faster transition.
+
+A Continuous-Time Markov Chain (CTMC) is a type of Markov model where the time between transitions is not fixed but is governed by exponential distributions. If there are more then one outgoing transition from a state, we get race-conditions, the first transition to occur is the one that will be taken. The time spent in a state before transitioning to a new state is called $dwell-time$. This is exponentially distributed with a rate $E(s) = \sum_{s' \in S} R(s, s')$. The probability of transitioning from state $s$ to state $s'$ is $R(s, s')/E(s)$, the time spent in $s$ is independent from the properbility of transitioning to $s'$.
+
+\subsection{Matrix Representation}
+The transition function $\tau$ can be represented as a matrix, where each element $\tau(s, s')$ is the probability of transitioning from state $s$ to state $s'$. The matrix representation of $\tau$ is called the transition matrix. The transition matrix is a square matrix with dimensions $|S| \times |S|$, where $|S|$ is the number of states in the model. The transition matrix is a stochastic matrix, meaning that the sum of each row is equal to 1, meaning all the probabilities of transitioning from state $s$ to all other states sum to 1.
+
+If we take an example of a model with two states $S = \{s_1, s_2\}$, the transition matrix $\tau$ is defined as:
+\begin{equation}
+    \tau = \begin{bmatrix}
+        \tau(s_1, s_1) & \tau(s_1, s_2) \\
+        \tau(s_2, s_1) & \tau(s_2, s_2)
+    \end{bmatrix}
+\end{equation}
+We can give an example of a transition matrix for a model with two states, where the model transitions from state $s_1$ to state $s_2$ with probability 0.4 and transitions from state $s_2$ to state $s_1$ with probability 0.5:
+\begin{equation}
+    \tau = \begin{bmatrix}
+        0.6 & 0.4 \\
+        0.5 & 0.5
+    \end{bmatrix}
+\end{equation}
+
+The initial distribution $\pi$ is a vector that represents the probability of starting in each state. The initial distribution is a stochastic vector, meaning that the sum of all probabilities is equal to 1. The initial distribution $\pi$ is a vector with dimensions $|S|$, where $|S|$ is the number of states in the model. Each element $\pi(s)$ is the probability of starting in state $s$.
+\begin{equation}
+    \pi = \begin{bmatrix}
+        0.6 \\
+        0.5
+    \end{bmatrix}
+\end{equation}
+
+The labeling function $\mathcal{l}$ can be represented as a matrix, where each element $\mathcal{l}(s, l)$ is the probability of emitting label $l$ in state $s$. The matrix representation of $\mathcal{l}$ is called the emission matrix. The emission matrix is a matrix with dimensions $|S| \times |\mathcal{L}|$, where $|\mathcal{L}|$ is the number of labels in the model. The emission matrix is a stochastic matrix, meaning that the sum of each row is equal to 1, meaning all the probabilities of emitting a label in state $s$ sum to 1. 
+
+If we take an example of a model with two states $S = \{s_1, s_2\}$ and two labels $\mathcal{L} = \{l_1, l_2\}$, the emission matrix $\mathcal{l}$ is defined as:
+\begin{equation}
+    \mathcal{l} = \begin{bmatrix}
+        \mathcal{l}(s_1, l_1) & \mathcal{l}(s_1, l_2) \\
+        \mathcal{l}(s_2, l_1) & \mathcal{l}(s_2, l_2)
+    \end{bmatrix}
+\end{equation}
+We can give an example of an emission matrix for a model with two states and two labels, where the model emits label $l_1$ in state $s_1$ with probability 0.7 and emits label $l_2$ in state $s_2$ with probability 0.6:
+\begin{equation}
+    \mathcal{l} = \begin{bmatrix}
+        0.7 & 0.3 \\
+        0.4 & 0.6
+    \end{bmatrix}
+\end{equation}
+
+The rate function $R$ can be represented as a matrix, where each element $R(s, s')$ is the rate of transitioning from state $s$ to state $s'$. The matrix representation of $R$ is called the rate matrix. The rate matrix is a square matrix with dimensions $|S| \times |S|$, where $|S|$ is the number of states in the model. The rate matrix is a non-negative matrix, meaning that all elements are greater than or equal to 0.
+\begin{equation}
+    R = \begin{bmatrix}
+        R(s_1, s_1) & R(s_1, s_2) \\
+        R(s_2, s_1) & R(s_2, s_2)
+    \end{bmatrix}
+\end{equation}
+
+If we take an example of a model with two states $S = \{s_1, s_2\}$, the rate matrix $R$ is defined as:
+\begin{equation}
+    R = \begin{bmatrix}
+        0.5 & 0.3 \\
+        0.2 & 0.4
+    \end{bmatrix}   
+\end{equation}
