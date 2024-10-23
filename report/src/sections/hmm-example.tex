@@ -4,16 +4,16 @@ We have a simple HMM with, two hidden states \( S_1 \) and \( S_2 \), two observ
 
 The HMM parameters are:
 
-\textbf{Transition matrix} \( \tau \) (probability of moving from one state to another):
+\textbf{Transition matrix} \( A \) (probability of moving from one state to another):
   \[
-  \tau = \begin{bmatrix}
+  A = \begin{bmatrix}
   0.6 & 0.4 \\
   0.5 & 0.5
   \end{bmatrix}
   \]
-\textbf{Emission matrix} \( \mathcal{l} \) (probability of emitting observation given a state):
+\textbf{Emission matrix} \( B \) (probability of emitting observation given a state):
   \[
-  \mathcal{l} = \begin{bmatrix}
+  B = \begin{bmatrix}
   0.7 & 0.3 \\
   0.4 & 0.6
   \end{bmatrix}
@@ -28,36 +28,36 @@ In the expectation step we calculate $\alpha$ and $\beta$.
 
 We first compute the forward probabilities \( \alpha_t(i) \), which represent the probability of being in state \( i \) at time \( t \) after observing the first \( t \) symbols.
 
-\paragraph{Initialization (at \( o = 1 \))}
+\paragraph{Initialization at \( (t = 1 \))}
   \[
-  \alpha_1 = \pi \circ \mathcal{l}_{y1}
+  \alpha_1 = \pi \circ B_{y1}
   \]
-  Where \( \mathcal{l}_{y1} \) is the first column of the emission matrix, corresponding to observation \( O_1 \) 
+  Where \( B_{y1} \) is the first column of the emission matrix, corresponding to observation \( O_1 \) 
   
-  (i.e., \( \mathcal{l}_{y1} = \begin{bmatrix} 0.7 \\ 0.4 \end{bmatrix} \)) and \( \circ \) represents the Hadamard product. So, we get:
+  (i.e., \( B_{y1} = \begin{bmatrix} 0.7 \\ 0.4 \end{bmatrix} \)) and \( \circ \) represents the Hadamard product. So, we get:
   \[
   \alpha_1 = \begin{bmatrix} 0.8 \\ 0.2 \end{bmatrix} \circ \begin{bmatrix} 0.7 \\ 0.4 \end{bmatrix} = \begin{bmatrix} 0.56 \\ 0.08 \end{bmatrix}
   \]
 
-\paragraph{Induction (for \( t = 2, 3, \dots, v \))}
+\paragraph{Induction (for \( t = 2, 3, \dots, T \))}
 
   For subsequent timesteps, we compute:
   \[
-  \alpha_{v+1} = \mathcal{l}_{yv+1} \circ  (\tau^T \alpha_v)
+  \alpha_{t+1} = B_{yt+1} \circ  (A^T \alpha_t)
   \]
-  Where \( \tau^T \) is the transpose of the transition matrix. Let’s apply this to compute the forward probabilities for \( o = 2 \) and \( o = 3 \):
+  Where \( A^T \) is the transpose of the transition matrix. Let’s apply this to compute the forward probabilities for \( t = 2 \) and \( t = 3 \):
 
-  \textbf{Observation \( O_2 \)}:
+  \textbf{At \( t = 2 \) (observation \( O_2 \))}:
   \[
-  \alpha_2 = \mathcal{l}_{y2} \circ (\tau^T \alpha_1)
+  \alpha_2 = B_{y2} \circ (A^T \alpha_1)
   \]
   We have:
   \[
-  \mathcal{l}(y2) = \begin{bmatrix} 0.3 \\ 0.6 \end{bmatrix}
+  B(y2) = \begin{bmatrix} 0.3 \\ 0.6 \end{bmatrix}
   \]
   and 
   \[
-  \tau^T = \begin{bmatrix} 0.6 & 0.5 \\ 0.4 & 0.5 \end{bmatrix} 
+  A^T = \begin{bmatrix} 0.6 & 0.5 \\ 0.4 & 0.5 \end{bmatrix} 
   \]
 
   We get:
@@ -65,9 +65,9 @@ We first compute the forward probabilities \( \alpha_t(i) \), which represent th
   \alpha_2 = \begin{bmatrix} 0.3 \\ 0.6 \end{bmatrix} \circ \left(\begin{bmatrix} 0.6 & 0.5 \\ 0.4 & 0.5 \end{bmatrix} \cdot \begin{bmatrix} 0.56 \\ 0.08 \end{bmatrix}\right) = \begin{bmatrix} 0.1128 \\ 0.1584 \end{bmatrix}
   \]
 
-  \textbf{Observation \( O_3 \)}:
+  \textbf{At \( t = 3 \) (observation \( O_1 \))}:
   \[
-  \alpha_2 = \mathcal{l}_{y1} \circ (\tau^T \alpha_2)
+  \alpha_2 = B_{y1} \circ (A^T \alpha_2)
   \]
   We get: 
   \[
@@ -76,26 +76,26 @@ We first compute the forward probabilities \( \alpha_t(i) \), which represent th
 
 \subsubsection{Backward step $\beta$}
 
-The backward probabilities \( \beta_t(i) \) represent the probability of observing the rest of the sequence starting from time \( n+1 \), given that the system is in state \( i \) at time \( n \).
+The backward probabilities \( \beta_t(i) \) represent the probability of observing the rest of the sequence starting from time \( t+1 \), given that the system is in state \( i \) at time \( t \).
 
-\textbf{Initialization at \( o_v = O_3 = 3\))}
+\textbf{Initialization (at \( t = T = 3\))}
   \[
   \beta_T = \mathbf{1} = \begin{bmatrix} 1 \\ 1 \end{bmatrix}
   \]
 
-\paragraph{Induction (for \( O = n-1, n-2, \dots, 1 \))}
+\paragraph{Induction (for \( t = T-1, T-2, \dots, 1 \))}
   
   For earlier timesteps, we compute:
   \[
-  \beta_t = \tau (\beta_{t+1} \circ \mathcal{l}_{yn+1})
+  \beta_t = A (\beta_{t+1} \circ B_{yt+1})
   \]
 
-  \textbf{At \( o = 2 \) (observation \( O_2 \))}:
+  \textbf{At \( t = 2 \) (observation \( O_1 \))}:
   \[
-  \beta_2 = A (\beta_3 \circ \mathcal{l}_{y1})
+  \beta_2 = A (\beta_3 \circ B_{y1})
   \]
   \[
-  \mathcal{l}_{y1} = \begin{bmatrix} 0.7 \\ 0.4 \end{bmatrix}, \quad \beta_3 = \begin{bmatrix} 1 \\ 1 \end{bmatrix}
+  B_{y1} = \begin{bmatrix} 0.7 \\ 0.4 \end{bmatrix}, \quad \beta_3 = \begin{bmatrix} 1 \\ 1 \end{bmatrix}
   \]
   We get:
   \[
@@ -108,13 +108,13 @@ The backward probabilities \( \beta_t(i) \) represent the probability of observi
 \beta_2 = \begin{bmatrix} 0.6 & 0.4 \\ 0.5 & 0.5 \end{bmatrix} \cdot \begin{bmatrix} 0.7 \\ 0.4 \end{bmatrix} = \begin{bmatrix} 0.58 \\ 0.55 \end{bmatrix}
   \]
 
-  \textbf{At \( o = 1 \) (observation \( O_1 \))}:
+  \textbf{At \( t = 1 \) (observation \( O_2 \))}:
   \[
-  \beta_1 = \tau (\beta_2 \circ \mathcal{l}_{y2}) 
+  \beta_1 = A (\beta_2 \circ B_{y2}) 
   \]
   We have:
   \[
-  \mathcal{l}_{y2} = \begin{bmatrix} 0.3 \\ 0.6 \end{bmatrix}, \quad \beta_2 = \begin{bmatrix} 0.58 \\ 0.55 \end{bmatrix}
+  B_{y2} = \begin{bmatrix} 0.3 \\ 0.6 \end{bmatrix}, \quad \beta_2 = \begin{bmatrix} 0.58 \\ 0.55 \end{bmatrix}
   \]
   \[
   \beta_1 = \begin{bmatrix} 0.6 & 0.4 \\ 0.5 & 0.5 \end{bmatrix} \cdot \left(\begin{bmatrix} 0.3 \\ 0.6 \end{bmatrix} \circ \begin{bmatrix} 0.58 \\ 0.55 \end{bmatrix}\right) 
@@ -410,7 +410,7 @@ We can now calculate $\xi_3$:
 \]
 
 \[
-\hat{\mathcal{l}} = (\mathbbm{1} \oslash \gamma) \bullet (\sum_{t=1}^T \gamma_t \otimes \mathbbm{1}_{yt}^T)
+\hat{B} = (\mathbbm{1} \oslash \gamma) \bullet (\sum_{t=1}^T \gamma_t \otimes \mathbbm{1}_{yt}^T)
 \]
 
 When referring to $\gamma$, we use the sum of the probabilities:
@@ -473,7 +473,7 @@ We can now calculate $\hat{A}$
 \end{bmatrix}
 \]
 
-We calculate $\hat{\mathcal{l}}$
+We calculate $\hat{B}$
 We first calculate the sum of the outer products:
 \[
 \sum_{t=1}^T \gamma_t \otimes \mathbbm{1}_{yt}^T 
@@ -529,7 +529,7 @@ We summearize these to get:
 \]
 
 \[
-\hat{\mathcal{l}} = \begin{bmatrix}
+\hat{b} = \begin{bmatrix}
     \cfrac{1}{2.0923} \\ \cfrac{1}{1.1352}
 \end{bmatrix} \bullet \begin{bmatrix}    
     1.54185022 & 0.45814978 \\
