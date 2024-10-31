@@ -2,21 +2,23 @@
 %! Date = 29-12-2023
 
 % Preamble
-\documentclass[a4paper,conference]{IEEEtran}
+\documentclass[english,a4paper,compsoc,journal]{IEEEtran}
+\overfullrule=10pt
+\frenchspacing
 
 % Packages
+\input{setup/title}
 \input{setup/preamble}
 \input{setup/acronyms}
-\input{setup/title}
 
 % Document
 \begin{document}
     \maketitle
     \input{sections/00-abstract}
     \input{sections/01-introduction}
-    \input{sections/definitions.tex}
-    \input{sections/hmm-example.tex}
-    \input{sections/class-diagram.tex}
+    \input{sections/definitions}
+    \input{sections/hmm-example}
+    \input{sections/class-diagram}
     \printglossary[type=\acronymtype]
 
     \printbibliography

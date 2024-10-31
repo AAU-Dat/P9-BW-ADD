@@ -128,7 +128,7 @@ The backward probabilities \( \beta_t(i) \) represent the probability of observi
 \subsubsection{Compute $\gamma$}
 We can compute $\gamma$ by 
 \[
-\gamma_t = (\mathbbm{1}^T \bigcdot \alpha_T)^{-1} \bigcdot (\alpha_t \circ \beta_t)
+\gamma_t = (\mathbbm{1}^T \cdot \alpha_T)^{-1} \cdot (\alpha_t \circ \beta_t)
 \]
 %Explanation of Each Term:
 %\begin{itemize}
@@ -146,7 +146,7 @@ We can compute $\gamma$ by
 \]
 
 \[
-    \mathbbm{1}^T \bigcdot \alpha_T = 0.089628 + 0.053328 = 0.152544
+    \mathbbm{1}^T \cdot \alpha_T = 0.089628 + 0.053328 = 0.152544
 \]
 This is the total probability of oberserving our sequence $O = \{O_1, O_2, O_1\}$
 
@@ -172,7 +172,7 @@ We take the Hadamard product of this.
 
 We normalize the first part and take the scalar product.
 \[
-\gamma_1 = \cfrac{1}{0.152544} \bigcdot \begin{bmatrix}
+\gamma_1 = \cfrac{1}{0.152544} \cdot \begin{bmatrix}
     0.132384 \\ 0.02016
 \end{bmatrix} = \begin{bmatrix}
     0.8678414 \\ 0.1321589
@@ -201,7 +201,7 @@ The Hadamard product is:
 
 We normalize the first part and take the scalar product.
 \[
-\gamma_2 = \cfrac{1}{0.152544} \bigcdot \begin{bmatrix}
+\gamma_2 = \cfrac{1}{0.152544} \cdot \begin{bmatrix}
     0.062292 \\ 0.08712 \end{bmatrix} = \begin{bmatrix}
         0.42888609 \\ 0.57111391
     \end{bmatrix}
@@ -225,7 +225,7 @@ The Hadamard product is:
 \]
 We normalize the first part and take the scalar product.
 \[
-\gamma_3 = \cfrac{1}{0.152544} \bigcdot \begin{bmatrix}
+\gamma_3 = \cfrac{1}{0.152544} \cdot \begin{bmatrix}
     0.089628 \\ 0.053328 \end{bmatrix} = \begin{bmatrix}
         0.67400881 \\ 0.32599119
     \end{bmatrix}
@@ -235,10 +235,10 @@ We normalize the first part and take the scalar product.
 \subsubsection{Calculating $\xi$}
 We calculate $\xi$ by
 \[
-\xi_t = ((\mathbbm{1}^T\alpha_T)^{-1} \bigcdot A) \circ (\alpha_t \otimes (\beta_{t+1} \circ B_{yt+1})^T)
+\xi_t = ((\mathbbm{1}^T\alpha_T)^{-1} \cdot A) \circ (\alpha_t \otimes (\beta_{t+1} \circ B_{yt+1})^T)
 \]
 
-We start by calculating $((\mathbbm{1}^T\alpha_T)^{-1} \bigcdot A)$:
+We start by calculating $((\mathbbm{1}^T\alpha_T)^{-1} \cdot A)$:
 From before, we have 
 \[
 (\mathbbm{1}^T\alpha_T)^{-1} = \cfrac{1}{0.152544} = 6.996
@@ -252,7 +252,7 @@ We have:
 \]
 We get:
 \[
-8.996 \bigcdot A = \begin{bmatrix}
+8.996 \cdot A = \begin{bmatrix}
     6.996 \cdot 0.6 & 6.996 \cdot 0.4 \\ 6.996 \cdot 0.5 & 6.996 \cdot 0.5
 \end{bmatrix} = \begin{bmatrix}
     4.198 & 2.798 \\ 3.498 & 3.498

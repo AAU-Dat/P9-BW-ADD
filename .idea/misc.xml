@@ -12,4 +12,7 @@
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$/CuPAAL">
     <contentRoot DIR="$PROJECT_DIR$" />
   </component>
+  <component name="ProjectRootManager">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
 </project>

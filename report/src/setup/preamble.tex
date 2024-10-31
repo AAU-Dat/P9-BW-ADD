@@ -3,16 +3,15 @@
 
 % Packages
 \RequirePackage{setup/clrscode4e}
-\usepackage{amsmath}
-\usepackage{amsthm}
-\usepackage{amssymb}
-\usepackage{amsbsy}
-\usepackage{mathrsfs}
-\usepackage{dsfont}
-\usepackage{bbold}
+\usepackage{microtype}
+\usepackage{mathtools}
+\usepackage[notext]{stix2}
 \usepackage{booktabs}
 \usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{thm-restate}
 \usepackage{bbm}
+
 \usetikzlibrary{positioning}
 \usetikzlibrary{calc}
 
@@ -26,6 +25,7 @@
 }
 
 % Packages with options set
+\usepackage[inference]{semantic}
 \usepackage[hidelinks]{hyperref}
 \usepackage[textsize=small,obeyDraft]{todonotes}
 \usepackage[newfloat]{minted}
@@ -38,20 +38,38 @@
 ]{biblatex}
 \usepackage[acronym]{glossaries}
 
+\usepackage{orcidlink}
+
+\makeatletter
+\hypersetup{%
+    plainpages=false,%
+    pdftitle=\@title,%
+    pdfauthor={Sebastian Aaholm, Lars Emanuel Hansen, Daniel Runge Petersen},%
+    pdflang={en-GB},%
+    pdfsubject={Semester project at Aalborg University},%
+    pdfkeywords ={Formal Verification, Parameter Estimation, Decision Diagram}
+    bookmarksnumbered=true,%
+    colorlinks=true,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,% you should probably change this to black before printing
+    urlcolor=black,%
+    pdfstartview=FitH%
+}
+\makeatother
+
 % Package setup
 \setlength{\marginparwidth}{2cm} % todonotes width
 \setminted{linenos, autogobble, breaklines, fontsize=\footnotesize, style=friendly, xleftmargin=1em, numbersep=5pt}
 \addbibresource{bib/main.bib}
 
 % Other setup and options
-\newtheorem{theorem}{Theorem}
-\newtheorem{definition}{Definition}
-\newfloat{algorithm}{htb!}{lop}
-\floatname{algorithm}{Algorithm}
-\newcommand{\algorithmautorefname}{Algorithm}
-\makeatletter
-\newcommand*\bigcdot{\mathpalette\bigcdot@{.5}}
-\newcommand*\bigcdot@[2]{\mathbin{\vcenter{\hbox{\scalebox{#2}{$\m@th#1\bullet$}}}}}
-\makeatother
-\makeglossaries
+\declaretheorem{theorem}
+\declaretheorem{lemma}
+\declaretheorem{corollary}
+\declaretheorem{definition}
+\declaretheorem{example}
+\declaretheorem{conjecture}
+\DeclareFloatingEnvironment[name=Algorithm, placement=htb!]{algorithm}
 
+\makeglossaries
