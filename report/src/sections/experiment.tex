@@ -1,0 +1,125 @@
+\section{Experiment}\label{sec:experiment}
+%Sammenlignende Eksperimentel Evaluering af Kø- og Synkroniseringsmodeller
+
+%Introduktion
+The purpose of the experiments is to evaluate the performance of different implementations of the Baum-Welch algorithm when applied to various CTMC models. Specifically, we compare our implementation that utilize ADDs with and without the log semiring to other implementations from Jajapy, namely the original Jajapy implementation of the Baum-Welch algorithm and the improved SUDD implementation. By analyzing both parameter estimation accuracy and runtime, we aim to determine the efficiency and reliability of each implementation across multiple model types.
+We also investigate the scalability of the Baum-Welch algorithm by increasing the number of states in the model and comparing the runtime of each implementation.
+
+%Eksperimentelt Setup
+We use 5 different models to test the performance of the Baum-Welch algorithm.
+Each model provides a different structure and complexity level for testing the Baum-Welch algorithm. The models are derived from CTMCs and include:
+\begin{itemize}
+    \item \textbf{Polling}: A model representing a server polling multiple queues, often used in network communication scenarios.
+    \item \textbf{Cluster}: Simulates clusters of entities competing for shared resources.
+    \item \textbf{Tandem}: A series of interconnected queues where entities move sequentially from one queue to the next.
+    \item \textbf{Philosophers(I) and Philosophers2(II)}: Models representing the classic synchronization problem where entities (philosophers) compete for limited resources (e.g., forks), with Philosophers2 containing one additional parameter.
+\end{itemize}
+
+In every model, we have a number of parameters we want to estimate. 
+The number of parameters to estimate in each model is shown in \autoref{tab:parameters}.
+The polling model is the smallest model with 2 parameters to estimate, while philosophers(II) is the largest model, with 4 parameters to estimate.'
+
+\begin{table}[H]
+    \centering
+    \caption{Number of parameters to estimate in each model}
+    \begin{tabular}{ll}
+        \toprule
+        Model & Num of parameters \\ 
+        Polling & 2 \\ 
+        Cluster & 3 \\ 
+        Tandem & 3 \\ 
+        Philosophers(I) & 3 \\ 
+        Philosophers(II) & 4 \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:parameters}
+\end{table}
+
+\subsection{Parameter Estimation Accuracy}
+%Beskrivelse af eksperimentet
+The first experiment measures the time and accuracy of the Baum-Welch algorithm for each implementation. We generate observation sequences from each model and use the Baum-Welch algorithm to estimate the parameters of the model. We compare the estimated parameters with the true parameters of the model to evaluate the accuracy of the estimation.
+%We evaluate the parameter estimation accuracy of the Baum-Welch algorithm by comparing the estimated parameters with the true parameters of the model. We use the relative formula error and relative parameter error to measure the accuracy of the estimated parameters. 
+
+The experiment is made with the following steps:
+\begin{enumerate}
+    \item We load the model.
+    \item Generate an observation sequence from the model with untimed steps.
+    \item Calculate the model’s parameters using each variant of the Baum-Welch algorithm, recording both the parameter estimates and runtime.
+    \item Repeat steps 2 and 3 ten times without changing the model, the sequence length, or whether the sequence is timed or untimed. The results are averaged to account for any variance in runtime and estimation accuracy.
+    \item Repeat with timed steps to observe the effects of timing information on estimation accuracy and runtime.
+    \item Compare the estimated parameters with the true parameters and record the runtime for each implementation.
+    \item Move to the next model and repeat the entire process.
+\end{enumerate}
+
+Following the experiment, the estimated parameters for each implementation are compared with the true parameters for accuracy assessment. Additionally, runtime for each Baum-Welch implementation is recorded. These results are presented in tables and plots to facilitate a direct comparison of performance across models and between implementations.
+
+Table \ref{tab:polling_results}, \ref{tab:cluster_results}, \ref{tab:tandem_results}, \ref{tab:philosophers1_results} and \ref{tab:philosophers2_results} show detailed results for each model in terms of runtime and estimation accuracy (relative formula error and relave parameter error). 
+
+
+
+\subsection{Scalability experiment}
+We also test the scalability of the Baum-Welch algorithm by increasing the number of states in a model. We use the Tandem model and increase the number of states from 28 to 1225. We then compare the runtime of the Baum-Welch algorithm for each implementation.
+We run the experiment 10 times for each number of states and compare the runtime of the Baum-Welch algorithm for each implementation.
+
+We use plots to illustrate the scalability by showing runtime across an increasing number of states for the Tandem model, highlighting each implementation's computational efficiency.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{example-image-a}
+    \caption{Scalability of Baum-Welch implementations for the Tandem model}
+    \label{fig:tandem_scalability}
+\end{figure}
+
+\subsection{Results}
+
+The comparison of the Baum-Welch implementations is based on the following criteria:
+\begin{itemize}
+    \item \textbf{Parameter estimation accuracy}: The accuracy of the estimated parameters compared to the true parameters.
+    \item \textbf{Runtime}: The time it takes to estimate the parameters.
+    \item \textbf{Scalability}: How the runtime scales with the number of states in the model.
+\end{itemize}
+
+The results are displayed as tables and plots to facilitate a direct comparison of performance across models and between implementations.
+
+\begin{table*}[]
+    \centering
+    \caption{Comparison of Baum-Welch implementations for Polling}
+    \label{tab:polling_results}
+    \input{figures/polling_results_table.tex}
+\end{table*}
+
+\begin{table*}
+    \centering
+    \caption{Comparison of Baum-Welch implementations for Cluster}
+    \label{tab:cluster_results}
+    \input{figures/cluster_results_table.tex}
+\end{table*}
+
+\begin{table*}[]
+    \centering
+    \caption{Comparison of Baum-Welch implementations for Tandem}
+    \label{tab:tandem_results}
+    \input{figures/tandem_results_table.tex}
+\end{table*}
+
+\begin{table*}[]
+    \centering
+    \caption{Comparison of Baum-Welch implementations for Philosophers(I)}
+    \label{tab:philosophers1_results}
+    \input{figures/philosophers(I)_results_table.tex}
+\end{table*}
+
+\begin{table*}
+    \centering
+    \caption{Comparison of Baum-Welch implementations for Philosophers(II)}
+    \label{tab:philosophers2_results}
+    \input{figures/philosophers(II)_results_table.tex}
+\end{table*}
+
+
+
+
+
+    
+    
+    
