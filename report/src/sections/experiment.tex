@@ -12,7 +12,7 @@ Each model provides a different structure and complexity level for testing the B
     \item \textbf{Polling}: A model representing a server polling multiple queues, often used in network communication scenarios.
     \item \textbf{Cluster}: Simulates clusters of entities competing for shared resources.
     \item \textbf{Tandem}: A series of interconnected queues where entities move sequentially from one queue to the next.
-    \item \textbf{Philosophers(I) and Philosophers2(II)}: Models representing the classic synchronization problem where entities (philosophers) compete for limited resources (e.g., forks), with Philosophers2 containing one additional parameter.
+    \item \textbf{Philosophers(I) and Philosophers(II)}: Models representing the classic synchronization problem where entities (philosophers) compete for limited resources (e.g., forks), with Philosophers2 containing one additional parameter.
 \end{itemize}
 
 In every model, we have a number of parameters we want to estimate. 
@@ -22,9 +22,10 @@ The polling model is the smallest model with 2 parameters to estimate, while phi
 \begin{table}[H]
     \centering
     \caption{Number of parameters to estimate in each model}
-    \begin{tabular}{ll}
+    \begin{tabular}{lc}
         \toprule
         Model & Num of parameters \\ 
+        \midrule
         Polling & 2 \\ 
         Cluster & 3 \\ 
         Tandem & 3 \\ 
@@ -65,7 +66,7 @@ We use plots to illustrate the scalability by showing runtime across an increasi
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\textwidth]{example-image-a}
+    \includegraphics[width=\columnwidth]{example-image-a}
     \caption{Scalability of Baum-Welch implementations for the Tandem model}
     \label{fig:tandem_scalability}
 \end{figure}
