@@ -1,0 +1,106 @@
+\section{Preliminaries}\label{sec:preliminaries}
+We introduce some preliminary notions and notations, which will be used in the rest of thepaper. 
+The parameter estimation algorithm studied here focuses on \glspl{ctmc}.
+We will first introduce the definition of a \gls{ctmc} and \gls{pctmc} then present the Baum-Welch algorithm, which is used to estimate the parameters of a \gls{ctmc}.
+%definitions of continuous time
+
+\subsection{Continuous-Time Markov Chains}
+In stochastic systems, state transitions are governed by two key aspects: timing and transition probabilities. In \glspl{ctmc}, these aspects are explicitly modeled as separate but interrelated components:
+\begin{enumerate}
+    \item \textbf{Dwell Time}: The time spent in a state before transitioning to another state. This is a random variable governed by an exponential distribution, characterized by the exit rate of the state.
+    \item \textbf{Transition Probability}: Once the dwell time elapses, the system transitions to a new state. The destination state is determined probabilistically based on the rates of outgoing transitions.
+\end{enumerate}
+By decoupling these two aspects, \glspl{ctmc} provide a flexible framework for modeling systems where the timing of transitions and the likelihood of transitioning to specific states are influenced by different factors.
+
+%definition of CTMC
+\begin{definition}[Continuous-Time Markov Chain]
+    A \gls{ctmc} is a tuple $\mathcal{M} = (S, \mathcal{L}, \mathscr{l}, R, \pi)$, where:
+    \begin{itemize}
+        \item $S$ is a finite set of states.
+        \item $\mathcal{L}$ is a finite set of labels.
+        \item $\mathscr{l}: S \rightarrow \mathcal{L}$ is a labeling function, which assigns a label $\mathcal{L}$ to each state.
+        \item $R: S \times S \rightarrow \mathbb{R}_{\geq 0}$ is the rate function. The model transitions from state $s$ to state $s'$ with rate $R(s, s')$.
+        \item $\pi$: is the initial distribution, the model starts in state $s$ with probability $\pi(s)$.
+    \end{itemize}
+\end{definition}
+
+\subsubsection*{Key Properties For a given state $s$}
+
+\begin{enumerate}
+    \item The time spent in $s$, known as the dwell time, is exponentially distributed with rate:
+    \begin{equation}
+        E(s) = \sum_{s' \in S} R(s, s').
+    \end{equation}
+    \item Once a transition occurs, the next state $s'$ is chosen based on the probability:
+    \begin{equation}
+        P(s \rightarrow s') = \frac{R(s, s')}{E(s)}.
+    \end{equation}
+\end{enumerate}
+    
+Transitions are independent of the time spent in the current state. If there are multiple possible transitions, a race condition occurs, and the first transition to complete determines the next state.
+
+%definitions of discrete time 
+\subsubsection*{Untimed Markov Chains}
+If the dwell time is disregarded or assumed to be uniform across all states, the timing of transitions becomes irrelevant, and the \gls{ctmc} simplifies into what can be called an untimed Markov chain. In this case:
+\begin{itemize}
+    \item Transitions are described only by the probabilities $P(s \rightarrow s')$ without considering rates or timing.
+    \item The model behaves equivalently to a \gls{dtmc}, focusing solely on the sequence of state transitions rather than their timing.
+\end{itemize}
+
+\subsubsection*{Observations in \glspl{ctmc}}
+Observations from a \gls{ctmc} represent sequences of successive transitions, described as follows:
+
+\begin{eqnarray}
+        \textbf{O} &=& o_0, o_1, \dots, o_{|\textbf{O}|-1}, \\ 
+                   &=& (p_0,\tau_0), (p_1,\tau_1), \dots, (p_{|\textbf{O}|-1}, \emptyset),  
+    \label{eq:observation-sequence} 
+\end{eqnarray}
+
+where:
+\begin{itemize}
+    \item $p_t \in \mathcal{L}$ is the label observed during the $t$-th transition.
+    \item $\tau_t \in \mathbb{R}_{>0} \cup \{\emptyset\}$ is the dwell time observed during the $t$-th transition.
+\end{itemize}
+if $\tau_t = \emptyset$ for all transitions in a sequence, the sequence is untimed, effectively ignoring dwell times.
+
+\subsection{Parametric Continuous Time Markov Chains}\label{subsec:parametric-ctmc}
+In practice, the rate function $R$ in a \gls{ctmc} is often unknown and must be estimated from observed data.
+In systems with complex or uncertain dynamics, \glspl{pctmc} extend \glspl{ctmc} by introducing parameters into the model's rate functions. These parameters allow for the representation of families of \glspl{ctmc} rather than a single, fixed model. Like \glspl{ctmc}, \glspl{pctmc} are governed by two key aspects:
+\begin{itemize}
+    \item \textbf{Dwell Time}: The time spent in a state before transitioning. This is determined by the parametric exit rate, which depends on the specific values of the parameters.
+    \item \textbf{Transition Probability}: After the dwell time elapses, the system transitions to a new state. The probability of transitioning to a particular state is derived from the parametric rates of all outgoing transitions from the current state.
+\end{itemize}
+
+The parametric nature of \glspl{pctmc} makes them highly versatile, as they enable the model to adapt to different scenarios or datasets by tuning the parameters.
+
+\begin{definition}[Parametric Continuous-Time Markov Chain] 
+    A \gls{pctmc} is a tuple $\mathcal{M} = (S, \mathcal{L}, \mathscr{l}, R, \pi)$, where: 
+    \begin{itemize} 
+        \item $S, \mathcal{L}, \mathscr{l}, \pi$ are defined as for \glspl{ctmc}. 
+        \item $R: S \times S \rightarrow (\mathbb{R}_{\geq 0}^n \rightharpoonup \mathbb{R}_{\geq 0})$ is a parametric transition rate function that maps transitions to polynomial expressions over a vector of parameters $\mathbf{x} = (x_1, \dots, x_n)$. 
+    \end{itemize} 
+\end{definition}
+
+In this definition, the parameter vector $\mathbf{x}$ introduces dependencies on system variables, enabling flexible modeling of transition dynamics.
+The rate function $R(s, s'; \mathbf{x})$ determines the rate at which the system transitions from state $s$ to state $s'$ based on the parameter values.
+
+\subsubsection*{Key Properties}
+
+\begin{itemize}
+    \item For a given state $s$, the parametric dwell time is exponentially distributed with rate:
+    \begin{equation}
+        E(s; \mathbf{x}) = \sum_{s' \in S} R(s, s'; \mathbf{x}),
+    \end{equation}
+    where the sum depends on the current values of the parameters $\mathbf{x}$.
+    \item The parametric transition probability is given by:
+    \begin{equation}
+        P(s \rightarrow s'; \mathbf{x}) = \frac{R(s, s'; \mathbf{x})}{E(s; \mathbf{x})}.
+    \end{equation}
+\end{itemize}
+
+These parametric formulations allow a single \gls{pctmc} to represent a broad class of \glspl{ctmc}, where the specific model instance is determined by fixing the parameter values.
+
+
+%Baum-Welch algorithm
+%with example
+%definition of HMM?
