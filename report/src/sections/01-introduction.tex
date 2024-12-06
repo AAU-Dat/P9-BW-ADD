@@ -8,16 +8,15 @@ Markov models are widely used in various fields, such as biology, finance, and c
 As such, their analysis has a wide range of applications.
 
 An example of a Markov model, is a simple weather model, if today is sunny, there might be an 80\% chance of sun tomorrow and a 20\% chance of rain. Similarly, if today is rainy, there might be a 70\% chance of rain tomorrow and a 30\% chance of sun.
-Another example is in financial markets, where the price of a stock tomorrow might depend only on today's price and not on the historical trend
 
 %Model checking
 Model checking is a technique used to verify the correctness of Markov models by comparing the predictions of the model with observed data.
 Model checking is widely used in the verification of Markov models, where the model is analyzed to check if it satisfies certain properties~\cite{clarke1997model}. 
-It is used to check if the model satisfies certain properties, such as reachability, can we reach a desired state and safety properties, can we avoid going a specific sequence of states.
+It ensures reliability and correctness in critical systems, from traffic controls to industrial automation and communication protocols~\cite{clarke1997model}.
+It is also used to check if the model satisfies certain properties, such as reachability, can we reach a desired state and safety properties, can we avoid going a specific sequence of states.
 A real world example of model checking is the verification of a traffic light system, where the model is analyzed to check if the traffic lights are working correctly.
-For reachability we can ask, can a traffic light system always cycle back to green after being red?
-For safety properties we can ask, can a traffic light system avoid having both lights green at the same time?
-Model checking ensures reliability and correctness in critical systems, from traffic controls to industrial automation and communication protocols~\cite{clarke1997model}.
+For reachability we can ask: \textit{can a traffic light system always cycle back to green after being red?}
+For safety properties we can ask, \textit{can a traffic light system avoid having both lights green at the same time?}
 There exists several tools for model checking, such as PRISM~\cite{kwiatkowska2011prism} and Storm~\cite{hensel2021probabilistic}, which are widely used in the verification of Markov models. 
 These tools use symbolic representations to represent the model and perform the operations required for model checking.
 The limitation of these tools is that they do not support parameter estimation, which makes them unsuitable for learning the parameters of the model from data.
