@@ -1,0 +1,353 @@
+\section{Implementation}\label{sec:implementation}
+In this section, we will discuss the implementation of the project. 
+We will start by discussing the tools used in the implementation, followed by the transition from matrices to \glspl{add}. 
+Finally, we will discuss the implementation of the matrix operations using \glspl{add}.
+
+
+\subsection{CUDD}
+The Colorado University Decision Diagram (CUDD) library~\cite{somenzi1997cudd} is a powerful tool for implementing and manipulating decision diagrams, including \glspl{bdd} and \glspl{add}. \glspl{add} are compact representations of functions, often used to handle large state spaces symbolically and efficiently.
+
+In this project, the CUDD library stores \glspl{add} and performs operations on them. Its optimized algorithms and efficient memory management allow us to handle large and complex matrices symbolically, leading to significant performance improvements over traditional methods.
+
+The CUDD library is implemented in C, ensuring high-performance execution, but it also ensures it can be used in C++ programs. 
+
+\subsection{Storm}
+Storm is a versatile probabilistic model checking tool designed to verify the correctness and properties of stochastic models~\cite{hensel2021probabilistic}. 
+A key feature of Storm is its ability to take a model as input and represent it symbolically, allowing for efficient manipulation and analysis. 
+It does this by converting the model into a symbolic representation, such as a \gls{bdd} or an \gls{add}, using the CUDD library.
+
+We use this symbolic representation to get acces to the \gls{add} representation of the model, which is then used to perform the matrix operations using CUDD.
+
+\subsection{Transition to ADDs}
+The first step in the implementation is to transition from vectors and matrices to \glspl{add}. 
+This conversion leverages the compact and efficient representation of \glspl{add} to perform operations symbolically.
+
+To convert a vector into an \gls{add}, the vector must first be interpreted as a square matrix. 
+This step ensures compatibility with the \gls{add} representation, which organizes data hierarchically. 
+
+Consider the following vector:
+\[
+V= 
+\begin{bmatrix}
+    1 & 2 & 3 & 4 \\
+\end{bmatrix}
+\]
+This vector corresponds to a matrix of size $4 \times 4$.
+\[
+\begin{bmatrix}
+    1 & 2 & 3 & 4 \\
+    0 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0 \\
+\end{bmatrix}
+\]
+Representing this as an \gls{add} requires $log_2(n)$ layers of nodes, where $n$ is the size of the matrix. In this case, the vector has 4 elements, so it requires $log_2(4 \times 4) = 4$ layers of nodes, as the binary representation of 4 indices spans 2 bits.
+The binary representation of the vector entries is shown in \autoref{tab:vector}, the rest of the matrix indices is filled with zeros.
+
+\begin{table}
+\centering
+\caption{Binary encoding of a vector V of size 4}
+\label{tab:vector}
+\begin{tabular}{lll}
+\toprule
+Vector Index & Value & Binary Encoding \\
+\midrule
+1 & 1 & 0000 \\
+2 & 2 & 0001 \\
+3 & 3 & 0010 \\
+4 & 4 & 0011 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The \gls{add} representation of this vector is shown in \autoref{fig:add}. The binary encodings determine the structure of the decision diagram, where each entry in the vector is stored as a terminal node. The paths to these nodes are dictated by the binary representation of their indices.
+\begin{figure*}
+    \centering
+    \input{figures/vector_add_example.tex}
+    \caption{Vector V represented as an ADD}
+    \label{fig:add}
+\end{figure*}
+
+The conversion of a matrix to an \gls{add} is similar to that of a vector, but with an additional layer of nodes to represent the rows.
+The \gls{add} can however be reduced as shown in Figure \autoref{fig:add_reduced}.
+This reduction is done by removing the dublicated terminating nodes, removing the redundant nodes and merging the nodes with the same children. 
+
+\begin{figure}
+    \centering
+    \input{figures/vector_add_example_reduced.tex}
+    \caption{Reduced ADD of matrix V}
+    \label{fig:add_reduced}
+\end{figure}
+
+\subsection{Matrix operations using ADDs}
+The matrix operations are implemented using \glspl{add}.
+The matrix operations implemented are matrix transpose, matrix addition, matrix multiplication, Hadamard product, Hadamard division, Kronecker product and Khatri-Rao product. 
+\[
+A = \begin{bmatrix}
+    1 & 2 \\
+    3 & 4 \\
+\end{bmatrix}
+\]
+and 
+\[
+B = \begin{bmatrix}
+    5 & 6 \\
+    7 & 8 \\
+\end{bmatrix}
+\]
+are used as examples in the following sections.
+
+Their \glspl{add} representations are shown in \autoref{fig:add_matrix_a} and \autoref{fig:add_matrix_b} respectively.
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[
+        level 1/.style={sibling distance=20mm},
+        level 2/.style={sibling distance=10mm},
+        level 3/.style={sibling distance=10mm}
+        ]
+        \node[c] {$x_1$}
+            child{ node[c]  {$y_1$} edge from parent[zeroarrow]
+                    child{ node[t] {1} 
+                    }
+                    child{ node [t] {2} edge from parent[onearrow]
+                    }
+            }
+            child{ node[c] {$y_1$} edge from parent[onearrow]
+                child{ node[t] {3} edge from parent[zeroarrow]
+                }
+                child{ node[t] {4} edge from parent[onearrow]}
+            }
+        ;
+            \end{tikzpicture}
+    \caption{Matrix A in ADD}
+    \label{fig:add_matrix_a}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[
+        level 1/.style={sibling distance=20mm},
+        level 2/.style={sibling distance=10mm},
+        level 3/.style={sibling distance=10mm}
+        ]
+        \node[c] {$x_1$}
+            child{ node[c]  {$y_1$} edge from parent[zeroarrow]
+                    child{ node[t] {5} 
+                    }
+                    child{ node [t] {6} edge from parent[onearrow]
+                    }
+            }
+            child{ node[c] {$y_1$} edge from parent[onearrow]
+                child{ node[t] {7} edge from parent[zeroarrow]
+                }
+                child{ node[t] {8} edge from parent[onearrow]}
+            }
+        ;
+            \end{tikzpicture}
+    \caption{Matrix B in ADD}
+    \label{fig:add_matrix_b}
+\end{figure}
+
+\subsubsection{Matrix Transpose}
+The matrix transpose is implemented by swapping the nodes in the \gls{add}, so that the rows become columns and the columns become rows.
+The transpose of matrix $A$ is 
+\[
+A^T = \begin{bmatrix}
+    1 & 3 \\
+    2 & 4 \\
+\end{bmatrix}
+\]
+
+The \gls{add} representation of the transpose is shown in \autoref{fig:add_transpose}.
+\begin{figure}
+    \centering
+    \input{figures/add_example_transpose.tex}
+    \caption{Matrix A Transposed}
+    \label{fig:add_transpose}
+\end{figure}
+
+\subsubsection{Matrix addition}
+Matrix addition is implemented by adding the \glspl{add} terminal nodes together.
+The sum of matrices $A$ and $B$ is
+\[
+A + B = \begin{bmatrix}
+    1 & 2 \\
+    3 & 4 \\
+\end{bmatrix} + \begin{bmatrix}
+    5 & 6 \\
+    7 & 8 \\
+\end{bmatrix} = \begin{bmatrix}
+    6 & 8 \\
+    10 & 12 \\
+\end{bmatrix}
+\]
+
+The \gls{add} representation of the sum is shown in \autoref{fig:add_addition}.
+\begin{figure}
+    \centering
+    \input{figures/add_example_sum.tex}
+    \caption{Sum of matrices A and B}
+    \label{fig:add_addition}
+\end{figure}
+
+\subsubsection{Matrix multiplication}
+Matrix multiplication is implemented by performing the dot product of the rows and columns of the matrices.
+The product of matrices $A$ and $B$ is
+\[
+A \times B = \begin{bmatrix}
+    1 & 2 \\
+    3 & 4 \\
+\end{bmatrix} \times \begin{bmatrix}
+    5 & 6 \\
+    7 & 8 \\
+\end{bmatrix} = \begin{bmatrix}
+    19 & 22 \\
+    43 & 50 \\
+\end{bmatrix}
+\]
+
+The \gls{add} representation of the product is shown in \autoref{fig:add_multiplication}.
+\begin{figure}
+    \centering
+    \input{figures/add_example_muliplication.tex}
+    \caption{Product of matrices A and B}
+    \label{fig:add_multiplication}
+\end{figure}
+
+\subsubsection{Hadamard product}
+The Hadamard product is implemented by multiplying the corresponding elements of the matrices together.
+The Hadamard product of matrices $A$ and $B$ is
+\[
+A \circ B = \begin{bmatrix}
+    1 & 2 \\
+    3 & 4 \\
+\end{bmatrix} \circ \begin{bmatrix}
+    5 & 6 \\
+    7 & 8 \\
+\end{bmatrix} = \begin{bmatrix}
+    5 & 12 \\
+    21 & 32 \\
+\end{bmatrix}
+\]
+
+The \gls{add} representation of the Hadamard product is shown in \autoref{fig:add_hadamard}.
+\begin{figure}
+    \centering
+    \input{figures/add_example_hadamard.tex}
+    \caption{Hadamard product of matrices A and B}
+    \label{fig:add_hadamard}
+\end{figure}
+
+\subsubsection{Hadamard division}
+The Hadamard division is implemented by dividing the corresponding elements of the matrices.
+The Hadamard division of matrices $A$ and $B$ is
+\[
+A \oslash B = \begin{bmatrix}
+    1 & 2 \\
+    3 & 4 \\
+\end{bmatrix} \oslash \begin{bmatrix}
+    5 & 6 \\
+    7 & 8 \\
+\end{bmatrix} = \begin{bmatrix}
+    0.2 & 0.3333 \\
+    0.4286 & 0.5 \\
+\end{bmatrix}
+\]
+
+The \gls{add} representation of the Hadamard division is shown in \autoref{fig:add_hadamard_division}.
+\begin{figure}
+    \centering
+    \input{figures/add_example_hadamard_div.tex}
+    \caption{Hadamard division of matrices A and B}
+    \label{fig:add_hadamard_division}
+\end{figure}
+
+\subsubsection{Kronecker product}
+The Kronecker product is implemented by multiplying each element of the first matrix by the second matrix.
+The Kronecker product of matrices $A$ and $B$ is
+\[
+A \otimes B = \begin{bmatrix}
+    1 & 2 \\
+    3 & 4 \\
+\end{bmatrix} \otimes \begin{bmatrix}
+    5 & 6 \\
+    7 & 8 \\
+\end{bmatrix} = \begin{bmatrix}
+    5 & 6 & 10 & 12 \\
+    7 & 8 & 14 & 16 \\
+    15 & 18 & 20 & 24 \\
+    21 & 24 & 28 & 32 \\
+\end{bmatrix}
+\]
+
+The \gls{add} representation of the Kronecker product is shown in \autoref{fig:add_kroncker}.
+\begin{figure*}
+    \centering
+    \input{figures/add_example_kroneker.tex}       
+    \caption{Kronecker product of matrices A and B}
+    \label{fig:add_kroncker}
+\end{figure*}
+
+\subsubsection{Khatri-Rao product}
+The Khatri-Rao product is implemented by multiplying one element of the first matrix by the row of the second matrix.
+The Khatri-Rao product of matrices $A$ and $B$ is
+\[
+A \bullet B = \begin{bmatrix}
+    1 & 2 \\
+    3 & 4 \\
+\end{bmatrix} \bullet \begin{bmatrix}
+    5 & 6 \\
+    7 & 8 \\
+\end{bmatrix} = \begin{bmatrix}
+    5 & 6 & 10 & 12 \\
+    21 & 24 & 28 & 32 \\
+\end{bmatrix}
+\]
+
+The \gls{add} representation of the Khatri-Rao product is shown in \autoref{fig:add_katri_rao}.
+\begin{figure*}
+    \centering
+    \input{figures/add_example_katri_rao.tex}        
+    \caption{Khatri-Rao in ADD}
+    \label{fig:add_katri_rao}
+\end{figure*}
+
+% \subsubsection{Matrix scalar}
+% Matrix scalar is implemented by multiplying each element in the matrix by a scalar value.
+% The scaling of matrix $A$ by a factor of 2 is
+% \[
+% 2 \times A = 2 \times \begin{bmatrix}
+%     1 & 2 \\
+%     3 & 4 \\
+% \end{bmatrix} = \begin{bmatrix}
+%     2 & 4 \\
+%     6 & 8 \\
+% \end{bmatrix}
+% \]
+
+% The \gls{add} representation of the scaled matrix is shown in Figure \ref{fig:add_scaling}.
+% \begin{figure}
+%     \centering
+%     \begin{tikzpicture}[
+% level 1/.style={sibling distance=20mm},
+% level 2/.style={sibling distance=10mm},
+% level 3/.style={sibling distance=10mm}
+% ]
+% \node[c] {$x_1$}
+%     child{ node[c]  {$y_1$} edge from parent[zeroarrow]
+%             child{ node[t] {2} 
+%             }
+%             child{ node [t] {4} edge from parent[onearrow]
+%             }
+%     }
+%     child{ node[c] {$y_1$} edge from parent[onearrow]
+%         child{ node[t] {6} edge from parent[zeroarrow]
+%         }
+%         child{ node[t] {8} edge from parent[onearrow]}
+%     }
+% ;
+%     \end{tikzpicture}
+%     \caption{Scaling of matrix A by a factor of 2}
+%     \label{fig:add_scaling}
+% \end{figure}
