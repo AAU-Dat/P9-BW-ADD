@@ -1,0 +1,53 @@
+\begin{tikzpicture}[
+    level 1/.style={sibling distance=80mm},
+    level 2/.style={sibling distance=40mm},
+    level 3/.style={sibling distance=20mm},
+    level 4/.style={sibling distance=10mm}
+    ]
+\node[c] {$x_1$}
+    child{ node[c]  {$y_1$} edge from parent[zeroarrow]
+            child{ node[c] {$x_2$} 
+                    child{ node[c] {$y_2$} 
+                        child{ node[t] {1}}
+                        child{ node[t] {2} edge from parent[onearrow]} 
+                    }
+                    child{ node[c] {$y_2$} edge from parent[onearrow]
+                        child{ node[t] {3} edge from parent[zeroarrow]}
+                        child{ node[t] {4}} 
+                    }
+            }
+            child{ node [c] {$x_2$} edge from parent[onearrow]
+                    child{ node[c] {$y_2$}  edge from parent[zeroarrow]
+                        child{ node[t] {0}} 
+                        child{ node[t] {0} edge from parent[onearrow]} 
+                    }
+                    child{ node[c] {$y_2$} edge from parent[onearrow]
+                        child{ node[t] {0} edge from parent[zeroarrow]} 
+                        child{ node[t] {0}} 
+                    }
+            }
+    }
+    child{ node[c] {$y_1$} edge from parent[onearrow]
+            child{ node [c] {$x_2$} edge from parent[zeroarrow]
+                    child{ node[c] {$y_2$} 
+                        child{ node[t] {0}} 
+                        child{ node[t] {0} edge from parent[onearrow]} 
+                    }
+                    child{ node[c] {$y_2$} edge from parent[onearrow]
+                        child{ node[t] {0} edge from parent[zeroarrow]} 
+                        child{ node[t] {0}}  
+                    }
+            }
+            child{ node [c] {$x_2$} edge from parent[onearrow]
+                    child{ node[c] {$y_2$} edge from parent[zeroarrow]
+                        child{ node[t] {0}} 
+                        child{ node[t] {0} edge from parent[onearrow]} 
+                    }
+                    child{ node[c] {$y_2$} edge from parent[onearrow]
+                        child{ node[t] {0} edge from parent[zeroarrow]} 
+                        child{ node[t] {0}} 
+                    }
+            }
+    }
+;
+\end{tikzpicture}
