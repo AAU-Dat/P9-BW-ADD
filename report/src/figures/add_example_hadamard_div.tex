@@ -1,0 +1,19 @@
+\begin{tikzpicture}[
+    level 1/.style={sibling distance=35mm},
+    level 2/.style={sibling distance=20mm},
+    level 3/.style={sibling distance=15mm}
+]
+\node[c] {$x_1$}
+child{ node[c]  {$y_1$} edge from parent[zeroarrow]
+        child{ node[t] {0.2} 
+        }
+        child{ node [t] {0.3333} edge from parent[onearrow]
+        }
+}
+child{ node[c] {$y_1$} edge from parent[onearrow]
+    child{ node[t] {0.4286} edge from parent[zeroarrow]
+    }
+    child{ node[t] {0.5} edge from parent[onearrow]}
+}
+;
+\end{tikzpicture}

@@ -1,51 +1,75 @@
 \section{Introduction}\label{sec:introduction}
 %This paper is about improving the runtime of Jajapy - a tool for estimating parameters in parametric models~\cite{goossens1993}.
 %Introduce Markov models
-Markov models are a class of probabilistic models that are used to describe the evolution of a system over time. 
+Markov models are a class of probabilistic models that are used to describe the evolution of a system over time.
 A Markov model has the Markov property, which states that the future behavior of the system depends only on its current state and not on its past history~\cite{markov1962theory}.
-This property simplifies analysis by focusing only on the present state, making Markov models especially useful for systems where memoryless behavior is a reasonable assumption.
+This property simplifies analysis by focusing only on the present state, making Markov models especially useful for systems where memory-less behavior is a reasonable assumption.
+
 Markov models are widely used in various fields, such as biology, finance, and computer science, to model systems that exhibit stochastic behavior~\cite{covid19_prism,ciocchetta2009bio, mamon2007hidden,lazowska1984quantitative}.
 As such, their analysis has a wide range of applications.
 
-An example of a Markov model, is a simple weather model, if today is sunny, there might be an 80\% chance of sun tomorrow and a 20\% chance of rain. Similarly, if today is rainy, there might be a 70\% chance of rain tomorrow and a 30\% chance of sun.
+An example of a Markov model, is a simple weather model, if today is sunny, there might be an 80\% chance of sun tomorrow and a 20\% chance of rain.
+Similarly, if today is rainy, there might be a 70\% chance of rain tomorrow and a 30\% chance of sun.
 
 %Model checking
 Model checking is a technique used to verify the correctness of Markov models by comparing the predictions of the model with observed data.
-Model checking is widely used in the verification of Markov models, where the model is analyzed to check if it satisfies certain properties~\cite{clarke1997model}. 
+Model checking is widely used in the verification of Markov models, where the model is analyzed to check if it satisfies certain properties~\cite{clarke1997model}.
 It ensures reliability and correctness in critical systems, from traffic controls to industrial automation and communication protocols~\cite{clarke1997model}.
 It is also used to check if the model satisfies certain properties, such as reachability, can we reach a desired state and safety properties, can we avoid going a specific sequence of states.
+
 A real world example of model checking is the verification of a traffic light system, where the model is analyzed to check if the traffic lights are working correctly.
-For reachability we can ask: \textit{can a traffic light system always cycle back to green after being red?}
-For safety properties we can ask, \textit{can a traffic light system avoid having both lights green at the same time?}
-There exists several tools for model checking, such as PRISM~\cite{kwiatkowska2011prism} and Storm~\cite{hensel2021probabilistic}, which are widely used in the verification of Markov models. 
+For reachability, we can ask: \textit{can a traffic light system always cycle back to green after being red?}.
+For safety properties we can ask, \textit{can a traffic light system avoid having both lights green at the same time?}.
+
+There exists several tools for model checking, such as PRISM~\cite{kwiatkowska2011prism} and Storm~\cite{hensel2021probabilistic}, which are widely used in the verification of Markov models.
 These tools use symbolic representations to represent the model and perform the operations required for model checking.
 The limitation of these tools is that they do not support parameter estimation, which makes them unsuitable for learning the parameters of the model from data.
 
-Parameter estimation is a crucial step in the analysis of Markov models, as the analysis of the model depends on the accuracy of the estimated parameters, particually when in a timing and probabilistic behaviour~\cite{bacci2023mm}.
+Parameter estimation is a crucial step in the analysis of Markov models, as the analysis of the model depends on the accuracy of the estimated parameters, particularly when in a timing and probabilistic behaviour~\cite{bacci2023mm}.
 Parameter estimation is the process of estimating the parameters of the model from observed data, which is used to make predictions about the system's behavior.
+
 These parameters are used to ensure that the model accurately represents the system's behavior and dynamics and to make accurate predictions about the system's future behavior.
 Accurate parameter estimation is essential for making reliable predictions and validating model behavior, with applications ranging from healthcare diagnostics to network security~\cite{bacci2023mm}.
-The Baum-Welch algorithm is the most widely used method for estimating the parameters of Markov models~\cite{kenny2014deep}.
+
+The Baum-Welch algorithm is a widely used method for estimating the parameters of Markov models~\cite{kenny2014deep}.
 The algorithm uses the Expectation-Maximization (EM) framework to iteratively update the parameters of the model until convergence~\cite{levinson1983introduction}.
-The Baum-Welch algorithm is computationally expensive for large models, as it uses matrices to represent the model, which has a space complexity that grows quadratically with the number of states in the model. 
+The Baum-Welch algorithm is computationally expensive for large models, as it uses matrices to represent the model, which has a space complexity that grows quadratically with the number of states in the model.
 This makes the algorithm computationally expensive for large models, as the memory requirements grow rapidly with the size of the model~\cite{davis2004comparing}.
+
 Addressing these challenges requires innovative techniques, such as symbolic representations, which reduce memory consumption while preserving accuracy.
 
-\subsection{Related Works}
-%Jajapy - what is it, what does it do, what are the limitations
-Jajapy~\cite{reynouard2023jajapy} is a Python-based tool designed for estimating parameters in parametric models using the Baum-Welch algorithm. It employs a matrix representation of the model and implements the necessary operations for parameter estimation through standard matrix computations. While accessible and straightforward, Jajapy is hindered by the space complexity inherent in its matrix-based representation. This limitation makes it computationally expensive for large-scale models, as memory requirements grow quadratically with the number of states in the system.
+\subsection{Related Works}\label{subsec:related-works}
+Jajapy~\cite{reynouard2023jajapy} is a Python-based tool designed for estimating parameters in parametric models using the Baum-Welch algorithm.
+It employs a matrix representation of the model and implements the necessary operations for parameter estimation through standard matrix computations.
+
+While accessible and straightforward, Jajapy is hindered by the space complexity inherent in its recursive-based calculation.
+This limitation makes it computationally expensive for large-scale models, as memory requirements grow quadratically with the number of states in the system.
 
 %P7 - what is it, what does it do, what are the limitations
-%TODO: Add a citation for P7
-SUDD builds upon the limitations of Jajapy by introducing a symbolic representation for the forward-backward algorithm. Specifically, it leverages \glspl{add} to reduce memory consumption and improve the runtime performance of the Baum-Welch algorithm. By employing \gls{add}-based computations, SUDD provides a significant improvement in scalability, making it feasible to handle larger models. However, the implementation is limited to a subset of the Baum-Welch algorithm, focusing primarily on forward-backward computations without addressing the full parameter estimation process.
+SUDD~\cite{p7} builds upon the limitations of Jajapy by introducing a symbolic representation for the forward-backward algorithm.
+Specifically, it leverages \glspl{add} to reduce memory consumption and improve the runtime performance of the Baum-Welch algorithm.
+By employing \gls{add}-based computations, SUDD provides a significant improvement in scalability, making it feasible to handle larger models.
 
-In this paper, we extend the work of SUDD by utilizing \glspl{add} to represent the full Baum-Welch algorithm. Our approach not only inherits the scalability benefits of \glspl{add} but also implements the complete parameter estimation process. Additionally, we compare our implementation with both the original Jajapy, SUDD and an extended version of SUDD using the log-semiring framework, which improves numerical stability in computations.
+However, the implementation is limited to a subset of the Baum-Welch algorithm, focusing primarily on forward-backward computations without addressing the full parameter estimation process.
 
-PRISM~\cite{kwiatkowska2011prism} is a widely used probabilistic model checker designed to verify the correctness of Markov models. It employs symbolic representations such as \glspl{add} to efficiently represent and manipulate large-scale models, enabling the verification of properties like reachability and safety. For example, PRISM can determine whether a traffic light system will always cycle back to green after being red or verify that conflicting light signals are avoided. However, PRISM does not support parameter estimation, limiting its use to model verification rather than learning the parameters required for accurate system predictions.
+In this paper, we extend the work of SUDD by utilizing \glspl{add} to represent the full Baum-Welch algorithm.
+Our approach not only inherits the scalability benefits of \glspl{add} but also implements the complete parameter estimation process.
+Additionally, we compare our implementation with both the original Jajapy, SUDD and an extended version of SUDD using the log-semiring framework, which improves numerical stability in computations.
 
-Storm~\cite{hensel2021probabilistic} is another state-of-the-art probabilistic model checker that shares many similarities with PRISM. Like PRISM, it uses symbolic representations to handle large models efficiently and focuses on verifying properties of Markov models. Storm has been optimized for scalability and flexibility, supporting a wide range of model types and verification tasks. Despite these strengths, Storm also lacks support for parameter estimation, making it unsuitable for tasks requiring the inference of model parameters from observed data.
+PRISM~\cite{kwiatkowska2011prism} is a widely used probabilistic model checker designed to verify the correctness of Markov models.
+It employs symbolic representations such as \glspl{add} to efficiently represent and manipulate large-scale models, enabling the verification of properties like reachability and safety.
 
-Our work bridges the gap between parameter estimation tools (e.g. Jajapy and SUDD) and model checking tools (e.g. PRISM and Storm). By integrating scalable symbolic representations into the full Baum-Welch algorithm, we provide a method that not only estimates parameters efficiently but also enables the accurate modeling of complex systems. This integration of parameter learning with symbolic computation addresses a critical limitation in the current landscape of tools for Markov models.
+For example, PRISM can determine whether a traffic light system will always cycle back to green after being red or verify that conflicting light signals are avoided.
+However, PRISM does not support parameter estimation, limiting its use to model verification rather than learning the parameters required for accurate system predictions.
+
+Storm~\cite{hensel2021probabilistic} is another state-of-the-art probabilistic model checker that shares many similarities with PRISM\@.
+Like PRISM, it uses symbolic representations to handle large models efficiently and focuses on verifying properties of Markov models.
+Storm has been optimized for scalability and flexibility, supporting a wide range of model types and verification tasks.
+Despite these strengths, Storm also lacks support for parameter estimation, making it unsuitable for tasks requiring the inference of model parameters from observed data.
+
+Our work bridges the gap between parameter estimation tools (e.g.\ Jajapy and SUDD) and model checking tools (e.g.\ PRISM and Storm).
+By integrating scalable symbolic representations into the full Baum-Welch algorithm, we provide a method that not only estimates parameters efficiently but also enables the accurate modeling of complex systems.
+This integration of parameter learning with symbolic computation addresses a critical limitation in the current landscape of tools for Markov models.
 
 
 %Model checking
@@ -62,9 +86,7 @@ Our work bridges the gap between parameter estimation tools (e.g. Jajapy and SUD
 %Storm
 
 
-
 % Use the definition LaTeX environment, and base the definitions off of Raphaels paper.
-
 
 
 %Describe the field we are in

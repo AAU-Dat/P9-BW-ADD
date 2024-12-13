@@ -1,26 +1,30 @@
 \section{Preliminaries}\label{sec:preliminaries}
-We introduce some preliminary notions and notations, which will be used in the rest of thepaper. 
+We introduce some preliminary notions and notations, which will be used in the rest of the paper.
 The parameter estimation algorithm studied here focuses on \glspl{ctmc}.
 We will first introduce the definition of a \gls{ctmc} and \gls{pctmc} then present the Baum-Welch algorithm, which is used to estimate the parameters of a \gls{ctmc}.
-%definitions of continuous time
 
-\subsection{Continuous-Time Markov Chains}
-In stochastic systems, state transitions are governed by two key aspects: timing and transition probabilities. In \glspl{ctmc}, these aspects are explicitly modeled as separate but interrelated components:
+\subsection{Continuous-Time Markov Chains}\label{subsec:ctmc}
+In stochastic systems, state transitions are governed by two key aspects: timing and transition probabilities.
+In \glspl{ctmc}, these aspects are explicitly modeled as separate but interrelated components:
+
 \begin{enumerate}
-    \item \textbf{Dwell Time}: The time spent in a state before transitioning to another state. This is a random variable governed by an exponential distribution, characterized by the exit rate of the state.
-    \item \textbf{Transition Probability}: Once the dwell time elapses, the system transitions to a new state. The destination state is determined probabilistically based on the rates of outgoing transitions.
+    \item \textbf{Dwell Time}: The time spent in a state before transitioning to another state.
+    This is a random variable governed by an exponential distribution, characterized by the exit rate of the state.
+    \item \textbf{Transition Probability}: Once the dwell time elapses, the system transitions to a new state.
+    The destination state is determined probabilistically based on the rates of outgoing transitions.
 \end{enumerate}
 By decoupling these two aspects, \glspl{ctmc} provide a flexible framework for modeling systems where the timing of transitions and the likelihood of transitioning to specific states are influenced by different factors.
 
-%definition of CTMC
-\begin{definition}[Continuous-Time Markov Chain]
+
+\begin{definition}[\gls{ctmc}]
     A \gls{ctmc} is a tuple $\mathcal{M} = (S, \mathcal{L}, \mathscr{l}, R, \pi)$, where:
     \begin{itemize}
         \item $S$ is a finite set of states.
         \item $\mathcal{L}$ is a finite set of labels.
         \item $\mathscr{l}: S \rightarrow \mathcal{L}$ is a labeling function, which assigns a label $\mathcal{L}$ to each state.
-        \item $R: S \times S \rightarrow \mathbb{R}_{\geq 0}$ is the rate function. The model transitions from state $s$ to state $s'$ with rate $R(s, s')$.
-        \item $\pi$: is the initial distribution, the model starts in state $s$ with probability $\pi(s)$.
+        \item $R: S \times S \rightarrow \mathbb{R}_{\geq 0}$ is the rate function.
+        The model transitions from state $s$ to state $s'$ with rate $R(s, s')$.
+        \item $\pi$ is the initial distribution, the model starts in state $s$ with probability $\pi(s)$.
     \end{itemize}
 \end{definition}
 
@@ -29,84 +33,92 @@ By decoupling these two aspects, \glspl{ctmc} provide a flexible framework for m
 \begin{enumerate}
     \item The time spent in $s$, known as the dwell time, is exponentially distributed with rate:
     \begin{equation}
-        E(s) = \sum_{s' \in S} R(s, s').
+        E(s) = \sum_{s' \in S} R(s, s')\label{eq:exitrate} %%TODO: Should we define DTMCs and then add the definition of the transition function/matrix for CTMCs?
     \end{equation}
     \item The probability of transitioning to state $s'$ is given by:
     \begin{equation}
-        P(s \rightarrow s') = \frac{R(s, s')}{E(s)}.
+        P(s' \mid s) = \frac{R(s, s')}{E(s)}\label{eq:transition-probability}
     \end{equation}
 \end{enumerate}
-    
-Transitions are independent of the time spent in the current state. If there are multiple possible transitions, a race condition occurs, and the first transition to complete determines the next state.
 
-%definitions of discrete time 
-\subsubsection{Untimed Markov Chains}
-If the dwell time is disregarded or assumed to be uniform across all states, the timing of transitions becomes irrelevant, and the \gls{ctmc} simplifies into what can be called an untimed Markov chain. In this case:
-\begin{itemize}
-    \item Transitions are described only by the probabilities $P(s \rightarrow s')$ without considering rates or timing.
-    \item The model behaves equivalently to a \gls{dtmc}, focusing solely on the sequence of state transitions rather than their timing.
-\end{itemize}
+
+Transitions are independent of the time spent in the current state.
+If there are multiple possible transitions, a race condition occurs, and the first transition to complete determines the next state.
+
+
+\subsubsection{Discrete Time Markov Chains}
+If the dwell time is disregarded or assumed to be uniform across all states, the timing of transitions becomes irrelevant, and the \gls{ctmc} simplifies into a \gls{dtmc}.
+In this case, transitions are described by the probabilities $P(s' \mid s)$ of moving to state $s'$ from state $s$.
 
 \subsubsection{Observations in CTMCs}
-Observations from a \gls{ctmc} represent sequences of successive transitions, described as follows:
+An execution of the \gls{ctmc} is represented by a sequence of states and dwell times in $\textbf{Paths} \subseteq (S \times \mathbb{R}_{>0} \cup \{\emptyset\})^{\omega}$ where $\omega$ symbolizes infinite execution.
+Similarly, an Observation, also called a Trace, is represented by a sequence of labels and dwell times in $\textbf{Observations} \subseteq (\mathcal{L} \times \mathbb{R}_{>0} \cup \{\emptyset\})^{\omega}$.
 
-\begin{eqnarray}
-        \textbf{O} &=& o_0, o_1, \dots, o_{|\textbf{O}|-1}, \\ 
-                   &=& (p_0,\tau_0), (p_1,\tau_1), \dots, (p_{|\textbf{O}|-1}, \emptyset),  
-    \label{eq:observation-sequence} 
-\end{eqnarray}
+For a finite observation $\textbf{o} = o_0, o_1, \dots, o_{|\textbf{O}|-1} = (l_0,\tau_0),(l_1,\tau_1),\dots,(l_{|0|-1}), \emptyset \in \textbf{Observations}$:
 
-where:
 \begin{itemize}
-    \item $p_t \in \mathcal{L}$ is the label observed during the $t$-th transition.
+    \item $l_t \in \mathcal{L}$ is the label observed during the $t$-th transition.
     \item $\tau_t \in \mathbb{R}_{>0} \cup \{\emptyset\}$ is the dwell time observed during the $t$-th transition.
 \end{itemize}
+
 if $\tau_t = \emptyset$ for all transitions in a sequence, the sequence is untimed, effectively ignoring dwell times.
 
-Observations link the observed labels $(p_t)$ and dwell times $(\tau_t)$ to the underlying states of the \gls{ctmc}. This connection is captured through the likelihood function $\omega_s(t)$, which combines label matching with timing information.
+%%%%%%%%%%%%%% This text is kind of weird
+Intuitively, observations link the observed labels $(l_t)$ and dwell times $(\tau_t)$ to the underlying states of the \gls{ctmc}.
+This connection is captured through the likelihood function $\omega_s(t)$, which combines label matching with timing information.
 
-The likelihood of observing an observation $o_t = (p_t, \tau_t)$ in state $s$ is given by the function $\omega_s(t)$, which links the observation to the model's dynamics. This function ensures that transitions are appropriately weighted by the likelihood of the observed data.
+The likelihood of observing an observation $o_t = (l_t, \tau_t)$ in state $s$ is given by the function $\omega_s(i)$, which links the observation to the model's dynamics.
+This function ensures that transitions are appropriately weighted by the likelihood of the observed data.
 
 \subsection{Parametric Continuous Time Markov Chains}\label{subsec:parametric-ctmc}
 In practice, the rate function $R$ in a \gls{ctmc} is often unknown and must be estimated from observed data.
-In systems with complex or uncertain dynamics, \glspl{pctmc} extend \glspl{ctmc} by introducing parameters into the model's rate functions. These parameters allow for the representation of families of \glspl{ctmc} rather than a single, fixed model. Like \glspl{ctmc}, \glspl{pctmc} are governed by two key aspects:
+In systems with complex or uncertain dynamics, \glspl{pctmc} extend \glspl{ctmc} by introducing parameters into the model's rate functions.
+These parameters allow for the representation of families of \glspl{ctmc} rather than a single, fixed model.
+Like \glspl{ctmc}, \glspl{pctmc} are governed by two key aspects:
+
 \begin{itemize}
-    \item \textbf{Dwell Time}: The time spent in a state before transitioning. This is determined by the parametric exit rate, which depends on the specific values of the parameters.
-    \item \textbf{Transition Probability}: After the dwell time elapses, the system transitions to a new state. The probability of transitioning to a particular state is derived from the parametric rates of all outgoing transitions from the current state.
+    \item \textbf{Dwell Time}: The time spent in a state before transitioning.
+    This is determined by the parametric exit rate, which depends on the specific values of the parameters.
+    \item \textbf{Transition Probability}: After the dwell time elapses, the system transitions to a new state.
+    The probability of transitioning to a particular state is derived from the parametric rates of all outgoing transitions from the current state.
 \end{itemize}
 
-The parametric nature of \glspl{pctmc} makes them highly versatile, as they enable the model to adapt to different scenarios or datasets by tuning the parameters.
+For a full description of \gls{pctmc} we refer~\cite{bacci2023mm}.
+%The parametric nature of \glspl{pctmc} makes them highly versatile, as they enable the model to adapt to different scenarios or datasets by tuning the parameters.
 
-\begin{definition}[Parametric Continuous-Time Markov Chain] 
-    A \gls{pctmc} is a tuple $\mathcal{P} = (S, \mathcal{L}, \mathscr{l}, R, \pi)$, where: 
-    \begin{itemize} 
-        \item $S, \mathcal{L}, \mathscr{l}, \pi$ are defined as for \glspl{ctmc}. 
-        \item $R: S \times S \rightarrow (\mathbb{R}_{\geq 0}^n \rightharpoonup \mathbb{R}_{\geq 0})$ is a parametric transition rate function that maps transitions to polynomial expressions over a vector of parameters $\mathbf{x} = (x_1, \dots, x_n)$. 
-    \end{itemize} 
+\begin{definition}[\gls{pctmc}]
+    A \gls{pctmc} is a tuple $\mathcal{P} = (S, \mathcal{L}, \mathscr{l}, R, \pi)$, where:
+    \begin{itemize}
+        \item $S, \mathcal{L}, \mathscr{l}, \pi$ are defined as for \glspl{ctmc}.
+        \item $R: S \times S \rightarrow (\mathbb{R}_{\geq 0}^n \rightharpoonup \mathbb{R}_{\geq 0})$ is a parametric transition rate function that maps transitions to polynomial expressions over a vector of parameters $\mathbf{x} = (x_1, \dots, x_n)$.
+    \end{itemize}
 \end{definition}
 
-In this definition, the parameter vector $\mathbf{x}$ introduces dependencies on system variables, enabling flexible modeling of transition dynamics.
-The rate function $R(s, s'; \mathbf{x})$ determines the rate at which the system transitions from state $s$ to state $s'$ based on the parameter values.
+
+In this definition, the rate function under $\mathbf{x}$, $R(s, s'; \mathbf{x})$ determines the rate at which the system transitions from state $s$ to state $s'$ dependent on the parameter values.
+Note that the partial function $(\mathbb{R}_{\geq 0}^n \rightharpoonup \mathbb{R}_{\geq 0})(\mathbf{x})$ is the actual evaluation of the rate.
+
 
 \subsubsection{Key Properties}
 
 \begin{itemize}
     \item For a given state $s$, the parametric dwell time is exponentially distributed with rate:
     \begin{equation}
-        E(s; \mathbf{x}) = \sum_{s' \in S} R(s, s'; \mathbf{x}),
+        E(s; \mathbf{x}) = \sum_{s' \in S} R(s, s'; \mathbf{x}),\label{eq:exitrate-pctmc}
     \end{equation}
     where the sum depends on the current values of the parameters $\mathbf{x}$.
     \item The parametric transition probability is given by:
     \begin{equation}
-        P(s \rightarrow s'; \mathbf{x}) = \frac{R(s, s'; \mathbf{x})}{E(s; \mathbf{x})}.
+        P(s' \mid s; \mathbf{x}) = \frac{R(s, s'; \mathbf{x})}{E(s; \mathbf{x})}.\label{eq:transition-probability-pctmc}
     \end{equation}
 \end{itemize}
 
 These parametric formulations allow a single \gls{pctmc} to represent a broad class of \glspl{ctmc}, where the specific model instance is determined by fixing the parameter values.
 
-
-\subsection{Baum-Welch Algorithm}\label{sec:baum-welch} 
-The Baum-Welch algorithm is an iterative method used to estimate the parameters of a \gls{pctmc} from observed data. Given a set of observations $\textbf{O}$, the algorithm aims to find the parameter values that maximize the likelihood of the observed data under the model. This process is based on the Expectation-Maximization (EM) framework and involves two main steps:
+\subsection{Baum-Welch Algorithm}\label{subsec:baum-welch}
+The Baum-Welch algorithm is an iterative method used to estimate the parameters of a \gls{pctmc} from observed data.
+GThe algorithm aims to find the parameter values that maximize the likelihood of the observed data under the model.
+This process is based on the Expectation-Maximization (EM) framework and involves two main steps:
 
 \begin{enumerate}
     \item \textbf{Expectation Step (E-step)}: Compute the expected values of the latent variables, which are the unobserved state sequences corresponding to the observations.
@@ -116,84 +128,109 @@ The Baum-Welch algorithm is an iterative method used to estimate the parameters 
 
 The Baum-Welch algorithm is particularly useful for estimating the parameters of a \gls{pctmc} when the underlying state sequence is unknown or partially observed.
 
-Given a multiset of observations $\mathcal{O}$ and initial parameters $\textbf{x}_0$, the Baum-Welch algorithm estimates the parameters of a \gls{pctmc} $\mathcal{P}$ by iteratively improving the current hypothesis $\textbf{x}_n$ using the previous estimate $\textbf{x}_{n-1}$ until a convergence criterion is met. 
-A hypothesis refers to a specific set of values for the parameters $\mathbf{x}$. Each iteration of the algorithm produces a new hypothesis, denoted as $\textbf{x}_n$, which is the algorithm's current best guess for the parameter values based on the observed data.
-The algorithm consists of three main steps: the forward-backward procedure, the update step, and the convergence criterion. 
-The Baum-Welch algorithm iteratively refines the parameters until the improvement between successive iterations falls below a predefined threshold. This is typically evaluated using a convergence criterion such as:
+Given a multiset of observations $\mathcal{O}$ and initial parameters $\textbf{x}_0$, the Baum-Welch algorithm estimates the parameters of a \gls{pctmc} $\mathcal{P}$ by iteratively improving the current hypothesis $\textbf{x}_n$ using the previous estimate $\textbf{x}_{n-1}$ until a convergence criterion is met.
+A hypothesis refers to a specific set of values for the parameters $\mathbf{x}$.
+
+Each iteration of the algorithm produces a new hypothesis, denoted as $\textbf{x}_n$, which is the algorithm's current best guess for the parameter values based on the observed data.
+The algorithm consists of three main steps: the forward-backward procedure, the update step, and the convergence criterion.
+The Baum-Welch algorithm iteratively refines the parameters until the improvement between successive iterations falls below a predefined threshold.
+This is typically evaluated using a convergence criterion such as:
+
 \begin{equation}
-    ||\textbf{x}_n - \textbf{x}_{n-1}|| < \epsilon
-\end{equation} 
+    ||\textbf{x}_n - \textbf{x}_{n-1}|| < \epsilon\label{eq:convergence-criterion}
+\end{equation}
+
 where $\epsilon > 0$ is a small threshold, and $\textbf{x}_n$ denotes the parameter values at the $n$-th iteration.
 
-The algorithm halts when the change in parameters is sufficiently small, indicating that the model has converged to a local maximum of the likelihood function.
+The algorithm stops when the change in parameters is sufficiently small, indicating that the model has converged to a local maximum of the likelihood function.
 The parameter estimation procedure is outlined in \autoref{alg:parameter-estimation}.
 
-\begin{algorithm}[htb!] 
-    \begin{codebox} 
-        \Procname{$\proc{Estimate-Parameters}(\mathcal{P}, \mathbf{x}_0, \mathcal{O})$} 
-        \li $\mathbf{x} \gets \mathbf{x}0$ 
-        \li \While $\neg\proc{Criterion}(\mathbf{x}{n-1}, \mathbf{x}n)$ 
-        \li \Do $\mathbf{x}{n - 1} \gets \mathbf{x}_n$ 
-        \li $(\alpha, \beta) = \proc{Forward-Backward}(\mathcal{P}(\mathbf{x}_n), \mathcal{O})$ 
-        \li $\mathbf{x}_n = \proc{Update}(\mathcal{P}(\mathbf{x}_n), \mathcal{O}, \alpha, \beta)$ \End 
-        \li \Return $\mathbf{x}_n$ 
-    \end{codebox} 
-    \caption{Parameter estimation procedure.} 
-    \label{alg:parameter-estimation} 
+\begin{algorithm}[htb!]
+    \begin{codebox}
+        \Procname{$\proc{Estimate-Parameters}(\mathcal{P}, \mathbf{x}_0, \mathcal{O})$}
+        \li $\mathbf{x} \gets \mathbf{x}0$
+        \li \While $\neg\proc{Criterion}(\mathbf{x}{n-1}, \mathbf{x}n)$
+        \li \Do $\mathbf{x}_{n - 1} \gets \mathbf{x}_n$
+        \li $(\alpha, \beta) = \proc{Forward-Backward}(\mathcal{P}(\mathbf{x}_n), \mathcal{O})$
+        \li $\mathbf{x}_n = \proc{Update}(\mathcal{P}(\mathbf{x}_n), \mathcal{O}, \alpha, \beta)$ \End
+        \li \Return $\mathbf{x}_n$
+    \end{codebox}
+    \caption{Parameter estimation procedure~\cite{p7}.}
+    \label{alg:parameter-estimation}
 \end{algorithm}
 
-Starting with initial parameters $\mathbf{x}_0$, the parameter estimation procedure iteratively improves the current hypothesis $\mathbf{x}_n$ using the previous estimate $\mathbf{x}_{n-1}$ until a specified criterion for convergence is met. The specifics of the $\proc{Forward-Backward}$ and $\proc{Update}$ procedures are detailed in \autoref{subsec:forward-backwards_algorithm} and \autoref{subsec:update-algorithm}.
+Starting with initial parameters $\mathbf{x}_0$, the parameter estimation procedure iteratively improves the current hypothesis $\mathbf{x}_n$ using the previous estimate $\mathbf{x}_{n-1}$ until a specified criterion for convergence is met.
+The specifics of the $\proc{Forward-Backward}$ and $\proc{Update}$ procedures are detailed in \autoref{subsec:forward-backwards_algorithm} and \autoref{subsec:update-algorithm} from~\cite{p7}.
 
 \subsection{The Forward-Backward Algorithm}\label{subsec:forward-backwards_algorithm}
 For a given \gls{ctmc} $\mathcal{M}$, the forward-backward algorithm computes the forward and backward variables, $\alpha_s(t)$ and $\beta_s(t)$, for each observation sequence $o_0, o_1, \dots, o_{|\mathbf{o}|-1} = \mathbf{o} \in \mathcal{O}$.
 
-The forward variable $\alpha_s(t)$ represents the likelihood of observing the partial sequence $o_0, o_1, \dots, o_t$ and being in state $s$ at time $t$, given the model $\mathcal{M}$: 
-\begin{equation} 
+The forward variable $\alpha_s(t)$ represents the likelihood of observing the partial sequence $o_0, o_1, \dots, o_t$ and being in state $s$ at time $t$, given the model $\mathcal{M}$:
+
+
+\begin{equation}
     \alpha_s(t) = l(o_0, o_1, \dots, o_t, S_{t} = s \mid \mathcal{M})
-    \label{eq:equation6} 
+    \label{eq:alpha-recursive}
 \end{equation}
 
-The backward variable $\beta_s(t)$ represents the likelihood of observing the partial sequence $o_{t+1}, o_{t+2}, \dots, o_{|\mathbf{o}|-1}$ given state $s$ at time $t$ and the model $\mathcal{M}$: 
-\begin{equation} 
+
+The backward variable $\beta_s(t)$ represents the likelihood of observing the partial sequence $o_{t+1}, o_{t+2}, \dots, o_{|\mathbf{o}|-1}$ given state $s$ at time $t$ and the model $\mathcal{M}$:
+
+
+\begin{equation}
     \beta_s(t) = l(o_{t+1}, o_{t+2}, \dots, o_{|\mathbf{o}|-1} \mid S_{t} = s, \mathcal{M})
-    \label{eq:equation7} 
+    \label{eq:beta-recursive}
 \end{equation}
 
-The forward variable $\alpha_s(t)$ and backward variable $\beta_s(t)$ can be computed recursively as follows: 
-\begin{equation} 
-    \alpha_s(t) = 
-    \begin{cases} 
-        \omega_s(0) \; \pi_s & \text{if } t = 0 \\ 
-        \omega_s(t) \sum_{s' \in S} P_{s's}\alpha_s(t - 1) & \text{if } 0 < t \leq |\mathbf{o}| - 1 \\ 
-    \end{cases}
-    \label{eq:equation8} 
-\end{equation} 
 
-\begin{equation} 
-    \beta_s(t) = 
-    \begin{cases} \mathbbm{1} & \text{if } t = |\mathbf{o}| - 1 \\ 
-        \sum_{s' \in S} P_{ss'} \omega_{s'}(t + 1) \beta_{s'}(t + 1) & \text{if } 0 \leq t < |\mathbf{o}| - 1 \\ 
+The forward variable $\alpha_s(t)$ and backward variable $\beta_s(t)$ can be computed recursively as follows:
+
+
+\begin{equation}
+    \alpha_s(t) =
+    \begin{cases}
+        \omega_s(0) \; \pi_s & \text{if } t = 0 \\
+        \omega_s(t) \sum_{s' \in S} P_{s's}\alpha_s(t - 1) & \text{if } 0 < t \leq |\mathbf{o}| - 1 \\
     \end{cases}
-    \label{eq:equation9} 
+    \label{eq:forward-recursive}
 \end{equation}
 
-Here, $\omega_{s}(t)$ is the likelihood of observing $o_t$ given that the current state at time $t$ is $s$ and the model $\mathcal{M}$, expressed as $\omega_s(t) = l(o_t \mid S_t = s, \mathcal{M})$. 
-The function $\omega_s(t)$ incorporates observed labels and dwell times into the likelihood computation, linking the data to the model's dynamics. It ensures the forward-backward algorithm appropriately weights transitions based on their likelihood given the observations. 
 
-For \glspl{pctmc}, $\omega_{s}(t)$ is given for some observation $o_t = (p_t, \tau_t)$ by\footnote{Note that $o_{|\mathbf{o}|-1} = (p_{|\mathbf{o}|-1}, \emptyset)$ is always true.}: 
-\begin{equation} 
-    \omega_s(t) = 
-    \begin{cases} 
-        \llbracket \ell(s) = p_t \rrbracket E(s) \; e^{-E_s\tau_t} & \text{if } \tau_t \neq \emptyset \\ 
-        \llbracket \ell(s) = p_t \rrbracket & \text{if } \tau_t = \emptyset 
+\begin{equation}
+    \beta_s(t) =
+    \begin{cases}
+        \mathbbm{1} & \text{if } t = |\mathbf{o}| - 1 \\
+        \sum_{s' \in S} P_{ss'} \omega_{s'}(t + 1) \beta_{s'}(t + 1) & \text{if } 0 \leq t < |\mathbf{o}| - 1 \\
     \end{cases}
-    \label{eq:equation10} 
+    \label{eq:backward-recursive}
 \end{equation}
+
+
+Here, $\omega_{s}(t)$ is the likelihood of observing $o_t$ given that the current state at time $t$ is $s$ and the model $\mathcal{M}$, expressed as $\omega_s(t) = l(o_t \mid S_t = s, \mathcal{M})$.
+The function $\omega_s(t)$ incorporates observed labels and dwell times into the likelihood computation, linking the data to the model's dynamics.
+It ensures the forward-backward algorithm appropriately weights transitions based on their likelihood given the observations.
+
+For \glspl{pctmc}, $\omega_{s}(t)$ is given for some observation $o_t = (l_t, \tau_t)$ by\footnote{Note that $o_{|\mathbf{o}|-1} = (l_{|\mathbf{o}|-1}, \emptyset)$ is always true.}:
+
+
+\begin{equation}
+    \omega_s(t) =
+    \begin{cases}
+        \lBrack \ell(s) = l_t \rBrack E(s) \; e^{-E_s\tau_t} & \text{if } \tau_t \neq \emptyset \\
+        \lBrack \ell(s) = l_t \rBrack & \text{if } \tau_t = \emptyset
+    \end{cases}
+    \label{eq:omega-pctmc}
+\end{equation}
+
+
 Here:
+
+
 \begin{itemize}
-    \item $\llbracket \ell(s) = p_t \rrbracket$ is an indicator function, equal to 1 if the label $\ell(s)$ of state $s$ matches the observed label $p_t$, and 0 otherwise.
+    \item $\lBrack \ell(s) = l_t \rBrack$ is an indicator function, equal to 1 if the label $\ell(s)$ of state $s$ matches the observed label $l_t$, and 0 otherwise.
     \item $E(s) = \sum_{s' \in S} R(s, s')$ is the total exit rate for state $s$.
 \end{itemize}
+
 
 The forward-backward algorithm computes the forward and backward variables for each state $s$ and time $t$ in the observation sequence $\mathbf{o}$, providing a comprehensive view of the likelihood of the observed data under the model.
 
@@ -201,91 +238,118 @@ The forward-backward algorithm computes the forward and backward variables for e
 The update algorithm refines the parameter values of a \gls{pctmc} based on the observed data and the forward and backward variables computed in the forward-backward procedure.
 Given the forward and backward variables $\alpha_s(t)$ and $\beta_s(t)$, the update algorithm aims to maximize the likelihood of the observed data by adjusting the parameter values.
 
-The update algorithm iteratively refines the parameter values $\mathbf{x}$ by maximizing the expected log-likelihood of the observed data under the model. The update step is based on the expected sufficient statistics of the latent variables, which are the unobserved state sequences corresponding to the observations.
+The update algorithm iteratively refines the parameter values $\mathbf{x}$ by maximizing the expected log-likelihood of the observed data under the model.
+The update step is based on the expected sufficient statistics of the latent variables, which are the unobserved state sequences corresponding to the observations.
 
 \subsubsection{Intermediate Variables}
-We need to intermediate variables $\gamma_s(t)$ and $\xi_{ss'}(t)$, $\gamma_s(t)$ represent the expected number of times the model is in state $s$ at time $t$ and $\xi_{ss'}(t)$ represent the expected number of transitions from state $s$ to state $s'$ at time $t$. These variables are computed as follows:
+We need to intermediate variables $\gamma_s(t)$ and $\xi_{ss'}(t)$, $\gamma_s(t)$ represent the expected number of times the model is in state $s$ at time $t$ and $\xi_{ss'}(t)$ represent the expected number of transitions from state $s$ to state $s'$ at time $t$.
+These variables are computed as follows:
+
+
 \begin{equation}
     \gamma_s(t) = \frac{\alpha_s(t) \beta_s(t)}{\sum_{s' \in S} \;(\alpha_{s'}(t) \beta_{s'}(t))}
-    \label{eq:equation16}
+    \label{eq:gamma}
 \end{equation}
-In \autoref{eq:equation16}, the numerator is the product of the forward variable $\alpha_s(t)$ and the backward variable $\beta_s(t)$, representing the joint probability of observing the sequence up to time $t$ and the model being in state $s$ at time $t$. The denominator normalizes the probabilities across all states $s' \in S$ to ensure that the sum of $\gamma_s(t)$ over all $s$ equals 1.
+
+
+In \autoref{eq:gamma}, the numerator is the product of the forward variable $\alpha_s(t)$ and the backward variable $\beta_s(t)$, representing the joint probability of observing the sequence up to time $t$ and the model being in state $s$ at time $t$.
+The denominator normalizes the probabilities across all states $s' \in S$ to ensure that the sum of $\gamma_s(t)$ over all $s$ equals 1.
+
 
 \begin{equation}
     \xi_{ss'}(t) = \frac{\alpha_s(t) P_{ss'} \omega_{s'}(t + 1) \beta_{s'}(t + 1)}{\sum_{s'' \in S} \;(\sum_{s''' \in S} \; (\alpha_{s''}(t) \; P_{s''s'''} \; \omega_{s'''}(t + 1) \; \beta_{s'''}(t + 1)))}
-    \label{eq:equation17}
+    \label{eq:xi}
 \end{equation}
 
-In \autoref{eq:equation17}, the numerator is the joint probability of observing the sequence up to time $t$ and the model transitioning from state $s$ to state $s'$ at time $t$. The denominator normalizes the probabilities across all states $s'' \in S$ to ensure that the sum of $\xi_{ss'}(t)$ over all $s'$ equals 1.
 
-The terms $\gamma_s(t)$ and $\xi_{ss'}(t)$ are normalized to ensure they represent probabilities. For $\gamma_s(t)$, this involves dividing by the total likelihood across all states at time $t$, while for $\xi_{ss'}(t)$, normalization occurs over all possible transitions at time $t$.
+In \autoref{eq:xi}, the numerator is the joint probability of observing the sequence up to time $t$ and the model transitioning from state $s$ to state $s'$ at time $t$.
+The denominator normalizes the probabilities across all states $s'' \in S$ to ensure that the sum of $\xi_{ss'}(t)$ over all $s'$ equals 1.
+
+The terms $\gamma_s(t)$ and $\xi_{ss'}(t)$ are normalized to ensure they represent probabilities.
+For $\gamma_s(t)$, this involves dividing by the total likelihood across all states at time $t$, while for $\xi_{ss'}(t)$, normalization occurs over all possible transitions at time $t$.
 
 \subsubsection{Parameter Update}
-The parameter update step refines the parameter values $\mathbf{x}$ based on the expected sufficient statistics of the latent variables. The update algorithm aims to maximize the expected log-likelihood of the observed data under the model by adjusting the parameter values.
+The parameter update step refines the parameter values $\mathbf{x}$ based on the expected sufficient statistics of the latent variables.
+The update algorithm aims to maximize the expected log-likelihood of the observed data under the model by adjusting the parameter values.
 
 Once $\gamma_s(t)$ and $\xi_{ss'}(t)$ are computed for all states $s, s'$ and all time steps $t$ for every observation sequence, the model parameters can be updated to maximize the expected log-likelihood.
 
-\paragraph*{\textit{Transition Probabilities ($P$)}} \
+\paragraph*{\textit{Transition Probabilities ($P$)}}
 
 We update the transition probabilities based on the expected number of transitions between states:
+
+
 \begin{equation}
     P_{s \rightarrow s'} = \frac{\sum_{t = 1}^{|\mathbf{o}|-1} \xi_{ss'}(t)}{\sum_{t = 1}^{|\mathbf{o}|-1} \gamma_s(t)}
-    \label{eq:equation18}
+    \label{eq:transition-probabilities}
 \end{equation}
-The numerator sums the expected number of transitions from state $s$ to state $s'$ over all time steps. The denominator sums the expected number of times the model is in state $s$ over all time steps, ensuring $P_{ss'}$ is normalized across all $s'$.
 
-\paragraph*{\textit{Observation Probabilities ($\omega$)}} \
 
-We update the observation probabilities based on the expected occupancy of state $s$ and the corresponding observations, meaning the likelihood of observing a specific value $o$ in state $s$. It is important to note in forward-backwards we use $\omega_s(t)$ to compute $\alpha_s(t)$ and $\beta_s(t)$, we look at all the properties we can see at time $t$:
+The numerator sums the expected number of transitions from state $s$ to state $s'$ over all time steps.
+The denominator sums the expected number of times the model is in state $s$ over all time steps, ensuring $P_{ss'}$ is normalized across all $s'$.
+
+\paragraph*{\textit{Observation Probabilities ($\omega$)}}
+
+We update the observation probabilities based on the expected occupancy of state $s$ and the corresponding observations, meaning the likelihood of observing a specific value $o$ in state $s$.
+It is important to note in forward-backwards we use $\omega_s(t)$ to compute $\alpha_s(t)$ and $\beta_s(t)$, we look at all the properties we can see at time $t$:
+
 \begin{equation}
-    \omega_s(o) = \frac{\sum_{t = 1}^{|\mathbf{o}|-1} \gamma_s(t) \llbracket o_t = o \rrbracket}{\sum_{t = 1}^{|\mathbf{o}|-1} \gamma_s(t)}
-    \label{eq:equation19}
+    \omega_s(o) = \frac{\sum_{t = 1}^{|\mathbf{o}|-1} \gamma_s(t) \lBrack o_t = o \rBrack}{\sum_{t = 1}^{|\mathbf{o}|-1} \gamma_s(t)}
+    \label{eq:omega}
 \end{equation}
-The numerator sums $\gamma_s(t)$ for all time steps $t$ where the observed value $o_t = o$. The denominator ensures the observation probabilities are normalized for state $s$.
-\paragraph*{\textit{Initial Probabilities ($\pi$)}} \
+The numerator sums $\gamma_s(t)$ for all time steps $t$ where the observed value $o_t = o$.
+The denominator ensures the observation probabilities are normalized for state $s$.
+
+\paragraph*{\textit{Initial Probabilities ($\pi$)}}
 
 We update the initial probabilities based on the expected occupancy of state $s$ at $t = 1$:
 \begin{equation}
     \pi_s = \gamma_s(1)
-    \label{eq:equation20}
+    \label{eq:initial-probabilities}
 \end{equation}
 
-We can then update the parameters $\mathbf{x}$ by maximizing the expected log-likelihood of the observed data under the model. The update algorithm iteratively refines the parameter values until convergence is reached.
+We can then update the parameters $\mathbf{x}$ by maximizing the expected log-likelihood of the observed data under the model.
+The update algorithm iteratively refines the parameter values until convergence is reached.
 
 \subsection{Matrix Representation}\label{subsec:matrixoperations}
 For an arbitrary total ordering $s_0 \leq s_1 \leq \dots \leq s_{|S|-1}$ of the states in $S$ let:
 \begin{equation}
-    \boldsymbol{P} = 
+    \boldsymbol{P} =
     \begin{bmatrix}
-        P_{s_0 s_0}             & \cdots & P_{s_0 s_{|S|-1}}             \\
-        \vdots                 & \ddots & \vdots                             \\
+        P_{s_0 s_0}      & \cdots & P_{s_0 s_{|S|-1}}      \\
+        \vdots           & \ddots & \vdots                 \\
         P_{s_{|S|-1}s_0} & \cdots & P_{s_{|S|-1}s_{|S|-1}} \\
     \end{bmatrix}
-    \label{eq:equation11}
+    \label{eq:transition-matrix}
 \end{equation}
 
-\begin{eqnarray}
+\begin{align}
     \boldsymbol{\omega}_t = \begin{bmatrix}
-        \omega_{s_0}(o_t)             \\
-        \vdots                      \\
-        \omega_{s_{|S|-1}}(o_t) \\
-     \end{bmatrix}, \;
-     \boldsymbol{\pi} = \begin{bmatrix}
-        \pi_{s_0}             \\
-        \vdots                \\
-        \pi_{s_{|S|-1}} \\
+                                \omega_{s_0}(o_t)       \\
+                                \vdots                  \\
+                                \omega_{s_{|S|-1}}(o_t) \\
+    \end{bmatrix}, \;
+    \boldsymbol{\pi} = \begin{bmatrix}
+                           \pi_{s_0}       \\
+                           \vdots          \\
+                           \pi_{s_{|S|-1}} \\
     \end{bmatrix}
-\end{eqnarray}
+\end{align}
 
 Then $\alpha$ and $\beta$ can be described in terms of matrix operations as follows:
-\begin{equation}\label{eq:alpha}
+
+\begin{equation}
+    \label{eq:alpha}
     \boldsymbol{\alpha}_t =
     \begin{cases}
-        \boldsymbol{\omega}_0 \; \circ \; \boldsymbol{\pi}   & \text{if } t = 0          \\ 
+        \boldsymbol{\omega}_0 \; \circ \; \boldsymbol{\pi}   & \text{if } t = 0          \\
         \boldsymbol{\omega}_t \; \circ \; \left( \boldsymbol{P}^\top \boldsymbol{\alpha}_{t - 1} \right)   & \text{if } 0 < t \leq |\mathbf{o}|-1 \\
     \end{cases}
 \end{equation}
-\begin{equation}\label{eq:beta}
+
+
+\begin{equation}
+    \label{eq:beta}
     \boldsymbol{\beta}_t =
     \begin{cases}
         \mathbbm{1} & \text{if } t = |\mathbf{o}|-1        \\
@@ -293,82 +357,87 @@ Then $\alpha$ and $\beta$ can be described in terms of matrix operations as foll
     \end{cases}
 \end{equation}
 
-Here $\circ$ represents the Hadamard (pointwise) matrix multiplication, $\boldsymbol{P}^\top$ denotes the transpose of the matrix $\boldsymbol{P}$, and $\mathbbm{1}$ is a column vector of ones. 
+Here $\circ$ represents the Hadamard (point-wise) matrix multiplication, $\boldsymbol{P}^\top$ denotes the transpose of the matrix $\boldsymbol{P}$, and $\mathbbm{1}$ is a column vector of ones.
 The resulting vectors $\boldsymbol{\alpha}_t$ and $\boldsymbol{\beta}_t$ for each moment $t$ are then related to $\alpha_s(t)$ and $\beta_s(t)$ for some $s$ by:
 
 \begin{align}
     \boldsymbol{\alpha}_t = \begin{bmatrix}
-        \alpha_{s_0}(t)       \\
-        \vdots                \\
-        \alpha_{s_{|S|-1}}(t) \\
+                                \alpha_{s_0}(t)       \\
+                                \vdots                \\
+                                \alpha_{s_{|S|-1}}(t) \\
     \end{bmatrix}, \;
     \boldsymbol{\beta}_t = \begin{bmatrix}
-        \beta_{s_0}(t)       \\
-        \vdots                \\
-        \beta_{s_{|S|-1}}(t) \\
+                               \beta_{s_0}(t)       \\
+                               \vdots               \\
+                               \beta_{s_{|S|-1}}(t) \\
     \end{bmatrix}
 \end{align}
 
 $\gamma$ and $\xi$ can be expressed in terms of matrix operations as follows:
+
 \begin{equation}
     \boldsymbol{\gamma}_t = (\sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \;\beta_{t i}))^{-1} \cdot \alpha_t \; \circ \; \beta_t
-    \label{eq:equation21}
+    \label{eq:gamma-matrix}
 \end{equation}
 
 \begin{equation}
     \boldsymbol{\xi}_t = ((\sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \; \beta_{t i}))^{-1} \cdot \; \boldsymbol{P}) \; \circ \;(\alpha_t \otimes (\beta_{t+1} \; \circ \; \boldsymbol{\omega}_{t+1}))
-    \label{eq:equation22}
+    \label{eq:xi-matrix}
 \end{equation}
 
-Here $\otimes$ represents the Kronecker (block) matrix multiplication, $\cdot$ denotes the dotproduct (also called scalar product) and $^{-1}$ denotes the elementwise inverse of a matrix.
+Here $\otimes$ represents the Kronecker (block) matrix multiplication, $\cdot$ denotes the dot product (also called scalar product) and $^{-1}$ denotes the elementwise inverse of a matrix.
 
 We can rewrite $\sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \beta_{t i})$ as:
-\begin{eqnarray}
+
+\begin{align}
     \sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \; \beta_{t i}) &= \sum_{i=1}^{|\mathbf{o}|-1} \alpha_{|\mathbf{o}|-1 i} \\
-    &= \mathbbm{1}^T \; \alpha_{|\mathbf{o}|-1} 
-\end{eqnarray}
+    &= \mathbbm{1}^T \; \alpha_{|\mathbf{o}|-1}
+\end{align}
 
 Here $\mathbbm{1}^T$ is a row vector of ones, and $\alpha_{|\mathbf{o}|-1}$ is the last column of the matrix $\boldsymbol{\alpha}_{|\mathbf{o}|-1}$.
 
 So we get:
+
 \begin{equation}
     \boldsymbol{\gamma}_t = (\mathbbm{1}^T \; \alpha_{|\mathbf{o}|-1})^{-1} \cdot \alpha_t \; \circ \; \beta_t
-    \label{eq:equation23}
+    \label{eq:gamma-matrix-ones}
 \end{equation}
 
 \begin{equation}
     \boldsymbol{\xi}_t = ((\mathbbm{1}^T \; \alpha_{|\mathbf{o}|-1})^{-1} \cdot \; \boldsymbol{P}) \; \circ \;(\alpha_t \otimes (\beta_{t+1} \; \circ \; \boldsymbol{\omega}_{t+1}))
-    \label{eq:equation24}
+    \label{eq:xi-matrix-ones}
 \end{equation}
 
 The resulting vectors $\boldsymbol{\gamma}_t$ and $\boldsymbol{\xi}_t$ for each moment $t$ are then related to $\gamma_s(t)$ and $\xi_{ss'}(t)$ for some $s, s'$ by:
+
 \begin{align}
     \boldsymbol{\gamma}_t = \begin{bmatrix}
-        \gamma_{s_0}(t)       \\
-        \vdots                \\
-        \gamma_{s_{|S|-1}}(t) \\
+                                \gamma_{s_0}(t)       \\
+                                \vdots                \\
+                                \gamma_{s_{|S|-1}}(t) \\
     \end{bmatrix}, \;
     \boldsymbol{\xi}_t = \begin{bmatrix}
-        \xi_{s_0 s_0}(t)       & \cdots & \xi_{s_0 s_{|S|-1}}(t)             \\
-        \vdots                 & \ddots & \vdots                             \\
-        \xi_{s_{|S|-1}s_0}(t) & \cdots & \xi_{s_{|S|-1}s_{|S|-1}}(t) \\
+                             \xi_{s_0 s_0}(t)      & \cdots & \xi_{s_0 s_{|S|-1}}(t)      \\
+                             \vdots                & \ddots & \vdots                      \\
+                             \xi_{s_{|S|-1}s_0}(t) & \cdots & \xi_{s_{|S|-1}s_{|S|-1}}(t) \\
     \end{bmatrix}
 \end{align}
 
 We can update the parameters with matrix operations as follows:
+
 \begin{equation}
-    \boldsymbol{P} = (\mathbbm{1} \oslash \gamma) \bullet \xi)
-    \label{eq:equation25}
+    \boldsymbol{P} = (\mathbbm{1} \oslash \gamma) \bullet \xi
+    \label{eq:transition-probabilities-update}
 \end{equation}
 
 \begin{equation}
     \boldsymbol{\omega}_s(o) = (\mathbbm{1} \oslash \gamma) \bullet (\sum_{t=1}^{|\mathbf{o}|-1} \gamma_t \otimes \mathbbm{1}_{yt}^{|\mathbf{o}|-1})
-    \label{eq:equation26}
+    \label{eq:omega-update}
 \end{equation}
 
 \begin{equation}
     \boldsymbol{\pi} = \boldsymbol{\gamma}_1
-    \label{eq:equation27}
+    \label{eq:initial-probabilities-update}
 \end{equation}
 
 Where $\oslash$ denotes Hadamard division (elementwise division) product and $\bullet$ denotes the Katri-Rao product (column-wise Kronecker product).
