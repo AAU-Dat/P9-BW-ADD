@@ -108,13 +108,251 @@ The parameter estimation procedure is outlined in \autoref{alg:parameter-estimat
     \label{alg:parameter-estimation}
 \end{algorithm}
 
-Starting with initial parameters $\mathbf{x}_0$, the parameter estimation procedure iteratively improves the current hypothesis $\mathbf{x}_n$ using the previous estimate $\mathbf{x}_{n-1}$ until a specified criterion for convergence is met.
-The specifics of the $\proc{Forward-Backward}$ and $\proc{Update}$ procedures are detailed in \autoref{subsec:forward-backwards_algorithm} and \autoref{subsec:update-algorithm} from~\cite{p7}.%TODO: Add reference to the paper
+Starting with initial parameters $\mathbf{x}_0$, the parameter estimation procedure iteratively improves the current hypothesis $\mathbf{x}_n$ using the previous estimate $\mathbf{x}_{n-1}$ until a specified criterion for convergence is met, the algorithm returns the final estimate $\mathbf{x}_n$.
+The specifics of the $\proc{Forward-Backward}$ and $\proc{Update}$ procedures are detailed in \autoref{subsec:forward-backwards_algorithm} and \autoref{subsec:update-algorithm} from~\cite{levinson1983introduction}.
 
 \subsection{Forward-Backward Algorithm}\label{subsec:forward-backwards_algorithm}
 %Forward-Backward algorithm
+For a given \gls{hmm} $\mathcal{M}$, the forward-backward algorithm computes the forward and backward variables, $\alpha_s(t)$ and $\beta_s(t)$, for each observation sequence $o_0, o_1, \dots, o_{|\mathbf{o}|-1} = \mathbf{o} \in \mathcal{O}$.
+
+The forward variable $\alpha_s(t)$ represents the likelihood of observing the partial sequence $o_0, o_1, \dots, o_t$ and being in state $s$ at time $t$, given the model $\mathcal{M}$:
 
 
-%Update of HMM
+\begin{equation}
+    \alpha_s(t) = l(o_0, o_1, \dots, o_t, S_{t} = s \mid \mathcal{M})
+    \label{eq:alpha-recursive}
+\end{equation}
+
+
+The backward variable $\beta_s(t)$ represents the likelihood of observing the partial sequence $o_{t+1}, o_{t+2}, \dots, o_{|\mathbf{o}|-1}$ given state $s$ at time $t$ and the model $\mathcal{M}$:
+
+
+\begin{equation}
+    \beta_s(t) = l(o_{t+1}, o_{t+2}, \dots, o_{|\mathbf{o}|-1} \mid S_{t} = s, \mathcal{M})
+    \label{eq:beta-recursive}
+\end{equation}
+
+
+The forward variable $\alpha_s(t)$ and backward variable $\beta_s(t)$ can be computed recursively as follows:
+
+
+\begin{equation}
+    \alpha_s(t) =
+    \begin{cases}
+        \omega_s(0) \; \pi_s & \text{if } t = 0 \\
+        \omega_s(t) \sum_{s' \in S} P_{s's}\alpha_{s'}(t - 1) & \text{if } 0 < t \leq |\mathbf{o}| - 1 \\
+    \end{cases}
+    \label{eq:forward-recursive}
+\end{equation}
+
+
+\begin{equation}
+    \beta_s(t) =
+    \begin{cases}
+        \mathbbm{1} & \text{if } t = |\mathbf{o}| - 1 \\
+        \sum_{s' \in S} P_{ss'} \omega_{s'}(t + 1) \beta_{s'}(t + 1) & \text{if } 0 \leq t < |\mathbf{o}| - 1 \\
+    \end{cases}
+    \label{eq:backward-recursive}
+\end{equation}
+
+
+Here, $\omega_{s}(t)$ is the likelihood of observing $o_t$ given that the state at time $t$ is $s$ and the model $\mathcal{M}$, formally $\omega_s(t) = l(o_t \mid S_t = s, \mathcal{M})$.
+
+The forward-backward algorithm computes the forward and backward variables for each state $s$ and time $t$ in the observation sequence $\mathbf{o}$, providing a comprehensive view of the likelihood of the observed data under the model.
+
+In preparation for later discussions we would like to draw the attention to the fact that the above recurrences can be solved using dynamic programming requiring one to use $\Theta(|S|\times|(|\mathbf{o}|-1)|)$ space.
+
+
 \subsection{Update Algorithm}\label{subsec:update-algorithm}
+%Update of HMM
+The update algorithm refines the parameter values of a \gls{pctmc} based on the observed data and the forward and backward variables computed in the forward-backward procedure.
+Given the forward and backward variables $\alpha_s(t)$ and $\beta_s(t)$, the update algorithm aims to maximize the likelihood of the observed data by adjusting the parameter values.
+
+The update step is based on the expected sufficient statistics of the latent variables, which are the unobserved state sequences corresponding to the observations.
+
+\subsubsection{Intermediate Variables}
+We need to calculate the intermediate variables $\gamma_s(t)$ and $\xi_{ss'}(t)$, $\gamma_s(t)$ represent the expected number of times the model is in state $s$ at time $t$ and $\xi_{ss'}(t)$ represent the expected number of transitions from state $s$ to state $s'$ at time $t$.
+These variables are computed as follows:
+
+
+\begin{equation}
+    \gamma_s(t) = \frac{\alpha_s(t) \beta_s(t)}{\sum_{s' \in S} \;(\alpha_{s'}(t) \beta_{s'}(t))}
+    \label{eq:gamma}
+\end{equation}
+
+
+In \autoref{eq:gamma}, the numerator is the product of the forward variable $\alpha_s(t)$ and the backward variable $\beta_s(t)$, representing the joint likelihood of observing the enire sequence and the model given that the model passed by state $s$ at time $t$.
+The denominator represents the likelihood of the observation sequence.
+
+\begin{equation}
+    \xi_{ss'}(t) = \frac{\alpha_s(t) P_{ss'} \omega_{s'}(t + 1) \beta_{s'}(t + 1)}{\sum_{s'' \in S} \;(\sum_{s''' \in S} \; (\alpha_{s''}(t) \; P_{s''s'''} \; \omega_{s'''}(t + 1) \; \beta_{s'''}(t + 1)))}
+    \label{eq:xi}
+\end{equation}
+
+
+In \autoref{eq:xi}, the numerator is the joint likelihood of observing the sequence given that the model transitions from state $s$ to state $s'$ at time $t$.
+The denominator represents the likelihood of the observation sequence.
+
+
+The terms $\gamma_s(t)$ and $\xi_{ss'}(t)$ are normalized to ensure they represent probabilities.
+For $\gamma_s(t)$, this involves dividing by the total likelihood across all states at time $t$, while for $\xi_{ss'}(t)$, normalization occurs over all possible transitions at time $t$.
+
+\subsubsection{Parameter Update}
+The parameter update step refines the parameter values of the model based on the earlier computed intermediate variables $\gamma_s(t)$ and $\xi_{ss'}(t)$.
+The update algorithm aims to maximize the expected likelihood of the observed data under the model by adjusting the parameter values.
+
+Once $\gamma_s(t)$ and $\xi_{ss'}(t)$ are computed for all states $s, s'$ and all time steps $t$ for every observation sequence, the model parameters can be updated to maximize the expected log-likelihood.
+
+\paragraph*{\textit{Transition Probabilities ($P$)}}
+
+We update the transition probabilities based on the expected number of transitions between states:
+
+
+\begin{equation}
+    P_{s \rightarrow s'} = \frac{\sum_{t = 1}^{|\mathbf{o}|-1} \xi_{ss'}(t)}{\sum_{t = 1}^{|\mathbf{o}|-1} \gamma_s(t)}
+    \label{eq:transition-probabilities}
+\end{equation}
+
+
+The numerator sums the expected number of transitions from state $s$ to state $s'$ over all time steps.
+The denominator sums the expected number of times the model is in state $s$ over all time steps, ensuring $P_{ss'}$ is normalized across all $s'$.
+
+\paragraph*{\textit{Emission Probabilities ($\omega$)}}
+
+We update the emission probabilities based on the expected occupancy of state $s$ and the corresponding observations, meaning the likelihood of observing the specific label $o$ in state $s$. 
+The update is given by:
+\begin{equation}
+    \omega_s(o) = \frac{\sum_{t = 1}^{|\mathbf{o}|-1} \gamma_s(t) \lBrack o_t = o \rBrack}{\sum_{t = 1}^{|\mathbf{o}|-1} \gamma_s(t)}
+    \label{eq:omega}
+\end{equation}
+
+The numerator sums $\gamma_s(t)$ for all time steps $t$ where the observed value $o_t = o$., meaning the model is in state $s$ and emits the observation $o$.
+The denominator sums $\gamma_s(t)$ for all time steps $t$ where the model is in a given state $s$.
+
+
+\paragraph*{\textit{Initial Probabilities ($\pi$)}}
+
+We update the initial probabilities based on the expected occupancy of state $s$ at $t = 1$:
+\begin{equation}
+    \pi_s = \gamma_s(1)
+    \label{eq:initial-probabilities}
+\end{equation}
+
+We can then update the parameters $\mathbf{x}$ by maximizing the expected log-likelihood of the observed data under the model.
+The update algorithm iteratively refines the parameter values until convergence is reached.
+
+\subsection{Matrix Operations}\label{subsec:matrix-operations}
 %Baum-Welch with matrix operations
+The Baum-Welch algorithm can be implemented using matrix operations to efficiently compute the forward and backward variables, intermediate variables, and parameter updates.
+
+Given a \gls{hmm} $\mathcal{M}$ with parameters $\omega$, $P$, and $\pi$, and an observation sequence $\mathbf{o}$, the forward and backward variables $\alpha_t$ and $\beta_t$ can be computed using matrix operations as follows:
+
+\begin{equation}
+    \label{eq:alpha}
+    \alpha_t =
+    \begin{cases}
+        \omega_0 \; \circ \; \pi   & \text{if } t = 0    \\
+        \omega_t \; \circ \; \left( {P}^\top \alpha_{t - 1} \right)   & \text{if } 0 < t \leq |\mathbf{o}|-1 \\
+    \end{cases}
+\end{equation}
+
+
+\begin{equation}
+    \label{eq:beta}
+    {\beta}_t =
+    \begin{cases}
+        \mathbbm{1} & \text{if } t = |\mathbf{o}|-1        \\
+        {P} \; ({\beta}_{t + 1} \; \circ \; {\omega}_{t + 1}) & \text{if } 0 \leq t < |\mathbf{o}|-1 \\
+    \end{cases}
+\end{equation}
+
+Here $\circ$ represents the Hadamard (point-wise) matrix multiplication, ${P}^\top$ denotes the transpose of the matrix ${P}$, and $\mathbbm{1}$ is a column vector of ones.
+The resulting vectors ${\alpha}_t$ and ${\beta}_t$ for each time step $t$ are then related to $\alpha_s(t)$ and $\beta_s(t)$ for some $s$ by:
+
+\begin{align}
+    {\alpha}_t = \begin{bmatrix}
+                                \alpha_{s_0}(t)       \\
+                                \vdots                \\
+                                \alpha_{s_{|S|-1}}(t) \\
+    \end{bmatrix}, \;
+    {\beta}_t = \begin{bmatrix}
+                               \beta_{s_0}(t)       \\
+                               \vdots               \\
+                               \beta_{s_{|S|-1}}(t) \\
+    \end{bmatrix}
+\end{align}
+
+$\gamma$ and $\xi$ can be expressed in terms of matrix operations as follows:
+
+\begin{equation}
+    {\gamma}_t = (\sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \;\beta_{t i}))^{-1} \cdot \alpha_t \; \circ \; \beta_t
+    \label{eq:gamma-matrix}
+\end{equation}
+
+\begin{equation}
+    {\xi}_t = ((\sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \; \beta_{t i}))^{-1} \cdot \; {P}) \; \circ \;(\alpha_t \otimes (\beta_{t+1} \; \circ \; {\omega}_{t+1}))
+    \label{eq:xi-matrix}
+\end{equation}
+
+Here $\otimes$ represents the Kronecker (block) matrix multiplication, $\cdot$ denotes the scalar product and $^{-1}$ denotes the elementwise inverse of a matrix.
+
+We can simplify $\sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \beta_{t i})$ as, the sum does not depend on $t$:
+
+\begin{align}
+    \sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \; \beta_{t i}) &= \sum_{i=1}^{|\mathbf{o}|-1} \alpha_{|\mathbf{o}|-1 i} \\
+    &= \mathbbm{1}^T \; \alpha_{|\mathbf{o}|-1}
+\end{align}
+
+Here $\mathbbm{1}^T$ is a row vector of ones, and $\alpha_{|\mathbf{o}|-1}$ is the last column of the matrix ${\alpha_t}_{T \;\in 0\dots|\mathbf{o}|-1}$.
+
+So we get:
+
+\begin{equation}
+    {\gamma}_t = (\mathbbm{1}^T \; \alpha_{|\mathbf{o}|-1})^{-1} \cdot \alpha_t \; \circ \; \beta_t
+    \label{eq:gamma-matrix-ones}
+\end{equation}
+
+\begin{equation}
+    {\xi}_t = ((\mathbbm{1}^T \; \alpha_{|\mathbf{o}|-1})^{-1} \cdot \; {P}) \; \circ \;(\alpha_t \otimes (\beta_{t+1} \; \circ \; {\omega}_{t+1}))
+    \label{eq:xi-matrix-ones}
+\end{equation}
+
+The resulting vectors ${\gamma}_t$ and ${\xi}_t$ for each time step $t$ are then related to $\gamma_s(t)$ and $\xi_{ss'}(t)$ for some $s, s'$ by:
+
+\begin{align}
+    {\gamma}_t = \begin{bmatrix}
+                                \gamma_{s_0}(t)       \\
+                                \vdots                \\
+                                \gamma_{s_{|S|-1}}(t) \\
+    \end{bmatrix}, \;
+    {\xi}_t = \begin{bmatrix}
+                             \xi_{s_0 s_0}(t)      & \cdots & \xi_{s_0 s_{|S|-1}}(t)      \\
+                             \vdots                & \ddots & \vdots                      \\
+                             \xi_{s_{|S|-1}s_0}(t) & \cdots & \xi_{s_{|S|-1}s_{|S|-1}}(t) \\
+    \end{bmatrix}
+\end{align}
+
+We can update the parameters with matrix operations as follows:
+
+\begin{equation}
+    {P} = (\mathbbm{1} \oslash \gamma) \bullet \xi
+    \label{eq:transition-probabilities-update}
+\end{equation}
+
+\begin{equation}
+    {\omega}_s(o) = (\mathbbm{1} \oslash \gamma) \bullet (\sum_{t=1}^{|\mathbf{o}|-1} \gamma_t \otimes \mathbbm{1}_{yt}^{|\mathbf{o}|-1})
+    \label{eq:omega-update}
+\end{equation}
+
+\begin{equation}
+    {\pi} = {\gamma}_1
+    \label{eq:initial-probabilities-update}
+\end{equation}
+
+Where $\oslash$ denotes Hadamard division (elementwise division) product and $\bullet$ denotes the Katri-Rao product (column-wise Kronecker product).
+In the formulas above, $\mathbbm{1}$ denotes a column vector of ones, $\mathbbm{1}_{yt}$ denotes a row vector of ones, $\gamma$ and $\xi$ are the sum of the respective vectors over all time steps $t$:
+\begin{align}
+    \gamma = \sum_{t=1}^{|\mathbf{o}|-1} \gamma_t, \;
+    \xi = \sum_{t=1}^{|\mathbf{o}|-1} \xi_t
+\end{align} 
+
