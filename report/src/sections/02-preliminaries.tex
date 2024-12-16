@@ -7,12 +7,13 @@ Finally, we discuss how the Baum-Welch algorithm can be implemented using matrix
 
 \subsection{Hidden Markov Models}\label{subsec:hmm}
 %definition of HMM
-\glspl{hmm} were introduced by Baum and Petrie in 1966~\cite{levinson1983introduction}.
+\glspl{hmm} were introduced by Baum and Petrie in 1966~\cite{baum1966statistical}.
 \gls{hmm} are a class of probabilistic graphical models that are widely used to model sequences of observations with underlying hidden states.
 These models consist of two main components: observations and hidden states.
 The observations are the visible data emitted by the model, while the hidden states represent the underlying process that generates these observations.
 The objective of an \gls{hmm} is to infer the hidden states based on the observations.
 \glspl{hmm} have applications in fields such as speech recognition~\cite{chavan2013overview}, bioinformatics~\cite{de2007hidden}, and natural language processing~\cite{murveit1990integrating}.
+\glspl{hmm} was chosen as the model of choice for this project due to its versatility and ability to model complex systems.
 
 \begin{definition}[Hidden Markov Model]
     A Hidden Markov Model (HMM) is a tuple $\mathcal{M} = (S, \mathcal{L}, \mathscr{l}, \tau,  \pi)$, where:
@@ -26,6 +27,12 @@ The objective of an \gls{hmm} is to infer the hidden states based on the observa
 \end{definition}
 
 Here, $D()$ denotes the set of probability distributions over a finite set. The model emits a label $l$ in state $s$ with probability $\mathscr{l}(s, l)$, transitions between states with probability $\tau(s, s')$, and starts in state $s$ with probability $\pi(s)$.
+
+%should i write about it is descrite time or not?
+\glspl{hmm} can be further classified into discrete-time and continuous-time models based on the time scale of the underlying process.
+Discrete-time \glspl{hmm} are the most common type of \glspl{hmm} and are used to model sequences of observations that occur at discrete time intervals.
+Continuous-time \glspl{hmm} are used to model sequences of observations that occur continuously over time.
+In this project, we focus on discrete-time \glspl{hmm}.
 
 %HMM as matrices
 \subsection{Matrix Representation of HMMs}\label{subsec:matrix-representation}
@@ -65,20 +72,22 @@ The sum of all elements in $\pi$ is equal to one, reflecting the total probabili
 An \gls{hmm} operates on sequences of observations, denoted as $O = {O_1, O_2, \ldots, O_N}$, where each $O_i$ is a sequence of labels $o_1, o_2, \ldots, o_{|\textbf{O}|-1}$.
 The task is to infer the sequence of hidden states $S = s_1, s_2, \ldots, s_{|\textbf{O}|-1}$ that most likely generated these observations.
 
-Given an observation sequence $O$, the goal is to maximize the probability of the hidden states conditioned on the observations:
+Given an observation sequence $O$, the goal is to maximize the probability of the hidden states conditioned on the observations.
 
 This inference is commonly achieved using the Baum-Welch algorithm.
 
 %Baum-Welch for HMM mathamatically
 \subsection{Baum-Welch Algorithm}\label{subsec:baum-welch}
-The Baum-Welch algorithm is a key method for estimating the parameters of an \gls{hmm} from observed data. It leverages the Expectation-Maximization (EM) framework and consists of two iterative steps:
+The Baum-Welch algorithm is a key method for estimating the parameters of an \gls{hmm} from observed data. 
+It was chosen as the method of choice for this project due to its ability to estimate the parameters of a \gls{hmm} without knowing the hidden states that generated the observations, and it is also the standard method for training \glspl{hmm}.
+If looking at other Markov models such as \glspl{mc}, the Baum-Welch algorithm can be used to estimate the parameters of the model from observed data, therefore it is a suitable choice for this project, as this can be used to estimate the parameters of other Markov models.
+It leverages the Expectation-Maximization (EM) framework and consists of two iterative steps:
 
 \begin{enumerate}
     \item \textbf{Expectation Step (E-step)}: Compute the expected the forward and backward variables, for each state $s$ and time $t$. of the latent variables, which are the unobserved state sequences corresponding to the observations. These variables represent the likelihood of being in state $s$ at time $t$ given the observed data up to time $t$ and the likelihood of observing the remaining data from time $t$ onwards given the state $s$ at time $t$, respectivly. 
     \item \textbf{Maximization Step (M-step)}: Update the model parameters (emission matrix $\omega$, transition matrix $P$, and initial distribution $\pi$) to maximize the likelihood of the observed data, using the expected values computed in the E-step.
     \item Repeat the E-step and M-step until convergence.
 \end{enumerate}
-
 
 The Baum-Welch algorithm is particularly useful for estimating the properbilities of the emission and transition matrices of a HMM, given a set of observations, without knowing the hidden states that generated the observations.
 
@@ -114,28 +123,25 @@ The parameter estimation procedure is outlined in \autoref{alg:parameter-estimat
 \end{algorithm}
 
 Starting with initial parameters $\mathbf{x}_0$, the parameter estimation procedure iteratively improves the current hypothesis $\mathbf{x}_n$ using the previous estimate $\mathbf{x}_{n-1}$ until a specified criterion for convergence is met, the algorithm returns the final estimate $\mathbf{x}_n$.
-The specifics of the $\proc{Forward-Backward}$ and $\proc{Update}$ procedures are detailed in \autoref{subsec:forward-backwards_algorithm} and \autoref{subsec:update-algorithm} from~\cite{levinson1983introduction}.
+The specifics of the $\proc{Forward-Backward}$ and $\proc{Update}$ procedures are detailed in \autoref{subsec:forward-backwards_algorithm} and \autoref{subsec:update-algorithm} from~\cite{baum1970maximization}.
 
 \subsection{Forward-Backward Algorithm}\label{subsec:forward-backwards_algorithm}
 %Forward-Backward algorithm
 For a given \gls{hmm} $\mathcal{M}$, the forward-backward algorithm computes the forward and backward variables, $\alpha_s(t)$ and $\beta_s(t)$, for each observation sequence $o_0, o_1, \dots, o_{|\mathbf{o}|-1} = \mathbf{o} \in \mathcal{O}$.
-
-The forward variable $\alpha_s(t)$ represents the likelihood of observing the partial sequence $o_0, o_1, \dots, o_t$ and being in state $s$ at time $t$, given the model $\mathcal{M}$:
-
-
-\begin{equation}
-    \alpha_s(t) = l(o_0, o_1, \dots, o_t, S_{t} = s \mid \mathcal{M})
-    \label{eq:alpha-recursive}
-\end{equation}
+The forward variable $\alpha_s(t)$ represents the likelihood of observing the partial sequence $o_0, o_1, \dots, o_t$ and being in state $s$ at time $t$, given the model $\mathcal{M}$.
+The backward variable $\beta_s(t)$ represents the likelihood of observing the partial sequence $o_{t+1}, o_{t+2}, \dots, o_{|\mathbf{o}|-1}$ given state $s$ at time $t$ and the model $\mathcal{M}$.
 
 
-The backward variable $\beta_s(t)$ represents the likelihood of observing the partial sequence $o_{t+1}, o_{t+2}, \dots, o_{|\mathbf{o}|-1}$ given state $s$ at time $t$ and the model $\mathcal{M}$:
+% \begin{equation}
+%     \alpha_s(t) = l(o_0, o_1, \dots, o_t, S_{t} = s \mid \mathcal{M})
+%     \label{eq:alpha-recursive}
+% \end{equation}
 
 
-\begin{equation}
-    \beta_s(t) = l(o_{t+1}, o_{t+2}, \dots, o_{|\mathbf{o}|-1} \mid S_{t} = s, \mathcal{M})
-    \label{eq:beta-recursive}
-\end{equation}
+% \begin{equation}
+%     \beta_s(t) = l(o_{t+1}, o_{t+2}, \dots, o_{|\mathbf{o}|-1} \mid S_{t} = s, \mathcal{M})
+%     \label{eq:beta-recursive}
+% \end{equation}
 
 
 The forward variable $\alpha_s(t)$ and backward variable $\beta_s(t)$ can be computed recursively as follows:
@@ -162,6 +168,7 @@ The forward variable $\alpha_s(t)$ and backward variable $\beta_s(t)$ can be com
 
 
 Here, $\omega_{s}(t)$ is the likelihood of observing $o_t$ given that the state at time $t$ is $s$ and the model $\mathcal{M}$, formally $\omega_s(t) = l(o_t \mid S_t = s, \mathcal{M})$.
+Meaning that $\omega_s(t)$ is the probability of observing the label $o_t$ in state $s$.
 
 The forward-backward algorithm computes the forward and backward variables for each state $s$ and time $t$ in the observation sequence $\mathbf{o}$, providing a comprehensive view of the likelihood of the observed data under the model.
 
@@ -170,27 +177,27 @@ In preparation for later discussions we would like to draw the attention to the 
 
 \subsection{Update Algorithm}\label{subsec:update-algorithm}
 %Update of HMM
-The update algorithm refines the parameter values of a \gls{pctmc} based on the observed data and the forward and backward variables computed in the forward-backward procedure.
+The update algorithm refines the parameter values of the \gls{hmm} model based on the observed data and the forward and backward variables computed in the forward-backward procedure.
 Given the forward and backward variables $\alpha_s(t)$ and $\beta_s(t)$, the update algorithm aims to maximize the likelihood of the observed data by adjusting the parameter values.
 
 The update step is based on the expected sufficient statistics of the latent variables, which are the unobserved state sequences corresponding to the observations.
 
 \subsubsection{Intermediate Variables}
 We need to calculate the intermediate variables $\gamma_s(t)$ and $\xi_{ss'}(t)$, $\gamma_s(t)$ represent the expected number of times the model is in state $s$ at time $t$ and $\xi_{ss'}(t)$ represent the expected number of transitions from state $s$ to state $s'$ at time $t$.
+For a given \gls{hmm} $\mathcal{M}$, the intermediate variables, $\gamma_s(t)$ and $\xi_{ss'}(t)$, are computed for each observation sequence $o_0, o_1, \dots, o_{|\mathbf{o}|-1} = \mathbf{o} \in \mathcal{O}$.
 These variables are computed as follows:
 
-
 \begin{equation}
-    \gamma_s(t) = \frac{\alpha_s(t) \beta_s(t)}{\sum_{s' \in S} \;(\alpha_{s'}(t) \beta_{s'}(t))}
+    \gamma_s(t) = \frac{\alpha_s(t) \beta_s(t)}{\sum_{s' \in S} \;\alpha_{s'}(t) \beta_{s'}(t)}
     \label{eq:gamma}
 \end{equation}
-
 
 In \autoref{eq:gamma}, the numerator is the product of the forward variable $\alpha_s(t)$ and the backward variable $\beta_s(t)$, representing the joint likelihood of observing the enire sequence and the model given that the model passed by state $s$ at time $t$.
 The denominator represents the likelihood of the observation sequence.
 
 \begin{equation}
-    \xi_{ss'}(t) = \frac{\alpha_s(t) P_{ss'} \omega_{s'}(t + 1) \beta_{s'}(t + 1)}{\sum_{s'' \in S} \;(\sum_{s''' \in S} \; (\alpha_{s''}(t) \; P_{s''s'''} \; \omega_{s'''}(t + 1) \; \beta_{s'''}(t + 1)))}
+    \xi_{ss'}(t) = \frac{\alpha_s(t) P_{ss'} \omega_{s'}(t + 1) \beta_{s'}(t + 1)}{\sum_{s''}\alpha_{s''}(t) \beta_{s''}(t)}
+    %{\sum_{s'' \in S} \;(\sum_{s''' \in S} \; (\alpha_{s''}(t) \; P_{s''s'''} \; \omega_{s'''}(t + 1) \; \beta_{s'''}(t + 1)))}
     \label{eq:xi}
 \end{equation}
 
