@@ -12,11 +12,14 @@ Its optimized algorithms and efficient memory management allow us to handle larg
 The CUDD library is implemented in C, ensuring high-performance execution, but it also ensures it can be used in C++ programs.
 
 \subsection{Storm}\label{subsec:storm}
-Storm is a versatile probabilistic model checking tool designed to verify the correctness and properties of stochastic models~\cite{hensel2021probabilistic}.
-A key feature of Storm is its ability to take a model as input and represent it symbolically, allowing for efficient manipulation and analysis.
-It does this by converting the model into a symbolic representation, such as a \gls{bdd} or an \gls{add}, using the CUDD library.
+Storm is a versatile, open-source probabilistic model checking tool designed to verify the correctness and properties of stochastic models~\cite{hensel2021probabilistic}. It supports a wide range of probabilistic models, including \glspl{hmm},\glspl{mc} and \glspl{mdp}. Storm allows users to analyze models efficiently by computing various quantitative properties, such as probabilities, expected rewards, or long-run averages.
 
-We use this symbolic representation to get acces to the \gls{add} representation of the model, which is then used to perform the matrix operations using CUDD\@.
+A key feature of Storm is its ability to represent models symbolically, leveraging data structures like \glspl{bdd} and \glspl{add}. These symbolic representations compactly encode the model's state space and transition structure, enabling efficient manipulation and analysis even for large-scale systems. Storm achieves this by interfacing with the CUDD library, mentioned earlier.
+
+In our implementation, Storm serves as a parser for loading the input models. Specifically, we utilize Storm to convert the model into its \gls{add} representation. This \gls{add} representation provides a compact and hierarchical encoding of the underlying matrices, which can then be used to perform symbolic matrix operations using the CUDD library.
+
+The reason for using Storm lies in it is open-source, which makes it easy to integrate into our project. Storm is designed to handle large and complex models efficiently for model checking.
+Therefore the next step in Storm is to calculate the parameters of interest, such as transition probabilities, rewards, or other metrics derived from the model. By performing these computations symbolically within the ADD framework, we achieve a scalable and efficient approach to analyzing stochastic models.
 
 \subsection{Transition to ADDs}\label{subsec:transition-to-adds}
 The first step in the implementation is to transition from vectors and matrices to \glspl{add}.
@@ -24,6 +27,7 @@ This conversion leverages the compact and efficient representation of \glspl{add
 
 To convert a vector into an \gls{add}, the vector must first be interpreted as a square matrix.
 This step ensures compatibility with the \gls{add} representation, which organizes data hierarchically.
+When a matrix is represented as an \gls{add}, the matrix also has to be square, as the \gls{add} representation requires a square matrix, if the matrix is not square, it has to be padded with zeros to make it square.
 
 Consider the following vector:
 
@@ -44,9 +48,11 @@ This vector corresponds to a matrix of size $4 \times 4$.
         0 & 0 & 0 & 0 \\
     \end{bmatrix}
 \]
+In an ADD, each layer corresponds to one binary variable (or bit) in the encoding of an index. 
+For a matrix of size $n \times n$, where $n = 2^k$, the binary representation of the row and column indices requires $k$ bits each. 
+By interleaving these bits (e.g., alternating between row and column bits), we construct a balanced and regular structure that preserves the matrix's two-dimensional nature.
+In the case of the vector V, the vector has 4 elements, so it requires $4 = 2^2$ bits to represent the indices.
 
-Representing this as an \gls{add} requires $log_2(n)$ layers of nodes, where $n$ is the size of the matrix.
-In this case, the vector has 4 elements, so it requires $log_2(4 \times 4) = 4$ layers of nodes, as the binary representation of 4 indices spans 2 bits.
 The binary representation of the vector entries is shown in \autoref{tab:vector}, the rest of the matrix indices is filled with zeros.
 
 \begin{table}
@@ -77,8 +83,11 @@ The paths to these nodes are dictated by the binary representation of their indi
 \end{figure*}
 
 The conversion of a matrix to an \gls{add} is similar to that of a vector, but with an additional layer of nodes to represent the rows.
-The \gls{add} can however be reduced as shown in Figure \autoref{fig:add_reduced}.
-This reduction is done by removing the dublicated terminating nodes, removing the redundant nodes and merging the nodes with the same children.
+The \gls{add} can however be reduced as shown in \autoref{fig:add_reduced}.
+This reduction is done by removing the duplicated terminal nodes, removing the redundant nodes and merging the nodes with the same children.
+The techniques for reducing \glspl{add} is the standard reduction techniques used for \glspl{bdd}.
+The reduction of the \gls{add} is done to reduce the size of the \gls{add} and to make the operations on the \gls{add} more efficient.
+CUDD has built-in functions for reducing the \gls{add}, that follows the standard reduction techniques.
 
 \begin{figure}
     \centering
