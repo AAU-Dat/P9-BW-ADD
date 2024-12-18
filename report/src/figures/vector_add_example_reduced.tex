@@ -1,5 +1,6 @@
 \begin{tikzpicture}[node distance=1cm and 0.5cm]
-    \node[c] (a) {$y_1$};
+    \node[c] (x) {$x_1$};
+    \node[c] (a) [below left=of x] {$y_1$};
     \node[c] (b) [below left=of a] {$x_2$};
     \node[c] (c) [below left=of b] {$y_2$};
     \node[c] (d) [below right=of b] {$y_2$};
@@ -10,7 +11,8 @@
     \node[t] (final-4) [right=of final-3] {4};
     \node[t] (final-5) [right=of final-4] {0};
     
-
+    \draw[zeroarrow] (x) -- (a);
+    \draw[onearrow] (x) -- (final-5);
     \draw[zeroarrow] (a) -- (b);
     \draw[zeroarrow] (b) -- (c);
     \draw[onearrow] (b) -- (d);

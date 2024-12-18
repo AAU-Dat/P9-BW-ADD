@@ -12,11 +12,14 @@ Its optimized algorithms and efficient memory management allow us to handle larg
 The CUDD library is implemented in C, ensuring high-performance execution, but it also ensures it can be used in C++ programs.
 
 \subsection{Storm}\label{subsec:storm}
-Storm is a versatile probabilistic model checking tool designed to verify the correctness and properties of stochastic models~\cite{hensel2021probabilistic}.
-A key feature of Storm is its ability to take a model as input and represent it symbolically, allowing for efficient manipulation and analysis.
-It does this by converting the model into a symbolic representation, such as a \gls{bdd} or an \gls{add}, using the CUDD library.
+Storm is a versatile, open-source probabilistic model checking tool designed to verify the correctness and properties of stochastic models~\cite{hensel2021probabilistic}. It supports a wide range of probabilistic models, including \glspl{hmm},\glspl{mc} and \glspl{mdp}. Storm allows users to analyze models efficiently by computing various quantitative properties, such as probabilities, expected rewards, or long-run averages.
 
-We use this symbolic representation to get acces to the \gls{add} representation of the model, which is then used to perform the matrix operations using CUDD\@.
+A key feature of Storm is its ability to represent models symbolically, leveraging data structures like \glspl{bdd} and \glspl{add}. These symbolic representations compactly encode the model's state space and transition structure, enabling efficient manipulation and analysis even for large-scale systems. Storm achieves this by interfacing with the CUDD library, mentioned earlier.
+
+In our implementation, Storm serves as a parser for loading the input models. Specifically, we utilize Storm to convert the model into its \gls{add} representation. This \gls{add} representation provides a compact and hierarchical encoding of the underlying matrices, which can then be used to perform symbolic matrix operations using the CUDD library.
+
+The reason for using Storm lies in it is open-source, which makes it easy to integrate into our project. Storm is designed to handle large and complex models efficiently for model checking.
+Therefore the next step in Storm is to calculate the parameters of interest, such as transition probabilities, rewards, or other metrics derived from the model. By performing these computations symbolically within the ADD framework, we achieve a scalable and efficient approach to analyzing stochastic models.
 
 \subsection{Transition to ADDs}\label{subsec:transition-to-adds}
 The first step in the implementation is to transition from vectors and matrices to \glspl{add}.
@@ -24,6 +27,7 @@ This conversion leverages the compact and efficient representation of \glspl{add
 
 To convert a vector into an \gls{add}, the vector must first be interpreted as a square matrix.
 This step ensures compatibility with the \gls{add} representation, which organizes data hierarchically.
+When a matrix is represented as an \gls{add}, the matrix also has to be square, as the \gls{add} representation requires a square matrix, if the matrix is not square, it has to be padded with zeros to make it square.
 
 Consider the following vector:
 
@@ -44,9 +48,11 @@ This vector corresponds to a matrix of size $4 \times 4$.
         0 & 0 & 0 & 0 \\
     \end{bmatrix}
 \]
+In an ADD, each layer corresponds to one binary variable (or bit) in the encoding of an index. 
+For a matrix of size $n \times n$, where $n = 2^k$, the binary representation of the row and column indices requires $k$ bits each. 
+By interleaving these bits (e.g., alternating between row and column bits), we construct a balanced and regular structure that preserves the matrix's two-dimensional nature.
+In the case of the vector V, the vector has 4 elements, so it requires $4 = 2^2$ bits to represent the indices.
 
-Representing this as an \gls{add} requires $log_2(n)$ layers of nodes, where $n$ is the size of the matrix.
-In this case, the vector has 4 elements, so it requires $log_2(4 \times 4) = 4$ layers of nodes, as the binary representation of 4 indices spans 2 bits.
 The binary representation of the vector entries is shown in \autoref{tab:vector}, the rest of the matrix indices is filled with zeros.
 
 \begin{table}
@@ -77,8 +83,11 @@ The paths to these nodes are dictated by the binary representation of their indi
 \end{figure*}
 
 The conversion of a matrix to an \gls{add} is similar to that of a vector, but with an additional layer of nodes to represent the rows.
-The \gls{add} can however be reduced as shown in Figure \autoref{fig:add_reduced}.
-This reduction is done by removing the dublicated terminating nodes, removing the redundant nodes and merging the nodes with the same children.
+The \gls{add} can however be reduced as shown in \autoref{fig:add_reduced}.
+This reduction is done by removing the duplicated terminal nodes, removing the redundant nodes and merging the nodes with the same children.
+The techniques for reducing \glspl{add} is the standard reduction techniques used for \glspl{bdd}.
+The reduction of the \gls{add} is done to reduce the size of the \gls{add} and to make the operations on the \gls{add} more efficient.
+CUDD has built-in functions for reducing the \gls{add}, that follows the standard reduction techniques.
 
 \begin{figure}
     \centering
@@ -107,63 +116,12 @@ and
     \end{bmatrix}
 \]
 
-are used as examples in the following sections.
-
-Their \glspl{add} representations are shown in \autoref{fig:add_matrix_a} and \autoref{fig:add_matrix_b} respectively.
-
-\begin{figure}
-    \centering
-    \begin{tikzpicture}[
-        level 1/.style={sibling distance=20mm},
-        level 2/.style={sibling distance=10mm},
-        level 3/.style={sibling distance=10mm}
-    ]
-        \node[c] {$x_1$}
-        child{ node[c]  {$y_1$} edge from parent[zeroarrow]
-        child{ node[t] {1}
-        }
-        child{ node [t] {2} edge from parent[onearrow]
-        }
-        }
-        child{ node[c] {$y_1$} edge from parent[onearrow]
-        child{ node[t] {3} edge from parent[zeroarrow]
-        }
-        child{ node[t] {4} edge from parent[onearrow]}
-        }
-        ;
-    \end{tikzpicture}
-    \caption{Matrix A in ADD}
-    \label{fig:add_matrix_a}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \begin{tikzpicture}[
-        level 1/.style={sibling distance=20mm},
-        level 2/.style={sibling distance=10mm},
-        level 3/.style={sibling distance=10mm}
-    ]
-        \node[c] {$x_1$}
-        child{ node[c]  {$y_1$} edge from parent[zeroarrow]
-        child{ node[t] {5}
-        }
-        child{ node [t] {6} edge from parent[onearrow]
-        }
-        }
-        child{ node[c] {$y_1$} edge from parent[onearrow]
-        child{ node[t] {7} edge from parent[zeroarrow]
-        }
-        child{ node[t] {8} edge from parent[onearrow]}
-        }
-        ;
-    \end{tikzpicture}
-    \caption{Matrix B in ADD}
-    \label{fig:add_matrix_b}
-\end{figure}
+are used as examples in the following subsections.
 
 \subsubsection{Matrix Transpose}
-The matrix transpose is implemented by swapping the nodes in the \gls{add}, so that the rows become columns and the columns become rows.
-The transpose of matrix $A$ is
+The matrix transpose is implemented by swapping the row and column variables in the \gls{add}. Specifically, for each path in the \gls{add} representing an entry $(i, j)$, the roles of the row index 
+$i$ and column index $j$ are exchanged. The terminal nodes (values of the matrix entries) remain unchanged.
+The transpose of matrix $A$ is:
 \[
     A^T = \begin{bmatrix}
               1 & 3 \\
@@ -171,167 +129,97 @@ The transpose of matrix $A$ is
     \end{bmatrix}
 \]
 
-The \gls{add} representation of the transpose is shown in \autoref{fig:add_transpose}.
-\begin{figure}
-    \centering
-    \input{figures/add_example_transpose}
-    \caption{Matrix A Transposed}
-    \label{fig:add_transpose}
-\end{figure}
-
 \subsubsection{Matrix addition}
-Matrix addition is implemented by adding the \glspl{add} terminal nodes together.
-The sum of matrices $A$ and $B$ is
+Matrix addition is implemented by adding the terminal nodes of two \glspl{add} while keeping the structure of the row and column indices consistent. The process involves:
+\begin{enumerate}
+    \item Traversing the paths of both \glspl{add} simultaneously.
+    \item Summing the values at the terminal nodes where the row and column indices match.
+\end{enumerate}
+The resulting \gls{add} represents the element-wise sum of the two matrices.
+The sum of matrices $A$ and $B$ is:
 \[
     A + B = \begin{bmatrix}
-                1 & 2 \\
-                3 & 4 \\
-    \end{bmatrix} + \begin{bmatrix}
-                        5 & 6 \\
-                        7 & 8 \\
-    \end{bmatrix} = \begin{bmatrix}
-                        6  & 8  \\
-                        10 & 12 \\
+        6  & 8  \\
+        10 & 12 \\
     \end{bmatrix}
 \]
-
-The \gls{add} representation of the sum is shown in \autoref{fig:add_addition}.
-\begin{figure}
-    \centering
-    \input{figures/add_example_sum}
-    \caption{Sum of matrices A and B}
-    \label{fig:add_addition}
-\end{figure}
 
 \subsubsection{Matrix multiplication}
-Matrix multiplication is implemented by performing the dot product of the rows and columns of the matrices.
+Matrix multiplication is implemented symbolically using the dot product of the row and column indices. In the \gls{add}:
+\begin{enumerate}
+    \item For each pair of rows in the first matrix and columns in the second matrix, the corresponding elements are multiplied.
+    \item The products are summed along the shared index, combining them into the final terminal nodes of the resulting \gls{add}.
+\end{enumerate}
+The hierarchical structure of the \gls{add} ensures that only relevant paths are explored, making the operation efficient.
 The product of matrices $A$ and $B$ is
-
 \[
     A \times B = \begin{bmatrix}
-                     1 & 2 \\
-                     3 & 4 \\
-    \end{bmatrix} \times \begin{bmatrix}
-                             5 & 6 \\
-                             7 & 8 \\
-    \end{bmatrix} = \begin{bmatrix}
-                        19 & 22 \\
-                        43 & 50 \\
+        19 & 22 \\
+        43 & 50 \\
     \end{bmatrix}
 \]
 
-The \gls{add} representation of the product can be seen in \autoref{fig:add_multiplication}.
-\begin{figure}
-    \centering
-    \input{figures/add_example_muliplication}
-    \caption{Product of matrices A and B}
-    \label{fig:add_multiplication}
-\end{figure}
-
-\subsubsection{Hadamard product}
-The Hadamard product is implemented by multiplying the corresponding elements of the matrices together.
-The Hadamard product of matrices $A$ and $B$ is
+\subsubsection{Hadamard product}\label{subsubsec:hadamard-product}
+The Hadamard product is implemented by pairwise multiplication of corresponding terminal nodes in the two \glspl{add}. For each matching row-column index pair $(i, j)$:
+\begin{enumerate}
+    \item The values from both \glspl{add} are multiplied.
+    \item The resulting product is stored in the terminal node of the new \gls{add}.
+\end{enumerate}
+The structure of the indices remains unchanged.
+The Hadamard product of matrices $A$ and $B$ is:
 
 \[
     A \circ B = \begin{bmatrix}
-                    1 & 2 \\
-                    3 & 4 \\
-    \end{bmatrix} \circ \begin{bmatrix}
-                            5 & 6 \\
-                            7 & 8 \\
-    \end{bmatrix} = \begin{bmatrix}
-                        5  & 12 \\
-                        21 & 32 \\
+        5  & 12 \\
+        21 & 32 \\
     \end{bmatrix}
 \]
 
-The \gls{add} representation of the Hadamard product is shown in \autoref{fig:add_hadamard}.
-
-\begin{figure}
-    \centering
-    \input{figures/add_example_hadamard}
-    \caption{Hadamard product of matrices A and B}
-    \label{fig:add_hadamard}
-\end{figure}
-
 \subsubsection{Hadamard division}
-The Hadamard division is implemented by dividing the corresponding elements of the matrices.
+The Hadamard division is implemented as Hadamard product, but with division instead of multiplication. See~\autoref{subsubsec:hadamard-product} for more details.
 The Hadamard division of matrices $A$ and $B$ is
 
 \[
     A \oslash B = \begin{bmatrix}
-                      1 & 2 \\
-                      3 & 4 \\
-    \end{bmatrix} \oslash \begin{bmatrix}
-                              5 & 6 \\
-                              7 & 8 \\
-    \end{bmatrix} = \begin{bmatrix}
-                        0.2    & 0.3333 \\
-                        0.4286 & 0.5    \\
+        0.2    & 0.3333 \\
+        0.4286 & 0.5    \\
     \end{bmatrix}
 \]
 
-The \gls{add} representation of the Hadamard division is shown in \autoref{fig:add_hadamard_division}.
-
-\begin{figure}
-    \centering
-    \input{figures/add_example_hadamard_div}
-    \caption{Hadamard division of matrices A and B}
-    \label{fig:add_hadamard_division}
-\end{figure}
-
 \subsubsection{Kronecker product}
-The Kronecker product is implemented by multiplying each element of the first matrix by the second matrix.
+The Kronecker product is implemented by expanding the indices and terminal nodes of the two matrices symbolically, with the resulting \gls{add} having the dimensions of the sum of the dimensions of the two matrices. 
+The Kronecker product is a generalization of the outer product, where each element of the first matrix is multiplied by the second matrix as a whole.
+For each entry $(i, j)$ in the first matrix with value $a$, the second matrix $B$ is multiplied by $a$, and the indices are adjusted:
+\begin{enumerate}
+    \item The row and column indices of $B$ are shifted based on $i$ and $j$ of $A$.
+    \item The resulting values are stored in a new \gls{add}.
+\end{enumerate}
 The Kronecker product of matrices $A$ and $B$ is
 
 \[
     A \otimes B = \begin{bmatrix}
-                      1 & 2 \\
-                      3 & 4 \\
-    \end{bmatrix} \otimes \begin{bmatrix}
-                              5 & 6 \\
-                              7 & 8 \\
-    \end{bmatrix} = \begin{bmatrix}
-                        5  & 6  & 10 & 12 \\
-                        7  & 8  & 14 & 16 \\
-                        15 & 18 & 20 & 24 \\
-                        21 & 24 & 28 & 32 \\
+        5  & 6  & 10 & 12 \\
+        7  & 8  & 14 & 16 \\
+        15 & 18 & 20 & 24 \\
+        21 & 24 & 28 & 32 \\
     \end{bmatrix}
 \]
 
-The \gls{add} representation of the Kronecker product is shown in \autoref{fig:add_kroncker}.
-
-\begin{figure*}
-    \centering
-    \input{figures/add_example_kroneker}
-    \caption{Kronecker product of matrices A and B}
-    \label{fig:add_kroncker}
-\end{figure*}
-
 \subsubsection{Khatri-Rao product}
-The Khatri-Rao product is implemented by multiplying one element of the first matrix by the row of the second matrix.
+The Khatri-Rao product is implemented by combining rows of the first matrix with corresponding rows of the second matrix. For each row index $i$:
+\begin{enumerate}
+    \item The elements of row $i$ in the first matrix are multiplied element-wise with the entire row $i$ in the second matrix.
+    \item The resulting row is constructed symbolically within the \gls{add}.   
+\end{enumerate}
 The Khatri-Rao product of matrices $A$ and $B$ is
 
 \[
     A \bullet B = \begin{bmatrix}
-                      1 & 2 \\
-                      3 & 4 \\
-    \end{bmatrix} \bullet \begin{bmatrix}
-                              5 & 6 \\
-                              7 & 8 \\
-    \end{bmatrix} = \begin{bmatrix}
-                        5  & 6  & 10 & 12 \\
-                        21 & 24 & 28 & 32 \\
+        5  & 6  & 10 & 12 \\
+        21 & 24 & 28 & 32 \\
     \end{bmatrix}
 \]
-
-The \gls{add} representation of the Khatri-Rao product is shown in \autoref{fig:add_katri_rao}.
-\begin{figure*}
-    \centering
-    \input{figures/add_example_katri_rao}
-    \caption{Khatri-Rao in ADD}
-    \label{fig:add_katri_rao}
-\end{figure*}
+The resulting \gls{add} has the dimensions of sum of the dimensions of the two matrices, as in the Kronecker product.
 
 % \subsubsection{Matrix scalar}
 % Matrix scalar is implemented by multiplying each element in the matrix by a scalar value.
