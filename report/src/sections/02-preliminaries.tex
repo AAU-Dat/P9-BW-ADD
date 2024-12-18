@@ -72,58 +72,77 @@ The sum of all elements in $\pi$ is equal to one, reflecting the total probabili
 An \gls{hmm} operates on sequences of observations, denoted as $O = {O_1, O_2, \ldots, O_N}$, where each $O_i$ is a sequence of labels $o_1, o_2, \ldots, o_{|\textbf{O}|-1}$.
 The task is to infer the sequence of hidden states $S = s_1, s_2, \ldots, s_{|\textbf{O}|-1}$ that most likely generated these observations.
 
-Given an observation sequence $O$, the goal is to maximize the probability of the hidden states conditioned on the observations.
+This involves maximizing the probability of the hidden states $S$ conditioned on the observed sequence $O$. In essence, the observations are the labels for which we seek the corresponding hidden state sequence, representing the most probable path that generated these observations.
 
-This inference is commonly achieved using the Baum-Welch algorithm.
+This inference is commonly performed using the Baum-Welch algorithm, a widely used method for estimating the probabilities of an \gls{hmm} and finding the most likely hidden state sequence.
 
 %Baum-Welch for HMM mathamatically
 \subsection{Baum-Welch Algorithm}\label{subsec:baum-welch}
-The Baum-Welch algorithm is a key method for estimating the parameters of an \gls{hmm} from observed data. 
-It was chosen as the method of choice for this project due to its ability to estimate the parameters of a \gls{hmm} without knowing the hidden states that generated the observations, and it is also the standard method for training \glspl{hmm}.
-If looking at other Markov models such as \glspl{mc}, the Baum-Welch algorithm can be used to estimate the parameters of the model from observed data, therefore it is a suitable choice for this project, as this can be used to estimate the parameters of other Markov models.
-It leverages the Expectation-Maximization (EM) framework and consists of two iterative steps:
+The Baum-Welch algorithm is a fundamental method for estimating the parameters of a \gls{hmm} given a sequence of observations. 
+These parameters include the emission matrix $\omega$, the transition matrix $P$, and the initial state distribution $\pi$.
+The algorithm is widely recognized as the standard approach for training \glspl{hmm} and was chosen for this project due to its ability to estimate these parameters without prior knowledge of the hidden states that generated the observations.
+
+The Baum-Welch algorithm applies the Expectation-Maximization (EM) framework to iteratively improve the likelihood of the observed data under the current model parameters. It consists of the following steps:
 
 \begin{enumerate}
-    \item \textbf{Expectation Step (E-step)}: Compute the expected the forward and backward variables, for each state $s$ and time $t$. of the latent variables, which are the unobserved state sequences corresponding to the observations. These variables represent the likelihood of being in state $s$ at time $t$ given the observed data up to time $t$ and the likelihood of observing the remaining data from time $t$ onwards given the state $s$ at time $t$, respectivly. 
-    \item \textbf{Maximization Step (M-step)}: Update the model parameters (emission matrix $\omega$, transition matrix $P$, and initial distribution $\pi$) to maximize the likelihood of the observed data, using the expected values computed in the E-step.
-    \item Repeat the E-step and M-step until convergence.
+    \item \textbf{Initialization:} Begin with initial estimates for the \gls{hmm} parameters $(\pi, P, \omega)$.
+    \item \textbf{Expectation Step (E-step):}
+    \begin{enumerate}
+        \item Compute the forward probabilities $\alpha_s(t)$ and backward probabilities $\beta_s(t)$, which represent:
+        \begin{itemize}
+            \item The probability of observing the sequence up to time $t$, given that the \gls{hmm} is in state $s$ at time $t$ ($\alpha_s(t)$).
+            \item The probability of observing the sequence from time $t+1$ to the end, given that the \gls{hmm} is in state $s$ at time $t$ ($\beta_s(t)$).
+        \end{itemize}
+    \end{enumerate}
+    \item \textbf{Maximization Step (M-step):} Update the \gls{hmm} parameters $(\pi, P, \omega)$ to maximize the likelihood of the observed data based on the expected counts computed in the E-step.
+    \item \textbf{Iteration:} Repeat the E-step and M-step until convergence, i.e., when the change in likelihood between iterations falls below a predefined threshold.
+    
 \end{enumerate}
+The Baum-Welch algorithm refines the \gls{hmm} parameters by iteratively maximizing the likelihood of the observations. 
+Starting with an initial hypothesis $\textbf{x}_0 = (\pi, P, \omega)$, the algorithm produces a sequence of parameter estimates $\textbf{x}_1, \textbf{x}_2, \ldots$, where each new estimate improves upon the previous one. 
+The process terminates when the improvement in likelihood is sufficiently small, satisfying the convergence criterion:
+\[
+||l(\textbf{x}_n) - l(\textbf{x}_{n-1})|| < \epsilon
+\]
+where $l(\textbf{x}_n)$ is the likelihood of the observations under the parameters $\textbf{x}_n$, and $\epsilon > 0$ is a small threshold.
 
-The Baum-Welch algorithm is particularly useful for estimating the properbilities of the emission and transition matrices of a HMM, given a set of observations, without knowing the hidden states that generated the observations.
+The steps of the Baum-Welch algorithm are detailed in the following sections, including the initialization of the \gls{hmm} parameters, the forward-backward algorithm, and the update algorithm, see \autoref{subsec:initialization}, \ref{subsec:forward-backwards_algorithm}, and \ref{subsec:update-algorithm} respectively.
 
-Given a multiset of observations $\mathcal{O}$ and initial parameters $\textbf{x}_0$, the Baum-Welch algorithm estimates the parameters of a \gls{hmm} $\mathcal{P}$ by iteratively improving the current hypothesis $\textbf{x}_n$ using the previous estimate $\textbf{x}_{n-1}$ until a convergence criterion is met.
-A hypothesis refers to a specific set of values for the parameters $\mathbf{x}$.
+\subsection{Initialization of HMM Parameters}\label{subsec:initialization}
+Before starting the Baum-Welch algorithm, we need to initialize the model parameters: The emission matrix $\omega$, the transition matrix $P$, and the initial state distribution $\pi$.
 
-Each iteration of the algorithm produces a new hypothesis, denoted as $\textbf{x}_n$, which is the algorithm's current best guess for the parameter values based on the observed data.
-The algorithm consists of three main steps: the forward-backward procedure, the update step, and the convergence criterion.
-The Baum-Welch algorithm iteratively refines the parameters until the improvement between successive iterations falls below a predefined threshold.
-This is typically evaluated using a convergence criterion such as:
+Since the algorithm is designed to converge iteratively toward an optimal parameter set, the initial estimates do not need to be exact. However, reasonable initialization can accelerate convergence and improve numerical stability. A common approach to initialize these parameters is as follows:
 
-\begin{equation}
-    ||l(\textbf{x}_n) - l(\textbf{x}_{n-1})|| < \epsilon\label{eq:convergence-criterion}
-\end{equation}
+The initial state probabilities $\pi$ represent the likelihood of starting in each hidden state $s \in S$. 
+To estimate initial state probabilities, we can use one of the following strategies:
+\begin{itemize}
+    \item Examine the observed data: Estimate the initial probabilities based on the observed data. For example, if certain states are more likely to occur at the beginning of the sequence, assign higher probabilities to these states. 
+    $\pi_s = \frac{R_s}{\sum_{s' \in S} R_{s'}}$ where $R_s$ is the number of times state $s$ occurs at the beginning of the sequence.
+    \item Uniform initialization: Set $\pi_s = \frac{1}{|S|}$ for all $s \in S$.
+    \item Random initialization: Assign random probabilities to each state $s \in S$.
+\end{itemize}
 
-where $\epsilon > 0$ is a small threshold, and $l(\textbf{x}_n)$ denotes the likelihood of the observed data given the parameter values at the $n$-th iteration.
 
-The algorithm stops when the change in parameters is sufficiently small, indicating that the model has converged to a local maximum of the likelihood function.
-The parameter estimation procedure is outlined in \autoref{alg:parameter-estimation}.
+The transition matrix $P$ represents the probability of transitioning from one state to another. 
+To estimate transition probabilities, we can use one of the following strategies:
+\begin{itemize}
+    \item Examine the observed data: Estimate the transition probabilities based on the observed data. For example, if certain states are more likely to transition to others, assign higher probabilities to these transitions. 
+    $P_{s \rightarrow s'} = \frac{C_{s \rightarrow s'}}{\sum_{s'' \in S} C_{s \rightarrow s''}}$ where $C_{s \rightarrow s'}$ is the number of transitions from state $s$ to state $s'$.
+    \item Random initialization: Assign random probabilities to each transition $P_{s \rightarrow s'}$.
+    \item Random walk initialization: Set $P_{s \rightarrow s'} = \frac{1}{|S|}$ for all $s, s' \in S$.
+\end{itemize}
 
-\begin{algorithm}[htb!]
-    \begin{codebox}
-        \Procname{$\proc{Estimate-Parameters}(\mathcal{P}, \mathbf{x}_0, \mathcal{O})$}
-        \li $\mathbf{x} \gets \mathbf{x}0$
-        \li \While $\neg\proc{Criterion}(\mathbf{x}_{n-1}, \mathbf{x}_n)$
-        \li \Do $\mathbf{x}_{n - 1} \gets \mathbf{x}_n$
-        \li $(\alpha, \beta) = \proc{Forward-Backward}(\mathcal{P}(\mathbf{x}_n), \mathcal{O})$
-        \li $\mathbf{x}_n = \proc{Update}(\mathcal{P}(\mathbf{x}_n), \mathcal{O}, \alpha, \beta)$ \End
-        \li \Return $\mathbf{x}_n$
-    \end{codebox}
-    \caption{Parameter estimation procedure~\cite{p7}.}
-    \label{alg:parameter-estimation}
-\end{algorithm}
 
-Starting with initial parameters $\mathbf{x}_0$, the parameter estimation procedure iteratively improves the current hypothesis $\mathbf{x}_n$ using the previous estimate $\mathbf{x}_{n-1}$ until a specified criterion for convergence is met, the algorithm returns the final estimate $\mathbf{x}_n$.
-The specifics of the $\proc{Forward-Backward}$ and $\proc{Update}$ procedures are detailed in \autoref{subsec:forward-backwards_algorithm} and \autoref{subsec:update-algorithm} from~\cite{baum1970maximization}.
+The emission matrix $\omega$ represents the probability of emitting each observation label from each hidden state. 
+To estimate emission probabilities, we can use one of the following strategies:
+\begin{itemize}
+    \item Examine the observed data: Estimate the emission probabilities based on the observed data. For example, if certain states are more likely to emit certain labels, assign higher probabilities to these emissions. 
+    $\omega_{s, l} = \frac{C_{s, l}}{\sum_{l' \in \mathcal{L}} C_{s, l'}}$ where $C_{s, l}$ is the number of times state $s$ emits label $l$.
+    \item Random initialization: Assign random probabilities to each emission $\omega_{s, l}$.
+    \item Random walk initialization: Set $\omega_{s, l} = \frac{1}{|\mathcal{L}|}$ for all $s \in S, l \in \mathcal{L}$.
+\end{itemize}
+
+These initialization strategies provide a starting point for the Baum-Welch algorithm to iteratively refine the model parameters based on the observed data.
 
 \subsection{Forward-Backward Algorithm}\label{subsec:forward-backwards_algorithm}
 %Forward-Backward algorithm
@@ -143,9 +162,7 @@ The backward variable $\beta_s(t)$ represents the likelihood of observing the pa
 %     \label{eq:beta-recursive}
 % \end{equation}
 
-
 The forward variable $\alpha_s(t)$ and backward variable $\beta_s(t)$ can be computed recursively as follows:
-
 
 \begin{equation}
     \alpha_s(t) =
@@ -196,8 +213,9 @@ In \autoref{eq:gamma}, the numerator is the product of the forward variable $\al
 The denominator represents the likelihood of the observation sequence.
 
 \begin{equation}
-    \xi_{ss'}(t) = \frac{\alpha_s(t) P_{ss'} \omega_{s'}(t + 1) \beta_{s'}(t + 1)}{\sum_{s''}\alpha_{s''}(t) \beta_{s''}(t)}
-    %{\sum_{s'' \in S} \;(\sum_{s''' \in S} \; (\alpha_{s''}(t) \; P_{s''s'''} \; \omega_{s'''}(t + 1) \; \beta_{s'''}(t + 1)))}
+    \xi_{ss'}(t) = \frac{\alpha_s(t) P_{ss'} \omega_{s'}(t + 1) \beta_{s'}(t + 1)}
+    %{\sum_{s''}\alpha_{s''}(t) \beta_{s''}(t)}
+    {\sum_{s'' \in S} \;(\sum_{s''' \in S} \; (\alpha_{s''}(t) \; P_{s''s'''} \; \omega_{s'''}(t + 1) \; \beta_{s'''}(t + 1)))}
     \label{eq:xi}
 \end{equation}
 
@@ -283,14 +301,14 @@ The resulting vectors ${\alpha}_t$ and ${\beta}_t$ for each time step $t$ are th
 
 \begin{align}
     {\alpha}_t = \begin{bmatrix}
-                                \alpha_{s_0}(t)       \\
-                                \vdots                \\
-                                \alpha_{s_{|S|-1}}(t) \\
+        \alpha_{s_0}(t)       \\
+        \vdots                \\
+        \alpha_{s_{|S|-1}}(t) \\
     \end{bmatrix}, \;
     {\beta}_t = \begin{bmatrix}
-                               \beta_{s_0}(t)       \\
-                               \vdots               \\
-                               \beta_{s_{|S|-1}}(t) \\
+        \beta_{s_0}(t)       \\
+        \vdots               \\
+        \beta_{s_{|S|-1}}(t) \\
     \end{bmatrix}
 \end{align}
 
@@ -333,14 +351,14 @@ The resulting vectors ${\gamma}_t$ and ${\xi}_t$ for each time step $t$ are then
 
 \begin{align}
     {\gamma}_t = \begin{bmatrix}
-                                \gamma_{s_0}(t)       \\
-                                \vdots                \\
-                                \gamma_{s_{|S|-1}}(t) \\
+        \gamma_{s_0}(t)       \\
+        \vdots                \\
+        \gamma_{s_{|S|-1}}(t) \\
     \end{bmatrix}, \;
     {\xi}_t = \begin{bmatrix}
-                             \xi_{s_0 s_0}(t)      & \cdots & \xi_{s_0 s_{|S|-1}}(t)      \\
-                             \vdots                & \ddots & \vdots                      \\
-                             \xi_{s_{|S|-1}s_0}(t) & \cdots & \xi_{s_{|S|-1}s_{|S|-1}}(t) \\
+        \xi_{s_0 s_0}(t)      & \cdots & \xi_{s_0 s_{|S|-1}}(t)      \\
+        \vdots                & \ddots & \vdots                      \\
+        \xi_{s_{|S|-1}s_0}(t) & \cdots & \xi_{s_{|S|-1}s_{|S|-1}}(t) \\
     \end{bmatrix}
 \end{align}
 

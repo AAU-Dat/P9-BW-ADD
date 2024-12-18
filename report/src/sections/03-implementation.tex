@@ -3,24 +3,6 @@ In this section, we will discuss the implementation of the project.
 We will start by discussing the tools used in the implementation, followed by the transition from matrices to \glspl{add}.
 Finally, we will discuss the implementation of the matrix operations using \glspl{add}.
 
-\subsection{CUDD}\label{subsec:cudd}
-The Colorado University Decision Diagram (CUDD) library~\cite{somenzi1997cudd} is a powerful tool for implementing and manipulating decision diagrams, including \glspl{bdd} and \glspl{add}. \glspl{add} are compact representations of functions, often used to handle large state spaces symbolically and efficiently.
-
-In this project, the CUDD library stores \glspl{add} and performs operations on them.
-Its optimized algorithms and efficient memory management allow us to handle large and complex matrices symbolically, leading to significant performance improvements over traditional methods.
-
-The CUDD library is implemented in C, ensuring high-performance execution, but it also ensures it can be used in C++ programs.
-
-\subsection{Storm}\label{subsec:storm}
-Storm is a versatile, open-source probabilistic model checking tool designed to verify the correctness and properties of stochastic models~\cite{hensel2021probabilistic}. It supports a wide range of probabilistic models, including \glspl{hmm},\glspl{mc} and \glspl{mdp}. Storm allows users to analyze models efficiently by computing various quantitative properties, such as probabilities, expected rewards, or long-run averages.
-
-A key feature of Storm is its ability to represent models symbolically, leveraging data structures like \glspl{bdd} and \glspl{add}. These symbolic representations compactly encode the model's state space and transition structure, enabling efficient manipulation and analysis even for large-scale systems. Storm achieves this by interfacing with the CUDD library, mentioned earlier.
-
-In our implementation, Storm serves as a parser for loading the input models. Specifically, we utilize Storm to convert the model into its \gls{add} representation. This \gls{add} representation provides a compact and hierarchical encoding of the underlying matrices, which can then be used to perform symbolic matrix operations using the CUDD library.
-
-The reason for using Storm lies in it is open-source, which makes it easy to integrate into our project. Storm is designed to handle large and complex models efficiently for model checking.
-Therefore the next step in Storm is to calculate the parameters of interest, such as transition probabilities, rewards, or other metrics derived from the model. By performing these computations symbolically within the ADD framework, we achieve a scalable and efficient approach to analyzing stochastic models.
-
 \subsection{Transition to ADDs}\label{subsec:transition-to-adds}
 The first step in the implementation is to transition from vectors and matrices to \glspl{add}.
 This conversion leverages the compact and efficient representation of \glspl{add} to perform operations symbolically.
@@ -96,6 +78,25 @@ CUDD has built-in functions for reducing the \gls{add}, that follows the standar
     \label{fig:add_reduced}
 \end{figure}
 
+\subsection{CUDD}\label{subsec:cudd}
+The Colorado University Decision Diagram (CUDD) library~\cite{somenzi1997cudd} is a powerful tool for implementing and manipulating decision diagrams, including \glspl{bdd} and \glspl{add}. \glspl{add} are compact representations of functions, often used to handle large state spaces symbolically and efficiently.
+
+In this project, the CUDD library stores \glspl{add} and performs operations on them.
+Its optimized algorithms and efficient memory management allow us to handle large and complex matrices symbolically, leading to significant performance improvements over traditional methods.
+
+The CUDD library is implemented in C, ensuring high-performance execution, but it also ensures it can be used in C++ programs.
+
+\subsection{Storm}\label{subsec:storm}
+Storm is a versatile, open-source probabilistic model checking tool designed to verify the correctness and properties of stochastic models~\cite{hensel2021probabilistic}. It supports a wide range of probabilistic models, including \glspl{hmm},\glspl{mc} and \glspl{mdp}. Storm allows users to analyze models efficiently by computing various quantitative properties, such as probabilities, expected rewards, or long-run averages.
+
+A key feature of Storm is its ability to represent models symbolically, leveraging data structures like \glspl{bdd} and \glspl{add}. These symbolic representations compactly encode the model's state space and transition structure, enabling efficient manipulation and analysis even for large-scale systems. Storm achieves this by interfacing with the CUDD library, mentioned earlier.
+
+In our implementation, Storm serves as a parser for loading the input models. Specifically, we utilize Storm to convert the model into its \gls{add} representation. This \gls{add} representation provides a compact and hierarchical encoding of the underlying matrices, which can then be used to perform symbolic matrix operations using the CUDD library.
+
+The reason for using Storm lies in it is open-source, which makes it easy to integrate into our project. Storm is designed to handle large and complex models efficiently for model checking.
+Therefore the next step in Storm is to calculate the parameters of interest, such as transition probabilities, rewards, or other metrics derived from the model. By performing these computations symbolically within the ADD framework, we achieve a scalable and efficient approach to analyzing stochastic models.
+
+
 \subsection{Matrix operations using ADDs}\label{subsec:matrix-operations-using-adds}
 The matrix operations are implemented using \glspl{add}.
 The matrix operations implemented are matrix transpose, matrix addition, matrix multiplication, Hadamard product, Hadamard division, Kronecker product and Khatri-Rao product.
@@ -118,6 +119,9 @@ and
 
 are used as examples in the following subsections.
 
+In CUDD the \textit{DdManager} is used to manage the \glspl{add} and the operations on them.
+The \textit{DdNode} is used to represent both the \glspl{add} and the variables in the \glspl{add}, that is the row and column indices in the \glspl{add}.
+
 \subsubsection{Matrix Transpose}
 The matrix transpose is implemented by swapping the row and column variables in the \gls{add}. Specifically, for each path in the \gls{add} representing an entry $(i, j)$, the roles of the row index 
 $i$ and column index $j$ are exchanged. The terminal nodes (values of the matrix entries) remain unchanged.
@@ -128,6 +132,8 @@ The transpose of matrix $A$ is:
               2 & 4 \\
     \end{bmatrix}
 \]
+
+In CUDD the function we use for transposing an \gls{add} is implemented as \textit{Cudd\_addSwapVariables(DdManager * dd, DdNode * f, DdNode ** x, DdNode ** y, int  n )}, where \textit{f} is the \gls{add} to be transposed, \textit{x} and \textit{y} are the set variables to be swapped and \textit{n} is the size of the variables to be swapped.
 
 \subsubsection{Matrix addition}
 Matrix addition is implemented by adding the terminal nodes of two \glspl{add} while keeping the structure of the row and column indices consistent. The process involves:
@@ -144,6 +150,8 @@ The sum of matrices $A$ and $B$ is:
     \end{bmatrix}
 \]
 
+In CUDD the function we use for adding two \glspl{add} is implemented as \textit{Cudd\_addApply(DdManager * dd, Cudd\_addPlus(), DdNode * f, DdNode * g)}, where \textit{f} and \textit{g} are the two \glspl{add} to be added and \textit{Cudd\_addPlus()} is the function that is used to add the two \glspl{add}.
+
 \subsubsection{Matrix multiplication}
 Matrix multiplication is implemented symbolically using the dot product of the row and column indices. In the \gls{add}:
 \begin{enumerate}
@@ -158,6 +166,12 @@ The product of matrices $A$ and $B$ is
         43 & 50 \\
     \end{bmatrix}
 \]
+
+%\textit{Cudd\_addMatrixMultiply(DdManager dd, DdNode A, DdNode B, DdNode **z, int nz)}
+We use the function \textit{Cudd\_addMatrixMultiply(DdManager dd, DdNode A, DdNode B, DdNode **z, int nz)} in CUDD to multiply two \glspl{add}. 
+The function takes two \glspl{add} \textit{A} and \textit{B} to be multiplied as input and returns a pointer to the resulting \gls{add}.
+\textit{z} is the set of variables that are dependent on the columns in \textit{A} and the rows in \textit{B}.
+\textit{A} is assumed to have the same number of columns as \textit{B} has rows, namely \textit{nz}.
 
 \subsubsection{Hadamard product}\label{subsubsec:hadamard-product}
 The Hadamard product is implemented by pairwise multiplication of corresponding terminal nodes in the two \glspl{add}. For each matching row-column index pair $(i, j)$:
@@ -175,6 +189,8 @@ The Hadamard product of matrices $A$ and $B$ is:
     \end{bmatrix}
 \]
 
+In CUDD the function we use for Hadamard product is implemented as \textit{Cudd\_addApply(DdManager * dd, Cudd\_addTimes(), DdNode * f, DdNode * g)}, where \textit{f} and \textit{g} are the two \glspl{add} to be multiplied and \textit{Cudd\_addTimes()} is the function that is used to multiply the two \glspl{add} elementwise.
+
 \subsubsection{Hadamard division}
 The Hadamard division is implemented as Hadamard product, but with division instead of multiplication. See~\autoref{subsubsec:hadamard-product} for more details.
 The Hadamard division of matrices $A$ and $B$ is
@@ -185,6 +201,8 @@ The Hadamard division of matrices $A$ and $B$ is
         0.4286 & 0.5    \\
     \end{bmatrix}
 \]
+
+The Hadamard division is implemented by \textit{Cudd\_addApply(DdManager * dd, Cudd\_addDivide(), DdNode * f, DdNode * g)}, where \textit{f} and \textit{g} are the two \glspl{add} to be divided and \textit{Cudd\_addDivide()} is the function that is used to divide the two \glspl{add} elementwise.
 
 \subsubsection{Kronecker product}
 The Kronecker product is implemented by expanding the indices and terminal nodes of the two matrices symbolically, with the resulting \gls{add} having the dimensions of the sum of the dimensions of the two matrices. 

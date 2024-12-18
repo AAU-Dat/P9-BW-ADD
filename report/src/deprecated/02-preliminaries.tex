@@ -116,19 +116,21 @@ Note that the partial function $(\mathbb{R}_{\geq 0}^n \rightharpoonup \mathbb{R
 These parametric formulations allow a single \gls{pctmc} to represent a broad class of \glspl{ctmc}, where the specific model instance is determined by fixing the parameter values.
 
 \subsection{Baum-Welch Algorithm}\label{subsec:baum-welch}
-The Baum-Welch algorithm is an iterative method used to estimate the parameters of a \gls{pctmc} from observed data.
-The algorithm aims to find the parameter values that maximize the likelihood of the observed data under the model.
-This process is based on the Expectation-Maximization (EM) framework and involves two main steps:
+The Baum-Welch algorithm is a key method for estimating the probabilities of an \gls{hmm} from observed data. 
+The probabilities of an \gls{hmm} are the emission matrix $\omega$, the transition matrix $P$, and the initial distribution $\pi$.
+It was chosen as the method for this project due to its ability to estimate the probabilities of a \gls{hmm} without knowing the hidden states that generated the observations, and it is also the standard method for training \glspl{hmm}.
+If looking at other Markov models such as \glspl{mc}, the Baum-Welch algorithm can be used to estimate the parameters of the model from observed data, therefore it is a suitable choice for this project, as this can be used to estimate the parameters of other Markov models.
+It leverages the Expectation-Maximization (EM) framework and consists of two iterative steps:
 
 \begin{enumerate}
-    \item \textbf{Expectation Step (E-step)}: Compute the expected values of the latent variables, which are the unobserved state sequences corresponding to the observations.
-    \item \textbf{Maximization Step (M-step)}: Update the parameter values to maximize the likelihood of the observed data, using the expected latent variables computed in the E-step.
+    \item \textbf{Expectation Step (E-step)}: Compute the expected the forward and backward variables, for each state $s$ and time $t$. of the latent variables, which are the unobserved state sequences corresponding to the observations. These variables represent the likelihood of being in state $s$ at time $t$ given the observed data up to time $t$ and the likelihood of observing the remaining data from time $t$ onwards given the state $s$ at time $t$, respectivly. 
+    \item \textbf{Maximization Step (M-step)}: Update the model parameters (emission matrix $\omega$, transition matrix $P$, and initial distribution $\pi$) to maximize the likelihood of the observed data, using the expected values computed in the E-step.
     \item Repeat the E-step and M-step until convergence.
 \end{enumerate}
 
-The Baum-Welch algorithm is particularly useful for estimating the parameters of a \gls{pctmc} when the underlying state sequence is unknown or partially observed.
+The Baum-Welch algorithm is particularly useful for estimating the properbilities of the emission and transition matrices of a HMM, given a set of observations, without knowing the hidden states that generated the observations.
 
-Given a multiset of observations $\mathcal{O}$ and initial parameters $\textbf{x}_0$, the Baum-Welch algorithm estimates the parameters of a \gls{pctmc} $\mathcal{P}$ by iteratively improving the current hypothesis $\textbf{x}_n$ using the previous estimate $\textbf{x}_{n-1}$ until a convergence criterion is met.
+Given a multiset of observations $\mathcal{O}$ and initial parameters $\textbf{x}_0$, the Baum-Welch algorithm estimates the parameters of a \gls{hmm} $\mathcal{P}$ by iteratively improving the current hypothesis $\textbf{x}_n$ using the previous estimate $\textbf{x}_{n-1}$ until a convergence criterion is met.
 A hypothesis refers to a specific set of values for the parameters $\mathbf{x}$.
 
 Each iteration of the algorithm produces a new hypothesis, denoted as $\textbf{x}_n$, which is the algorithm's current best guess for the parameter values based on the observed data.
@@ -137,10 +139,10 @@ The Baum-Welch algorithm iteratively refines the parameters until the improvemen
 This is typically evaluated using a convergence criterion such as:
 
 \begin{equation}
-    ||\textbf{x}_n - \textbf{x}_{n-1}|| < \epsilon\label{eq:convergence-criterion}
+    ||l(\textbf{x}_n) - l(\textbf{x}_{n-1})|| < \epsilon\label{eq:convergence-criterion}
 \end{equation}
 
-where $\epsilon > 0$ is a small threshold, and $\textbf{x}_n$ denotes the parameter values at the $n$-th iteration.
+where $\epsilon > 0$ is a small threshold, and $l(\textbf{x}_n)$ denotes the likelihood of the observed data given the parameter values at the $n$-th iteration.
 
 The algorithm stops when the change in parameters is sufficiently small, indicating that the model has converged to a local maximum of the likelihood function.
 The parameter estimation procedure is outlined in \autoref{alg:parameter-estimation}.
@@ -149,7 +151,7 @@ The parameter estimation procedure is outlined in \autoref{alg:parameter-estimat
     \begin{codebox}
         \Procname{$\proc{Estimate-Parameters}(\mathcal{P}, \mathbf{x}_0, \mathcal{O})$}
         \li $\mathbf{x} \gets \mathbf{x}0$
-        \li \While $\neg\proc{Criterion}(\mathbf{x}{n-1}, \mathbf{x}n)$
+        \li \While $\neg\proc{Criterion}(\mathbf{x}_{n-1}, \mathbf{x}_n)$
         \li \Do $\mathbf{x}_{n - 1} \gets \mathbf{x}_n$
         \li $(\alpha, \beta) = \proc{Forward-Backward}(\mathcal{P}(\mathbf{x}_n), \mathcal{O})$
         \li $\mathbf{x}_n = \proc{Update}(\mathcal{P}(\mathbf{x}_n), \mathcal{O}, \alpha, \beta)$ \End
@@ -159,8 +161,8 @@ The parameter estimation procedure is outlined in \autoref{alg:parameter-estimat
     \label{alg:parameter-estimation}
 \end{algorithm}
 
-Starting with initial parameters $\mathbf{x}_0$, the parameter estimation procedure iteratively improves the current hypothesis $\mathbf{x}_n$ using the previous estimate $\mathbf{x}_{n-1}$ until a specified criterion for convergence is met.
-The specifics of the $\proc{Forward-Backward}$ and $\proc{Update}$ procedures are detailed in \autoref{subsec:forward-backwards_algorithm} and \autoref{subsec:update-algorithm} from~\cite{p7}.
+Starting with initial parameters $\mathbf{x}_0$, the parameter estimation procedure iteratively improves the current hypothesis $\mathbf{x}_n$ using the previous estimate $\mathbf{x}_{n-1}$ until a specified criterion for convergence is met, the algorithm returns the final estimate $\mathbf{x}_n$.
+The specifics of the $\proc{Forward-Backward}$ and $\proc{Update}$ procedures are detailed in \autoref{subsec:forward-backwards_algorithm} and \autoref{subsec:update-algorithm} from~\cite{baum1970maximization}.
 
 \subsection{The Forward-Backward Algorithm}\label{subsec:forward-backwards_algorithm}
 For a given \gls{ctmc} $\mathcal{M}$, the forward-backward algorithm computes the forward and backward variables, $\alpha_s(t)$ and $\beta_s(t)$, for each observation sequence $o_0, o_1, \dots, o_{|\mathbf{o}|-1} = \mathbf{o} \in \mathcal{O}$.
