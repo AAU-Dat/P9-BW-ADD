@@ -69,8 +69,8 @@ The sum of all elements in $\pi$ is equal to one, reflecting the total probabili
 \]
 
 \subsection{Observations and Hidden States}\label{subsec:observations-hidden-states}
-An \gls{hmm} operates on sequences of observations, denoted as $O = {O_1, O_2, \ldots, O_N}$, where each $O_i$ is a sequence of labels $o_1, o_2, \ldots, o_{|\textbf{O}|-1}$.
-The task is to infer the sequence of hidden states $S = s_1, s_2, \ldots, s_{|\textbf{O}|-1}$ that most likely generated these observations.
+An \gls{hmm} operates on a multiset of observations, denoted as  $\mathcal{O} = {O_1, O_2, \ldots, O_N}$, where each $O_i$ is a observation sequence of labels $\mathbf{O} = o_1, o_2, \ldots, o_{|\mathbf{O}|-1}$.
+The task is to infer the sequence of hidden states $S = s_1, s_2, \ldots, s_{|\mathbf{O}|-1}$ that most likely generated these observations.
 
 This involves maximizing the probability of the hidden states $S$ conditioned on the observed sequence $O$. In essence, the observations are the labels for which we seek the corresponding hidden state sequence, representing the most probable path that generated these observations.
 
@@ -87,13 +87,12 @@ The Baum-Welch algorithm applies the Expectation-Maximization (EM) framework to 
 \begin{enumerate}
     \item \textbf{Initialization:} Begin with initial estimates for the \gls{hmm} parameters $(\pi, P, \omega)$.
     \item \textbf{Expectation Step (E-step):}
-    \begin{enumerate}
-        \item Compute the forward probabilities $\alpha_s(t)$ and backward probabilities $\beta_s(t)$, which represent:
+    Compute the forward probabilities $\alpha_s(t)$ and backward probabilities $\beta_s(t)$, which represent:
         \begin{itemize}
             \item The probability of observing the sequence up to time $t$, given that the \gls{hmm} is in state $s$ at time $t$ ($\alpha_s(t)$).
             \item The probability of observing the sequence from time $t+1$ to the end, given that the \gls{hmm} is in state $s$ at time $t$ ($\beta_s(t)$).
         \end{itemize}
-    \end{enumerate}
+
     \item \textbf{Maximization Step (M-step):} Update the \gls{hmm} parameters $(\pi, P, \omega)$ to maximize the likelihood of the observed data based on the expected counts computed in the E-step.
     \item \textbf{Iteration:} Repeat the E-step and M-step until convergence, i.e., when the change in likelihood between iterations falls below a predefined threshold.
     
@@ -102,45 +101,56 @@ The Baum-Welch algorithm refines the \gls{hmm} parameters by iteratively maximiz
 Starting with an initial hypothesis $\textbf{x}_0 = (\pi, P, \omega)$, the algorithm produces a sequence of parameter estimates $\textbf{x}_1, \textbf{x}_2, \ldots$, where each new estimate improves upon the previous one. 
 The process terminates when the improvement in likelihood is sufficiently small, satisfying the convergence criterion:
 \[
-||l(\textbf{x}_n) - l(\textbf{x}_{n-1})|| < \epsilon
+||l(o,x_n)|| < \epsilon
 \]
-where $l(\textbf{x}_n)$ is the likelihood of the observations under the parameters $\textbf{x}_n$, and $\epsilon > 0$ is a small threshold.
+
+Where $l(o, x_n)$ is the likelihood of the observations under the parameters $x_n$, and $\epsilon > 0$ is a small threshold.
+%where $l(\textbf{x}_n)$ is the likelihood of the observations under the parameters $\textbf{x}_n$, and $\epsilon > 0$ is a small threshold.
 
 The steps of the Baum-Welch algorithm are detailed in the following sections, including the initialization of the \gls{hmm} parameters, the forward-backward algorithm, and the update algorithm, see \autoref{subsec:initialization}, \ref{subsec:forward-backwards_algorithm}, and \ref{subsec:update-algorithm} respectively.
 
 \subsection{Initialization of HMM Parameters}\label{subsec:initialization}
 Before starting the Baum-Welch algorithm, we need to initialize the model parameters: The emission matrix $\omega$, the transition matrix $P$, and the initial state distribution $\pi$.
 
-Since the algorithm is designed to converge iteratively toward an optimal parameter set, the initial estimates do not need to be exact. However, reasonable initialization can accelerate convergence and improve numerical stability. A common approach to initialize these parameters is as follows:
+Since the algorithm is designed to converge iteratively toward an optimal parameter set, the initial estimates do not need to be exact. 
+However, reasonable initialization can accelerate convergence and improve numerical stability~\cite{benyacoub2015initial}. 
+As we are working with \glspl{hmm} we do not know which labels are emitted by which states, and we do not know the transition probabilities between states,therefore we cannot initialize the parameters based on some prior knowledge.
+A common approach to initialize these parameters is as follows:
+
+\textit{Initialization state probability distribution}:
 
 The initial state probabilities $\pi$ represent the likelihood of starting in each hidden state $s \in S$. 
 To estimate initial state probabilities, we can use one of the following strategies:
 \begin{itemize}
-    \item Examine the observed data: Estimate the initial probabilities based on the observed data. For example, if certain states are more likely to occur at the beginning of the sequence, assign higher probabilities to these states. 
-    $\pi_s = \frac{R_s}{\sum_{s' \in S} R_{s'}}$ where $R_s$ is the number of times state $s$ occurs at the beginning of the sequence.
+    % \item Examine the observed data: Estimate the initial probabilities based on the observed data. For example, if certain states are more likely to occur at the beginning of the sequence, assign higher probabilities to these states. 
+    % $\pi_s = \frac{R_s}{\sum_{s' \in S} R_{s'}}$ where $R_s$ is the number of times state $s$ occurs at the beginning of the sequence.
+    \item Random initialization: Assign random probabilities to each state $s \in S$, such that $\sum_{s \in S} \pi_s = 1$.
     \item Uniform initialization: Set $\pi_s = \frac{1}{|S|}$ for all $s \in S$.
-    \item Random initialization: Assign random probabilities to each state $s \in S$.
 \end{itemize}
 
+\textit{Initialization transition probability distribution}:
 
 The transition matrix $P$ represents the probability of transitioning from one state to another. 
 To estimate transition probabilities, we can use one of the following strategies:
 \begin{itemize}
-    \item Examine the observed data: Estimate the transition probabilities based on the observed data. For example, if certain states are more likely to transition to others, assign higher probabilities to these transitions. 
-    $P_{s \rightarrow s'} = \frac{C_{s \rightarrow s'}}{\sum_{s'' \in S} C_{s \rightarrow s''}}$ where $C_{s \rightarrow s'}$ is the number of transitions from state $s$ to state $s'$.
-    \item Random initialization: Assign random probabilities to each transition $P_{s \rightarrow s'}$.
-    \item Random walk initialization: Set $P_{s \rightarrow s'} = \frac{1}{|S|}$ for all $s, s' \in S$.
+    % \item Examine the observed data: Estimate the transition probabilities based on the observed data. For example, if certain states are more likely to transition to others, assign higher probabilities to these transitions. 
+    % $P_{s \rightarrow s'} = \frac{C_{s \rightarrow s'}}{\sum_{s'' \in S} C_{s \rightarrow s''}}$ where $C_{s \rightarrow s'}$ is the number of transitions from state $s$ to state $s'$.
+    \item Random initialization: Assign random probabilities to each transition $P_{s \rightarrow s'}$, such that $\sum_{s' \in S} P_{s \rightarrow s'} = 1$.
+    \item Uniform initialization: Set $P_{s \rightarrow s'} = \frac{1}{|S|}$ for all $s, s' \in S$.
 \end{itemize}
 
+\textit{Initialization emission probability distribution}:
 
 The emission matrix $\omega$ represents the probability of emitting each observation label from each hidden state. 
 To estimate emission probabilities, we can use one of the following strategies:
 \begin{itemize}
-    \item Examine the observed data: Estimate the emission probabilities based on the observed data. For example, if certain states are more likely to emit certain labels, assign higher probabilities to these emissions. 
-    $\omega_{s, l} = \frac{C_{s, l}}{\sum_{l' \in \mathcal{L}} C_{s, l'}}$ where $C_{s, l}$ is the number of times state $s$ emits label $l$.
-    \item Random initialization: Assign random probabilities to each emission $\omega_{s, l}$.
-    \item Random walk initialization: Set $\omega_{s, l} = \frac{1}{|\mathcal{L}|}$ for all $s \in S, l \in \mathcal{L}$.
+    % \item Examine the observed data: Estimate the emission probabilities based on the observed data. For example, if certain states are more likely to emit certain labels, assign higher probabilities to these emissions. 
+    % $\omega_{s, l} = \frac{C_{s, l}}{\sum_{l' \in \mathcal{L}} C_{s, l'}}$ where $C_{s, l}$ is the number of times state $s$ emits label $l$.
+    \item Random initialization: Assign random probabilities to each emission $\omega_{s, l}$, such that $\sum_{l \in \mathcal{L}} \omega_{s, l} = 1$ for all $s \in S$.
+    \item Uniform initialization: Set $\omega_{s, l} = \frac{1}{|\mathcal{L}|}$ for all $s \in S, l \in \mathcal{L}$.
 \end{itemize}
+
+We initialize the parameters using uniform initialization for the emission matrix $\omega$, the transition matrix $P$, and the initial state distribution $\pi$.
 
 These initialization strategies provide a starting point for the Baum-Welch algorithm to iteratively refine the model parameters based on the observed data.
 
@@ -214,8 +224,8 @@ The denominator represents the likelihood of the observation sequence.
 
 \begin{equation}
     \xi_{ss'}(t) = \frac{\alpha_s(t) P_{ss'} \omega_{s'}(t + 1) \beta_{s'}(t + 1)}
-    %{\sum_{s''}\alpha_{s''}(t) \beta_{s''}(t)}
-    {\sum_{s'' \in S} \;(\sum_{s''' \in S} \; (\alpha_{s''}(t) \; P_{s''s'''} \; \omega_{s'''}(t + 1) \; \beta_{s'''}(t + 1)))}
+    {\sum_{s''}\alpha_{s''}(t) \beta_{s''}(t)}
+    %{\sum_{s'' \in S} \;(\sum_{s''' \in S} \; (\alpha_{s''}(t) \; P_{s''s'''} \; \omega_{s'''}(t + 1) \; \beta_{s'''}(t + 1)))}
     \label{eq:xi}
 \end{equation}
 
