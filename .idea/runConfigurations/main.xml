@@ -4,10 +4,11 @@
       <compiler>PDFLATEX</compiler>
       <compiler-path />
       <sumatra-path />
-      <pdf-viewer>BUILT-IN-PDF-VIEWER</pdf-viewer>
+      <pdf-viewer>SUMATRA</pdf-viewer>
       <viewer-command />
       <compiler-arguments>-shell-escape</compiler-arguments>
       <envs />
+      <before-run-command />
       <main-file>$PROJECT_DIR$/report/src/main.tex</main-file>
       <output-path>$PROJECT_DIR$/report/out</output-path>
       <auxil-path>{projectDir}/auxil</auxil-path>
