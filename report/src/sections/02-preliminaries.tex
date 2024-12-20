@@ -2,13 +2,13 @@
 In this section, we introduce the necessary background concepts and definitions that are essential for understanding the subsequent sections.
 We begin by defining the key concepts of a \gls{hmm} and then describe how a \gls{hmm} can be represented using matrices.
 We then introduce the Baum-Welch algorithm, which is used to estimate the parameters of a \gls{hmm} from observed data.
-We describe all the steps involved in the Baum-Welch algorithm, including the forward-backward algorithm and the update algorithm.
+We describe all the steps involved in the Baum-Welch algorithm, namely the forward-backward algorithm and the parameter's update.
 Finally, we discuss how the Baum-Welch algorithm can be implemented using matrix operations to efficiently compute the forward and backward variables, intermediate variables, and parameter updates.
 
 \subsection{Hidden Markov Models}\label{subsec:hmm}
 %definition of HMM
 \glspl{hmm} were introduced by Baum and Petrie in 1966~\cite{baum1966statistical}.
-\gls{hmm} are a class of probabilistic graphical models that are widely used to model sequences of observations with underlying hidden states.
+\gls{hmm} are a class of probabilistic models that are widely used to model sequences of observations dependent on some underlying hidden states.
 These models consist of two main components: observations and hidden states.
 The observations are the visible data emitted by the model, while the hidden states represent the underlying process that generates these observations.
 The objective of an \gls{hmm} is to infer the hidden states based on the observations.
@@ -22,105 +22,120 @@ The objective of an \gls{hmm} is to infer the hidden states based on the observa
         \item $\mathcal{L}$ is a finite set of labels.
         \item $\mathscr{l}: S \rightarrow D(\mathcal{L})$ is the emission function.
         \item $\tau: S \rightarrow D(S)$ is the transition function.
-        \item $\pi: S \rightarrow \mathbb{R}$ is the initial distribution.
+        \item $\pi \in D(S)$ is the initial distribution.
     \end{itemize}
 \end{definition}
 
-Here, $D()$ denotes the set of probability distributions over a finite set. The model emits a label $l$ in state $s$ with probability $\mathscr{l}(s, l)$, transitions between states with probability $\tau(s, s')$, and starts in state $s$ with probability $\pi(s)$.
-
-%should i write about it is descrite time or not?
-\glspl{hmm} can be further classified into discrete-time and continuous-time models based on the time scale of the underlying process.
-Discrete-time \glspl{hmm} are the most common type of \glspl{hmm} and are used to model sequences of observations that occur at discrete time intervals.
-Continuous-time \glspl{hmm} are used to model sequences of observations that occur continuously over time.
-In this project, we focus on discrete-time \glspl{hmm}.
+Here, $D$ denotes the set of discrete probability distributions over a finite set.
+The model emits a label $l$ in state $s$ with probability $\mathscr{l}(s)(l)$, transitions between states with probability $\tau(s)(s')$, and starts in state $s$ with probability $\pi(s)$.
 
 %HMM as matrices
+
 \subsection{Matrix Representation of HMMs}\label{subsec:matrix-representation}
-\glspl{hmm} can be represented using matrices.
-The emission function $\mathscr{l}$ can be represented as a matrix $\omega$ where $\omega_{s, l} = \mathscr{l}(s, l)$.
+\glspl{hmm} can be represented using various matrices.
+The emission function $\mathscr{l}$ can be represented as a matrix $\omega$ where $\omega_{s, l} = \mathscr{l}(s)(l)$.
 The matrix $\omega$ has the size $|S| \times |\mathcal{L}|$.
 The sum of each row in the matrix $\omega$ is equal to one, reflecting the total probability of emitting all labels from a given state.
+
+
 \[
-\omega = \begin{bmatrix}
-    \mathscr{l}(s_1, l_1) & \cdots & \mathscr{l}(s_1, l_{|\mathcal{L}|}) \\
-    \vdots & \ddots & \vdots \\
-    \mathscr{l}(s_{|S|}, l_1)  & \cdots & \mathscr{l}(s_{|S|}, l_{|\mathcal{L}|})
-\end{bmatrix}
+    \omega = \begin{bmatrix}
+                 \mathscr{l}(s_1)(l_1)     & \cdots & \mathscr{l}(s_1)(l_{|\mathcal{L}|})     \\
+                 \vdots                    & \ddots & \vdots                                  \\
+                 \mathscr{l}(s_{|S|})(l_1) & \cdots & \mathscr{l}(s_{|S|})(l_{|\mathcal{L}|})
+    \end{bmatrix}
 \]
-The transition function $\tau$ can be represented as a matrix $P$ where $P_{s, s'} = \tau(s, s')$.
+
+
+The transition function $\tau$ can be represented as a stochastic matrix $P$ where $P_{s, s'} = \tau(s)(s')$.
 The matrix $P$ has the size $|S| \times |S|$.
 The sum of each row in $P$ is equal to one, reflecting the total probability of transitioning from a given state to all other states.
+
 \[
-P = \begin{bmatrix}
-    \tau(s_1, s_1) &  \cdots & \tau(s_1, s_{|S|}) \\
-    \vdots  & \ddots & \vdots \\
-    \tau(s_{|S|}, s_1) & \cdots & \tau(s_{|S|}, s_{|S|})
-\end{bmatrix}
+    P = \begin{bmatrix}
+            \tau(s_1)(s_1)     & \cdots & \tau(s_1)(s_{|S|})     \\
+            \vdots             & \ddots & \vdots                 \\
+            \tau(s_{|S|})(s_1) & \cdots & \tau(s_{|S|})(s_{|S|})
+    \end{bmatrix}
 \]
+
 The initial distribution $\pi$ can be represented as a vector $\pi$ where $\pi_s = \pi(s)$.
 The vector $\pi$ has the size $|S|$.
-The sum of all elements in $\pi$ is equal to one, reflecting the total probability of starting in each state.
+The sum of all elements in $\pi$ is equal to one, reflecting the fact that $\pi \in D(s)$.
+
 \[
-\pi = \begin{bmatrix}
-    \pi(s_1) \\
-    \vdots \\
-    \pi(s_{|S|})
-\end{bmatrix} 
+    \pi = \begin{bmatrix}
+              \pi(s_1) \\
+              \vdots   \\
+              \pi(s_{|S|})
+    \end{bmatrix}
 \]
 
 \subsection{Observations and Hidden States}\label{subsec:observations-hidden-states}
+
+
+%% TODO: Add description of paths, observations, sequences of labels, and Giovannis comment on The Baum Welch Algorithm.
+
+
+
 An \gls{hmm} operates on a multiset of observations, denoted as  $\mathcal{O} = {O_1, O_2, \ldots, O_N}$, where each $O_i$ is a observation sequence of labels $\mathbf{O} = o_1, o_2, \ldots, o_{|\mathbf{O}|-1}$.
-The task is to infer the sequence of hidden states $S = s_1, s_2, \ldots, s_{|\mathbf{O}|-1}$ that most likely generated these observations.
 
-This involves maximizing the probability of the hidden states $S$ conditioned on the observed sequence $O$. In essence, the observations are the labels for which we seek the corresponding hidden state sequence, representing the most probable path that generated these observations.
 
-This inference is commonly performed using the Baum-Welch algorithm, a widely used method for estimating the probabilities of an \gls{hmm} and finding the most likely hidden state sequence.
+
+
+%The task is to infer the sequence of hidden states $S = s_1, s_2, \ldots, s_{|\mathbf{O}|-1}$ that most likely generated these observations.
+
+%This involves maximizing the probability of the hidden states $S$ conditioned on the observed sequence $O$.
+%In essence, the observations are the labels for which we seek the corresponding hidden state sequence, representing the most probable path that generated these observations.
+
+This problem is commonly approximated using the Baum-Welch algorithm, a widely used method for estimating the probabilities of an \gls{hmm} and finding the most likely hidden state sequence.
 
 %Baum-Welch for HMM mathamatically
-\subsection{Baum-Welch Algorithm}\label{subsec:baum-welch}
-The Baum-Welch algorithm is a fundamental method for estimating the parameters of a \gls{hmm} given a sequence of observations. 
+
+\subsection{The Baum-Welch Algorithm}\label{subsec:baum-welch}
+The Baum-Welch algorithm is a fundamental method for estimating the parameters of a \gls{hmm} given a sequence of observations.
 These parameters include the emission matrix $\omega$, the transition matrix $P$, and the initial state distribution $\pi$.
 The algorithm is widely recognized as the standard approach for training \glspl{hmm} and was chosen for this project due to its ability to estimate these parameters without prior knowledge of the hidden states that generated the observations.
 
-The Baum-Welch algorithm applies the Expectation-Maximization (EM) framework to iteratively improve the likelihood of the observed data under the current model parameters. It consists of the following steps:
+The Baum-Welch algorithm applies the Expectation-Maximization (EM) framework to iteratively improve the likelihood of the observed data under the current model parameters.
+It consists of the following steps:
 
 \begin{enumerate}
     \item \textbf{Initialization:} Begin with initial estimates for the \gls{hmm} parameters $(\pi, P, \omega)$.
     \item \textbf{Expectation Step (E-step):}
     Compute the forward probabilities $\alpha_s(t)$ and backward probabilities $\beta_s(t)$, which represent:
-        \begin{itemize}
-            \item The probability of observing the sequence up to time $t$, given that the \gls{hmm} is in state $s$ at time $t$ ($\alpha_s(t)$).
-            \item The probability of observing the sequence from time $t+1$ to the end, given that the \gls{hmm} is in state $s$ at time $t$ ($\beta_s(t)$).
-        \end{itemize}
-
+    \begin{itemize}
+        \item The probability of observing the sequence up to time $t$, given that the \gls{hmm} is in state $s$ at time $t$ ($\alpha_s(t)$).
+        \item The probability of observing the sequence from time $t+1$ to the end, given that the \gls{hmm} is in state $s$ at time $t$ ($\beta_s(t)$).
+    \end{itemize}
     \item \textbf{Maximization Step (M-step):} Update the \gls{hmm} parameters $(\pi, P, \omega)$ to maximize the likelihood of the observed data based on the expected counts computed in the E-step.
     \item \textbf{Iteration:} Repeat the E-step and M-step until convergence, i.e., when the change in likelihood between iterations falls below a predefined threshold.
-    
 \end{enumerate}
-The Baum-Welch algorithm refines the \gls{hmm} parameters by iteratively maximizing the likelihood of the observations. 
-Starting with an initial hypothesis $\textbf{x}_0 = (\pi, P, \omega)$, the algorithm produces a sequence of parameter estimates $\textbf{x}_1, \textbf{x}_2, \ldots$, where each new estimate improves upon the previous one. 
+The Baum-Welch algorithm refines the \gls{hmm} parameters by iteratively maximizing the likelihood of the observations.
+Starting with an initial hypothesis $\textbf{x}_0 = (\pi, P, \omega)$, the algorithm produces a sequence of parameter estimates $\textbf{x}_1, \textbf{x}_2, \ldots$, where each new estimate improves upon the previous one.
 The process terminates when the improvement in likelihood is sufficiently small, satisfying the convergence criterion:
+
 \[
-||l(o,x_n)|| < \epsilon
+    ||l(o,x_n)|| < \epsilon
 \]
 
 Where $l(o, x_n)$ is the likelihood of the observations under the parameters $x_n$, and $\epsilon > 0$ is a small threshold.
 %where $l(\textbf{x}_n)$ is the likelihood of the observations under the parameters $\textbf{x}_n$, and $\epsilon > 0$ is a small threshold.
 
-The steps of the Baum-Welch algorithm are detailed in the following sections, including the initialization of the \gls{hmm} parameters, the forward-backward algorithm, and the update algorithm, see \autoref{subsec:initialization}, \ref{subsec:forward-backwards_algorithm}, and \ref{subsec:update-algorithm} respectively.
+The steps of the Baum-Welch algorithm are detailed in the following sections, including the initialization of the \gls{hmm} parameters, the forward-backward algorithm, and the update algorithm, see \autoref{subsec:initialization},~\ref{subsec:forward-backwards_algorithm}, and~\ref{subsec:update-algorithm} respectively.
 
 \subsection{Initialization of HMM Parameters}\label{subsec:initialization}
-Before starting the Baum-Welch algorithm, we need to initialize the model parameters: The emission matrix $\omega$, the transition matrix $P$, and the initial state distribution $\pi$.
+Before starting the Baum-Welch algorithm, we need to initialize the model parameters: the emission matrix $\omega$, the transition matrix $P$, and the initial state distribution $\pi$.
 
-Since the algorithm is designed to converge iteratively toward an optimal parameter set, the initial estimates do not need to be exact. 
-However, reasonable initialization can accelerate convergence and improve numerical stability~\cite{benyacoub2015initial}. 
+Since the algorithm is designed to converge iteratively toward a locally optimal parameter set, the initial estimates do not need to be exact.
+However, reasonable initialization can accelerate convergence and improve numerical stability~\cite{benyacoub2015initial}.
 As we are working with \glspl{hmm} we do not know which labels are emitted by which states, and we do not know the transition probabilities between states,therefore we cannot initialize the parameters based on some prior knowledge.
 A common approach to initialize these parameters is as follows:
 
-\textit{Initialization state probability distribution}:
-
-The initial state probabilities $\pi$ represent the likelihood of starting in each hidden state $s \in S$. 
+\subsubsection{Initialization state probability distribution}
+The initial state probabilities $\pi$ represent the likelihood of starting in each hidden state $s \in S$.
 To estimate initial state probabilities, we can use one of the following strategies:
+
 \begin{itemize}
     % \item Examine the observed data: Estimate the initial probabilities based on the observed data. For example, if certain states are more likely to occur at the beginning of the sequence, assign higher probabilities to these states. 
     % $\pi_s = \frac{R_s}{\sum_{s' \in S} R_{s'}}$ where $R_s$ is the number of times state $s$ occurs at the beginning of the sequence.
@@ -130,7 +145,7 @@ To estimate initial state probabilities, we can use one of the following strateg
 
 \textit{Initialization transition probability distribution}:
 
-The transition matrix $P$ represents the probability of transitioning from one state to another. 
+The transition matrix $P$ represents the probability of transitioning from one state to another.
 To estimate transition probabilities, we can use one of the following strategies:
 \begin{itemize}
     % \item Examine the observed data: Estimate the transition probabilities based on the observed data. For example, if certain states are more likely to transition to others, assign higher probabilities to these transitions. 
@@ -141,7 +156,7 @@ To estimate transition probabilities, we can use one of the following strategies
 
 \textit{Initialization emission probability distribution}:
 
-The emission matrix $\omega$ represents the probability of emitting each observation label from each hidden state. 
+The emission matrix $\omega$ represents the probability of emitting each observation label from each hidden state.
 To estimate emission probabilities, we can use one of the following strategies:
 \begin{itemize}
     % \item Examine the observed data: Estimate the emission probabilities based on the observed data. For example, if certain states are more likely to emit certain labels, assign higher probabilities to these emissions. 
@@ -177,8 +192,8 @@ The forward variable $\alpha_s(t)$ and backward variable $\beta_s(t)$ can be com
 \begin{equation}
     \alpha_s(t) =
     \begin{cases}
-        \omega_s(0) \; \pi_s & \text{if } t = 0 \\
-        \omega_s(t) \sum_{s' \in S} P_{s's}\alpha_{s'}(t - 1) & \text{if } 0 < t \leq |\mathbf{o}| - 1 \\
+        \omega_{s, o_t} \pi_s & \text{if } t = 0 \\
+        \omega_{s, o_t} \sum_{s' \in S} P_{s's}\alpha_{s'}(t - 1) & \text{if } 0 < t \leq |\mathbf{o}| - 1 \\
     \end{cases}
     \label{eq:forward-recursive}
 \end{equation}
@@ -194,13 +209,12 @@ The forward variable $\alpha_s(t)$ and backward variable $\beta_s(t)$ can be com
 \end{equation}
 
 
-Here, $\omega_{s}(t)$ is the likelihood of observing $o_t$ given that the state at time $t$ is $s$ and the model $\mathcal{M}$, formally $\omega_s(t) = l(o_t \mid S_t = s, \mathcal{M})$.
-Meaning that $\omega_s(t)$ is the probability of observing the label $o_t$ in state $s$.
+Here, $\omega_{s, o_t}$ is the likelihood of observing $o_t$ given that the state at time $t$ is $s$ and the model $\mathcal{M}$, formally $\omega_{s, o_t} = l(o_t \mid s, \mathcal{M}) = \mathscr{l}(s)(o_t)$.
+Meaning that $\omega_{s, o_t}$ is the probability of observing the label $o_t$ in state $s$.
 
 The forward-backward algorithm computes the forward and backward variables for each state $s$ and time $t$ in the observation sequence $\mathbf{o}$, providing a comprehensive view of the likelihood of the observed data under the model.
 
 In preparation for later discussions we would like to draw the attention to the fact that the above recurrences can be solved using dynamic programming requiring one to use $\Theta(|S|\times|(|\mathbf{o}|-1)|)$ space.
-
 
 \subsection{Update Algorithm}\label{subsec:update-algorithm}
 %Update of HMM
@@ -210,7 +224,9 @@ Given the forward and backward variables $\alpha_s(t)$ and $\beta_s(t)$, the upd
 The update step is based on the expected sufficient statistics of the latent variables, which are the unobserved state sequences corresponding to the observations.
 
 \subsubsection{Intermediate Variables}
-We need to calculate the intermediate variables $\gamma_s(t)$ and $\xi_{ss'}(t)$, $\gamma_s(t)$ represent the expected number of times the model is in state $s$ at time $t$ and $\xi_{ss'}(t)$ represent the expected number of transitions from state $s$ to state $s'$ at time $t$.
+We need to calculate the intermediate variables $\gamma_s(t)$ and $\xi_{ss'}(t)$.
+$\gamma_s(t)$ represent the expected number of times the model is in state $s$ at time $t$ and $\xi_{ss'}(t)$ represent the expected number of transitions from state $s$ to state $s'$ at time $t$.
+
 For a given \gls{hmm} $\mathcal{M}$, the intermediate variables, $\gamma_s(t)$ and $\xi_{ss'}(t)$, are computed for each observation sequence $o_0, o_1, \dots, o_{|\mathbf{o}|-1} = \mathbf{o} \in \mathcal{O}$.
 These variables are computed as follows:
 
@@ -219,8 +235,8 @@ These variables are computed as follows:
     \label{eq:gamma}
 \end{equation}
 
-In \autoref{eq:gamma}, the numerator is the product of the forward variable $\alpha_s(t)$ and the backward variable $\beta_s(t)$, representing the joint likelihood of observing the enire sequence and the model given that the model passed by state $s$ at time $t$.
-The denominator represents the likelihood of the observation sequence.
+In \autoref{eq:gamma}, the numerator is the product of the forward variable $\alpha_s(t)$ and the backward variable $\beta_s(t)$, representing the joint probability of observing the entire sequence given that the model passed by state $s$ at time $t$.
+The denominator represents the probability of the observation sequence.
 
 \begin{equation}
     \xi_{ss'}(t) = \frac{\alpha_s(t) P_{ss'} \omega_{s'}(t + 1) \beta_{s'}(t + 1)}
@@ -230,12 +246,11 @@ The denominator represents the likelihood of the observation sequence.
 \end{equation}
 
 
-In \autoref{eq:xi}, the numerator is the joint likelihood of observing the sequence given that the model transitions from state $s$ to state $s'$ at time $t$.
-The denominator represents the likelihood of the observation sequence.
-
+In \autoref{eq:xi}, the numerator is the joint probability of observing the sequence given that the model transitions from state $s$ to state $s'$ at time $t$.
+The denominator represents the probability of the observation sequence.
 
 The terms $\gamma_s(t)$ and $\xi_{ss'}(t)$ are normalized to ensure they represent probabilities.
-For $\gamma_s(t)$, this involves dividing by the total likelihood across all states at time $t$, while for $\xi_{ss'}(t)$, normalization occurs over all possible transitions at time $t$.
+For $\gamma_s(t)$, this involves dividing by the total probability across all states at time $t$, while for $\xi_{ss'}(t)$, normalization occurs over all possible transitions at time $t$.
 
 \subsubsection{Parameter Update}
 The parameter update step refines the parameter values of the model based on the earlier computed intermediate variables $\gamma_s(t)$ and $\xi_{ss'}(t)$.
@@ -249,7 +264,7 @@ We update the transition probabilities based on the expected number of transitio
 
 
 \begin{equation}
-    P_{s \rightarrow s'} = \frac{\sum_{t = 1}^{|\mathbf{o}|-1} \xi_{ss'}(t)}{\sum_{t = 1}^{|\mathbf{o}|-1} \gamma_s(t)}
+    P_{s s'} = \frac{\sum_{t = 1}^{|\mathbf{o}|-1} \xi_{ss'}(t)}{\sum_{t = 1}^{|\mathbf{o}|-1} \gamma_s(t)}
     \label{eq:transition-probabilities}
 \end{equation}
 
@@ -259,10 +274,12 @@ The denominator sums the expected number of times the model is in state $s$ over
 
 \paragraph*{\textit{Emission Probabilities ($\omega$)}}
 
-We update the emission probabilities based on the expected occupancy of state $s$ and the corresponding observations, meaning the likelihood of observing the specific label $o$ in state $s$. 
+We update the emission probabilities based on the expected occupancy of state $s$ and the corresponding observations, meaning the probability of observing the specific label $o$ in state $s$.
+
 The update is given by:
+
 \begin{equation}
-    \omega_s(o) = \frac{\sum_{t = 1}^{|\mathbf{o}|-1} \gamma_s(t) \lBrack o_t = o \rBrack}{\sum_{t = 1}^{|\mathbf{o}|-1} \gamma_s(t)}
+    \omega_{s, l} = \frac{\sum_{t = 1}^{|\mathbf{o}|-1} \gamma_s(t) \lBrack o_t = l \rBrack}{\sum_{t = 1}^{|\mathbf{o}|-1} \gamma_s(t)}
     \label{eq:omega}
 \end{equation}
 
@@ -310,27 +327,30 @@ Here $\circ$ represents the Hadamard (point-wise) matrix multiplication, ${P}^\t
 The resulting vectors ${\alpha}_t$ and ${\beta}_t$ for each time step $t$ are then related to $\alpha_s(t)$ and $\beta_s(t)$ for some $s$ by:
 
 \begin{align}
-    {\alpha}_t = \begin{bmatrix}
-        \alpha_{s_0}(t)       \\
-        \vdots                \\
-        \alpha_{s_{|S|-1}}(t) \\
+{\alpha}
+    _t = \begin{bmatrix}
+             \alpha_{s_0}(t)       \\
+             \vdots                \\
+             \alpha_{s_{|S|-1}}(t) \\
     \end{bmatrix}, \;
     {\beta}_t = \begin{bmatrix}
-        \beta_{s_0}(t)       \\
-        \vdots               \\
-        \beta_{s_{|S|-1}}(t) \\
+                    \beta_{s_0}(t)       \\
+                    \vdots               \\
+                    \beta_{s_{|S|-1}}(t) \\
     \end{bmatrix}
 \end{align}
 
 $\gamma$ and $\xi$ can be expressed in terms of matrix operations as follows:
 
 \begin{equation}
-    {\gamma}_t = (\sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \;\beta_{t i}))^{-1} \cdot \alpha_t \; \circ \; \beta_t
+{\gamma}
+    _t = (\sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \;\beta_{t i}))^{-1} \cdot \alpha_t \; \circ \; \beta_t
     \label{eq:gamma-matrix}
 \end{equation}
 
 \begin{equation}
-    {\xi}_t = ((\sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \; \beta_{t i}))^{-1} \cdot \; {P}) \; \circ \;(\alpha_t \otimes (\beta_{t+1} \; \circ \; {\omega}_{t+1}))
+{\xi}
+    _t = ((\sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \; \beta_{t i}))^{-1} \cdot \; {P}) \; \circ \;(\alpha_t \otimes (\beta_{t+1} \; \circ \; {\omega}_{t+1}))
     \label{eq:xi-matrix}
 \end{equation}
 
@@ -348,44 +368,50 @@ Here $\mathbbm{1}^T$ is a row vector of ones, and $\alpha_{|\mathbf{o}|-1}$ is t
 So we get:
 
 \begin{equation}
-    {\gamma}_t = (\mathbbm{1}^T \; \alpha_{|\mathbf{o}|-1})^{-1} \cdot \alpha_t \; \circ \; \beta_t
+{\gamma}
+    _t = (\mathbbm{1}^T \; \alpha_{|\mathbf{o}|-1})^{-1} \cdot \alpha_t \; \circ \; \beta_t
     \label{eq:gamma-matrix-ones}
 \end{equation}
 
 \begin{equation}
-    {\xi}_t = ((\mathbbm{1}^T \; \alpha_{|\mathbf{o}|-1})^{-1} \cdot \; {P}) \; \circ \;(\alpha_t \otimes (\beta_{t+1} \; \circ \; {\omega}_{t+1}))
+{\xi}
+    _t = ((\mathbbm{1}^T \; \alpha_{|\mathbf{o}|-1})^{-1} \cdot \; {P}) \; \circ \;(\alpha_t \otimes (\beta_{t+1} \; \circ \; {\omega}_{t+1}))
     \label{eq:xi-matrix-ones}
 \end{equation}
 
 The resulting vectors ${\gamma}_t$ and ${\xi}_t$ for each time step $t$ are then related to $\gamma_s(t)$ and $\xi_{ss'}(t)$ for some $s, s'$ by:
 
 \begin{align}
-    {\gamma}_t = \begin{bmatrix}
-        \gamma_{s_0}(t)       \\
-        \vdots                \\
-        \gamma_{s_{|S|-1}}(t) \\
+{\gamma}
+    _t = \begin{bmatrix}
+             \gamma_{s_0}(t)       \\
+             \vdots                \\
+             \gamma_{s_{|S|-1}}(t) \\
     \end{bmatrix}, \;
     {\xi}_t = \begin{bmatrix}
-        \xi_{s_0 s_0}(t)      & \cdots & \xi_{s_0 s_{|S|-1}}(t)      \\
-        \vdots                & \ddots & \vdots                      \\
-        \xi_{s_{|S|-1}s_0}(t) & \cdots & \xi_{s_{|S|-1}s_{|S|-1}}(t) \\
+                  \xi_{s_0 s_0}(t)      & \cdots & \xi_{s_0 s_{|S|-1}}(t)      \\
+                  \vdots                & \ddots & \vdots                      \\
+                  \xi_{s_{|S|-1}s_0}(t) & \cdots & \xi_{s_{|S|-1}s_{|S|-1}}(t) \\
     \end{bmatrix}
 \end{align}
 
 We can update the parameters with matrix operations as follows:
 
 \begin{equation}
-    {P} = (\mathbbm{1} \oslash \gamma) \bullet \xi
+{P}
+    = (\mathbbm{1} \oslash \gamma) \bullet \xi
     \label{eq:transition-probabilities-update}
 \end{equation}
 
 \begin{equation}
-    {\omega}_s(o) = (\mathbbm{1} \oslash \gamma) \bullet (\sum_{t=1}^{|\mathbf{o}|-1} \gamma_t \otimes \mathbbm{1}_{yt}^{|\mathbf{o}|-1})
+{\omega}
+    _s(o) = (\mathbbm{1} \oslash \gamma) \bullet (\sum_{t=1}^{|\mathbf{o}|-1} \gamma_t \otimes \mathbbm{1}_{yt}^{|\mathbf{o}|-1})
     \label{eq:omega-update}
 \end{equation}
 
 \begin{equation}
-    {\pi} = {\gamma}_1
+{\pi}
+    = {\gamma}_1
     \label{eq:initial-probabilities-update}
 \end{equation}
 
