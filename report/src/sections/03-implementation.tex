@@ -186,6 +186,7 @@ We use the function \textit{Cudd\_addMatrixMultiply(DdManager dd, DdNode A, DdNo
 The function takes two \glspl{add} \textit{A} and \textit{B} to be multiplied as input and returns a pointer to the resulting \gls{add}.
 \textit{z} is the set of variables that are dependent on the columns in \textit{A} and the rows in \textit{B}.
 \textit{A} is assumed to have the same number of columns as \textit{B} has rows, namely \textit{nz}.
+In the implementation of the matrix multiplication, we needed to rename the variables in the \glspl{add} to do the matrix multiplication, namely \textit{A}s columns variables and \textit{B}s row variables, as CUDD requires the variables in the \glspl{add} to have the same name.
 
 \subsubsection{Hadamard product}\label{subsubsec:hadamard-product}
 The Hadamard product is implemented by pairwise multiplication of corresponding terminal nodes in the two \glspl{add}. For each matching row-column index pair $(i, j)$:
