@@ -1,25 +1,17 @@
 \begin{tikzpicture}[node distance=1cm and 0.5cm]
     \node[c] (x) {$x_1$};
-    \node[c] (a) [below left=of x] {$y_1$};
-    \node[c] (b) [below left=of a] {$x_2$};
-    \node[c] (c) [below left=of b] {$y_2$};
-    \node[c] (d) [below right=of b] {$y_2$};
+    \node[c] (a) [below left=of x] {$x_2$};
+    \node[c] (b) [below right=of x] {$x_2$};
     
-    \node[t] (final-1) [below left=of c] {1};
-    \node[t] (final-2) [below right=of c] {2};
-    \node[t] (final-3) [right=of final-2] {3};
-    \node[t] (final-4) [right=of final-3] {4};
-    \node[t] (final-5) [right=of final-4] {0};
+    \node[t] (final-1) [below left=of a] {1};
+    \node[t] (final-2) [right=of final-1] {2};
+    \node[t] (final-4) [below right=of b] {4};
+    \node[t] (final-3) [left=of final-4] {3};
     
     \draw[zeroarrow] (x) -- (a);
-    \draw[onearrow] (x) -- (final-5);
-    \draw[zeroarrow] (a) -- (b);
-    \draw[zeroarrow] (b) -- (c);
-    \draw[onearrow] (b) -- (d);
-    \draw[zeroarrow] (c) -- (final-1);
-    \draw[onearrow] (c) -- (final-2);
-    \draw[zeroarrow] (d) -- (final-3);
-    \draw[onearrow] (d) -- (final-4);
-    \draw[onearrow] (a) -- (final-5);
-    
+    \draw[zeroarrow] (a) -- (final-1);
+    \draw[onearrow] (a) -- (final-2);
+    \draw[zeroarrow] (x) -- (b);
+    \draw[onearrow] (b) -- (final-3);
+    \draw[zeroarrow] (b) -- (final-4);    
 \end{tikzpicture}
