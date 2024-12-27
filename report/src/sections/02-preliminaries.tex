@@ -33,13 +33,13 @@ The model emits a label $l$ in state $s$ with probability $\mathscr{l}(s)(l)$, t
 
 \subsection{Matrix Representation of HMMs}\label{subsec:matrix-representation}
 \glspl{hmm} can be represented using various matrices.
-The emission function $\mathscr{l}$ can be represented as a matrix $\omega$ where $\omega_{s, l} = \mathscr{l}(s)(l)$.
-The matrix $\omega$ has the size $|S| \times |\mathcal{L}|$.
-The sum of each row in the matrix $\omega$ is equal to one, reflecting the total probability of emitting all labels from a given state.
+The emission function $\mathscr{l}$ can be represented as a matrix $\pmb{\omega}$ where $\pmb{\omega}_{s, l} = \mathscr{l}(s)(l)$.
+The matrix $\pmb{\omega}$ has the size $|S| \times |\mathcal{L}|$.
+The sum of each row in the matrix $\pmb{\omega}$ is equal to one, reflecting the total probability of emitting all labels from a given state.
 
 
 \[
-    \omega = \begin{bmatrix}
+    \pmb{\omega} = \begin{bmatrix}
                  \mathscr{l}(s_1)(l_1)     & \cdots & \mathscr{l}(s_1)(l_{|\mathcal{L}|})     \\
                  \vdots                    & \ddots & \vdots                                  \\
                  \mathscr{l}(s_{|S|})(l_1) & \cdots & \mathscr{l}(s_{|S|})(l_{|\mathcal{L}|})
@@ -47,24 +47,24 @@ The sum of each row in the matrix $\omega$ is equal to one, reflecting the total
 \]
 
 
-The transition function $\tau$ can be represented as a stochastic matrix $P$ where $P_{s, s'} = \tau(s)(s')$.
-The matrix $P$ has the size $|S| \times |S|$.
-The sum of each row in $P$ is equal to one, reflecting the total probability of transitioning from a given state to all other states.
+The transition function $\tau$ can be represented as a stochastic matrix $\pmb{P}$ where $\pmb{P}_{s, s'} = \tau(s)(s')$.
+The matrix $\pmb{P}$ has the size $|S| \times |S|$.
+The sum of each row in $\pmb{P}$ is equal to one, reflecting the total probability of transitioning from a given state to all other states.
 
 \[
-    P = \begin{bmatrix}
+    \pmb{P} = \begin{bmatrix}
             \tau(s_1)(s_1)     & \cdots & \tau(s_1)(s_{|S|})     \\
             \vdots             & \ddots & \vdots                 \\
             \tau(s_{|S|})(s_1) & \cdots & \tau(s_{|S|})(s_{|S|})
     \end{bmatrix}
 \]
 
-The initial distribution $\pi$ can be represented as a vector $\pi$ where $\pi_s = \pi(s)$.
-The vector $\pi$ has the size $|S|$.
-The sum of all elements in $\pi$ is equal to one, reflecting the fact that $\pi \in D(s)$.
+The initial distribution $\pi$ can be represented as a vector $\pmb{\pi}$ where $\pmb{\pi}_s = \pi(s)$.
+The vector $\pmb{\pi}$ has the size $|S|$.
+The sum of all elements in $\pmb{\pi}$ is equal to one, reflecting the fact that $\pi \in D(s)$.
 
 \[
-    \pi = \begin{bmatrix}
+    \pmb{\pi} = \begin{bmatrix}
               \pi(s_1) \\
               \vdots   \\
               \pi(s_{|S|})
@@ -102,24 +102,23 @@ It consists of the following steps:
 
 \begin{enumerate}
     \item \textbf{Initialization:} Begin with initial estimates for the \gls{hmm} parameters $(\pi, P, \omega)$.
-    \item \textbf{Expectation Step (E-step):}
-    Compute the forward probabilities $\alpha_s(t)$ and backward probabilities $\beta_s(t)$, which represent:
-    \begin{itemize}
-        \item The probability of observing the sequence up to time $t$, given that the \gls{hmm} is in state $s$ at time $t$ ($\alpha_s(t)$).
-        \item The probability of observing the sequence from time $t+1$ to the end, given that the \gls{hmm} is in state $s$ at time $t$ ($\beta_s(t)$).
-    \end{itemize}
+    \item \textbf{Expectation Step (E-step):} Compute the expected counts of the latent variables, i.e., the hidden states, based on the observation sequence and the current model parameters.
+    That is we compute the probabilities of observing the sequence up to time $t$, given that the \gls{hmm} is in state $s$ at time $t$ and the probabilities of observing the sequence from time $t+1$ to the end, given that the \gls{hmm} is in state $s$ at time $t$.
     \item \textbf{Maximization Step (M-step):} Update the \gls{hmm} parameters $(\pi, P, \omega)$ to maximize the likelihood of the observed data based on the expected counts computed in the E-step.
     \item \textbf{Iteration:} Repeat the E-step and M-step until convergence, i.e., when the change in likelihood between iterations falls below a predefined threshold.
 \end{enumerate}
-The Baum-Welch algorithm refines the \gls{hmm} parameters by iteratively maximizing the likelihood of the observations.
+
+The Baum Welch algorithm seeks to estimate the parameters $\tau$, $\pi$, and $\omega$ of a \gls{hmm} model $\mathcal{M}$ so that it maximises the likelihood function $l(\mathcal{M} | O)$.
+That is, the probability that the \gls{hmm} $\mathcal{M}$ has independently generated each observation sequence $O_1, \ldots, O_N$. 
+
 Starting with an initial hypothesis $\textbf{x}_0 = (\pi, P, \omega)$, the algorithm produces a sequence of parameter estimates $\textbf{x}_1, \textbf{x}_2, \ldots$, where each new estimate improves upon the previous one.
 The process terminates when the improvement in likelihood is sufficiently small, satisfying the convergence criterion:
 
 \[
-    ||l(o,x_n)|| < \epsilon
+    ||l(x_n, )|| < \epsilon
 \]
 
-Where $l(o, x_n)$ is the likelihood of the observations under the parameters $x_n$, and $\epsilon > 0$ is a small threshold.
+Where $l(x_n, o)$ is the likelihood of all the observations under the parameters $x_n$, and $\epsilon > 0$ is a small threshold.
 %where $l(\textbf{x}_n)$ is the likelihood of the observations under the parameters $\textbf{x}_n$, and $\epsilon > 0$ is a small threshold.
 
 The steps of the Baum-Welch algorithm are detailed in the following sections, including the initialization of the \gls{hmm} parameters, the forward-backward algorithm, and the update algorithm, see \autoref{subsec:initialization},~\ref{subsec:forward-backwards_algorithm}, and~\ref{subsec:update-algorithm} respectively.
@@ -129,43 +128,28 @@ Before starting the Baum-Welch algorithm, we need to initialize the model parame
 
 Since the algorithm is designed to converge iteratively toward a locally optimal parameter set, the initial estimates do not need to be exact.
 However, reasonable initialization can accelerate convergence and improve numerical stability~\cite{benyacoub2015initial}.
-As we are working with \glspl{hmm} we do not know which labels are emitted by which states, and we do not know the transition probabilities between states,therefore we cannot initialize the parameters based on some prior knowledge.
-A common approach to initialize these parameters is as follows:
 
-\subsubsection{Initialization state probability distribution}
-The initial state probabilities $\pi$ represent the likelihood of starting in each hidden state $s \in S$.
-To estimate initial state probabilities, we can use one of the following strategies:
+As we are working with \glspl{hmm} we dont have any prior knowledge of the model parameters.
+Therefore we need to initialize the parameters based on some strategy. 
+A common approach to initialize these parameters is as one of the following strategies:
 
-\begin{itemize}
-    % \item Examine the observed data: Estimate the initial probabilities based on the observed data. For example, if certain states are more likely to occur at the beginning of the sequence, assign higher probabilities to these states. 
-    % $\pi_s = \frac{R_s}{\sum_{s' \in S} R_{s'}}$ where $R_s$ is the number of times state $s$ occurs at the beginning of the sequence.
-    \item Random initialization: Assign random probabilities to each state $s \in S$, such that $\sum_{s \in S} \pi_s = 1$.
-    \item Uniform initialization: Set $\pi_s = \frac{1}{|S|}$ for all $s \in S$.
-\end{itemize}
+\begin{enumerate}
+    \item Random initialization: 
+    \begin{itemize}
+        \item Assign random probabilities to for the initial state distribution $\pi_s$, such that $\sum_{s \in S} \pi_s = 1$.
+        \item Assign random probabilities to each transition $P_{s, s'}$, such that $\sum_{s' \in S} P_{s, s'} = 1$.
+        \item Assign random probabilities to each emission $\omega_{s, l}$, such that $\sum_{l \in \mathcal{L}} \omega_{s, l} = 1$ for all $s \in S$.
+    \end{itemize}
+    \item Uniform initialization: 
+    \begin{itemize}
+        \item Set $\pi_s = \frac{1}{|S|}$ for all $s \in S$.
+        \item Set $P_{s, s'} = \frac{1}{|S|}$ for all $s, s' \in S$.
+        \item Set $\omega_{s, l} = \frac{1}{|\mathcal{L}|}$ for all $s \in S, l \in \mathcal{L}$.
+    \end{itemize}
+\end{enumerate}
 
-\textit{Initialization transition probability distribution}:
-
-The transition matrix $P$ represents the probability of transitioning from one state to another.
-To estimate transition probabilities, we can use one of the following strategies:
-\begin{itemize}
-    % \item Examine the observed data: Estimate the transition probabilities based on the observed data. For example, if certain states are more likely to transition to others, assign higher probabilities to these transitions. 
-    % $P_{s \rightarrow s'} = \frac{C_{s \rightarrow s'}}{\sum_{s'' \in S} C_{s \rightarrow s''}}$ where $C_{s \rightarrow s'}$ is the number of transitions from state $s$ to state $s'$.
-    \item Random initialization: Assign random probabilities to each transition $P_{s \rightarrow s'}$, such that $\sum_{s' \in S} P_{s \rightarrow s'} = 1$.
-    \item Uniform initialization: Set $P_{s \rightarrow s'} = \frac{1}{|S|}$ for all $s, s' \in S$.
-\end{itemize}
-
-\textit{Initialization emission probability distribution}:
-
-The emission matrix $\omega$ represents the probability of emitting each observation label from each hidden state.
-To estimate emission probabilities, we can use one of the following strategies:
-\begin{itemize}
-    % \item Examine the observed data: Estimate the emission probabilities based on the observed data. For example, if certain states are more likely to emit certain labels, assign higher probabilities to these emissions. 
-    % $\omega_{s, l} = \frac{C_{s, l}}{\sum_{l' \in \mathcal{L}} C_{s, l'}}$ where $C_{s, l}$ is the number of times state $s$ emits label $l$.
-    \item Random initialization: Assign random probabilities to each emission $\omega_{s, l}$, such that $\sum_{l \in \mathcal{L}} \omega_{s, l} = 1$ for all $s \in S$.
-    \item Uniform initialization: Set $\omega_{s, l} = \frac{1}{|\mathcal{L}|}$ for all $s \in S, l \in \mathcal{L}$.
-\end{itemize}
-
-We initialize the parameters using uniform initialization for the emission matrix $\omega$, the transition matrix $P$, and the initial state distribution $\pi$.
+We initialize the parameters using random initialization, as it provides a diverse set of initial values that can help avoid local optima.
+The uniform initialization is the worst choice as it provides a very limited set of initial values that can lead to local optima, and it is not recommended for practical use.
 
 These initialization strategies provide a starting point for the Baum-Welch algorithm to iteratively refine the model parameters based on the observed data.
 
@@ -174,18 +158,6 @@ These initialization strategies provide a starting point for the Baum-Welch algo
 For a given \gls{hmm} $\mathcal{M}$, the forward-backward algorithm computes the forward and backward variables, $\alpha_s(t)$ and $\beta_s(t)$, for each observation sequence $o_0, o_1, \dots, o_{|\mathbf{o}|-1} = \mathbf{o} \in \mathcal{O}$.
 The forward variable $\alpha_s(t)$ represents the likelihood of observing the partial sequence $o_0, o_1, \dots, o_t$ and being in state $s$ at time $t$, given the model $\mathcal{M}$.
 The backward variable $\beta_s(t)$ represents the likelihood of observing the partial sequence $o_{t+1}, o_{t+2}, \dots, o_{|\mathbf{o}|-1}$ given state $s$ at time $t$ and the model $\mathcal{M}$.
-
-
-% \begin{equation}
-%     \alpha_s(t) = l(o_0, o_1, \dots, o_t, S_{t} = s \mid \mathcal{M})
-%     \label{eq:alpha-recursive}
-% \end{equation}
-
-
-% \begin{equation}
-%     \beta_s(t) = l(o_{t+1}, o_{t+2}, \dots, o_{|\mathbf{o}|-1} \mid S_{t} = s, \mathcal{M})
-%     \label{eq:beta-recursive}
-% \end{equation}
 
 The forward variable $\alpha_s(t)$ and backward variable $\beta_s(t)$ can be computed recursively as follows:
 
@@ -225,7 +197,7 @@ The update step is based on the expected sufficient statistics of the latent var
 
 \subsubsection{Intermediate Variables}
 We need to calculate the intermediate variables $\gamma_s(t)$ and $\xi_{ss'}(t)$.
-$\gamma_s(t)$ represent the expected number of times the model is in state $s$ at time $t$ and $\xi_{ss'}(t)$ represent the expected number of transitions from state $s$ to state $s'$ at time $t$.
+$\gamma_s(t)$ represent the expected number of times the model is in state $s$ at time $t$ given that the sequence $O$ was observed and $\xi_{ss'}(t)$ represent the expected number of transitions from state $s$ to state $s'$ at time $t$ given that the sequence $O$ was observed.
 
 For a given \gls{hmm} $\mathcal{M}$, the intermediate variables, $\gamma_s(t)$ and $\xi_{ss'}(t)$, are computed for each observation sequence $o_0, o_1, \dots, o_{|\mathbf{o}|-1} = \mathbf{o} \in \mathcal{O}$.
 These variables are computed as follows:
@@ -302,32 +274,32 @@ The update algorithm iteratively refines the parameter values until convergence 
 %Baum-Welch with matrix operations
 The Baum-Welch algorithm can be implemented using matrix operations to efficiently compute the forward and backward variables, intermediate variables, and parameter updates.
 
-Given a \gls{hmm} $\mathcal{M}$ with parameters $\omega$, $P$, and $\pi$, and an observation sequence $\mathbf{o}$, the forward and backward variables $\alpha_t$ and $\beta_t$ can be computed using matrix operations as follows:
+Given a \gls{hmm} $\mathcal{M}$ with parameters $\pmb{\omega}$, $\pmb{P}$, and $\pmb{\pi}$, and an observation sequence $\mathbf{o}$, the forward and backward variables $\pmb{\alpha}_t$ and $\pmb{\beta}_t$ can be computed using matrix operations as follows:
 
 \begin{equation}
     \label{eq:alpha}
-    \alpha_t =
+    \pmb{\alpha}_t =
     \begin{cases}
-        \omega_0 \; \circ \; \pi   & \text{if } t = 0    \\
-        \omega_t \; \circ \; \left( {P}^\top \alpha_{t - 1} \right)   & \text{if } 0 < t \leq |\mathbf{o}|-1 \\
+        \pmb{\omega}_0 \; \circ \; \pmb{\pi}   & \text{if } t = 0    \\
+        \pmb{\omega}_t \; \circ \; \left( \pmb{P}^\top \pmb{\alpha}_{t - 1} \right)   & \text{if } 0 < t \leq |\mathbf{o}|-1 \\
     \end{cases}
 \end{equation}
 
 
 \begin{equation}
     \label{eq:beta}
-    {\beta}_t =
+    \pmb{\beta}_t =
     \begin{cases}
         \mathbbm{1} & \text{if } t = |\mathbf{o}|-1        \\
-        {P} \; ({\beta}_{t + 1} \; \circ \; {\omega}_{t + 1}) & \text{if } 0 \leq t < |\mathbf{o}|-1 \\
+        \pmb{P} \; (\pmb{\beta}_{t + 1} \; \circ \; \pmb{\omega}_{t + 1}) & \text{if } 0 \leq t < |\mathbf{o}|-1 \\
     \end{cases}
 \end{equation}
 
-Here $\circ$ represents the Hadamard (point-wise) matrix multiplication, ${P}^\top$ denotes the transpose of the matrix ${P}$, and $\mathbbm{1}$ is a column vector of ones.
-The resulting vectors ${\alpha}_t$ and ${\beta}_t$ for each time step $t$ are then related to $\alpha_s(t)$ and $\beta_s(t)$ for some $s$ by:
+Here $\circ$ represents the Hadamard (point-wise) matrix multiplication, $\pmb{P}^\top$ denotes the transpose of the matrix $\pmb{P}$, and $\mathbbm{1}$ is a column vector of ones, and $\pmb{\omega}_t$ is the coloumn vector that represents the label we are observing at time $t$ of matrix $\pmb{\omega}$.
+The resulting vectors $\pmb{\alpha}_t$ and $\pmb{\beta}_t$ for each time step $t$ are then related to $\alpha_s(t)$ and $\beta_s(t)$ for some $s$ by:
 
 \begin{align}
-{\alpha}
+\pmb{\alpha}
     _t = \begin{bmatrix}
              \alpha_{s_0}(t)       \\
              \vdots                \\
@@ -340,85 +312,105 @@ The resulting vectors ${\alpha}_t$ and ${\beta}_t$ for each time step $t$ are th
     \end{bmatrix}
 \end{align}
 
+We introduce $\pmb{\alpha}_{t i}$ and $\pmb{\beta}_{t i}$ as the combined matrix for $\alpha$ and $\beta$ respectively, $\pmb{\alpha}_t$ and $\pmb{\beta}_t$.
+\begin{equation}
+    \pmb{\alpha}_{t i} = 
+        \begin{bmatrix}
+            \alpha_{s_0t_{0}}  & \cdots & \alpha_{s_{|S|-1}t_{|\textbf{o}|-1}} \\
+            \vdots               & \ddots & \vdots                      \\
+            \alpha_{s_0t_{0}}  & \cdots & \alpha_{s_{|S|-1}t_{|\textbf{o}|-1}}
+        \end{bmatrix}
+        \text{ and }
+    \pmb{\beta}_{t i} = 
+        \begin{bmatrix}
+            \beta_{s_0t_{0}}  & \cdots & \beta_{s_{|S|-1}t_{|\textbf{o}|-1}} \\
+            \vdots               & \ddots & \vdots                      \\
+            \beta_{s_0t_{0}}  & \cdots & \beta_{s_{|S|-1}t_{|\textbf{o}|-1}}
+        \end{bmatrix}
+\end{equation}
 $\gamma$ and $\xi$ can be expressed in terms of matrix operations as follows:
 
 \begin{equation}
-{\gamma}
-    _t = (\sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \;\beta_{t i}))^{-1} \cdot \alpha_t \; \circ \; \beta_t
+\pmb{\gamma}
+    _t = (\sum_{i=1}^{|\mathbf{o}|-1} (\pmb{\alpha}_{t i} \;\pmb{\beta}_{t i}))^{-1} \cdot \pmb{\alpha}_t \; \circ \; \pmb{\beta}_t
     \label{eq:gamma-matrix}
 \end{equation}
 
 \begin{equation}
-{\xi}
-    _t = ((\sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \; \beta_{t i}))^{-1} \cdot \; {P}) \; \circ \;(\alpha_t \otimes (\beta_{t+1} \; \circ \; {\omega}_{t+1}))
+\pmb{\xi}
+    _t = ((\sum_{i=1}^{|\mathbf{o}|-1} (\pmb{\alpha}_{t i} \; \pmb{\beta}_{t i}))^{-1} \cdot \; \pmb{P}) \; \circ \;(\pmb{\alpha}_t \otimes (\pmb{\beta}_{t+1} \; \circ \; \pmb{\omega}_{t+1}))
     \label{eq:xi-matrix}
 \end{equation}
 
 Here $\otimes$ represents the Kronecker (block) matrix multiplication, $\cdot$ denotes the scalar product and $^{-1}$ denotes the elementwise inverse of a matrix.
 
-We can simplify $\sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \beta_{t i})$ as, the sum does not depend on $t$:
+We can simplify $\sum_{i=1}^{|\mathbf{o}|-1} (\pmb{\alpha}_{t i} \pmb{\beta}_{t i})$ as, the sum does not depend on $t$:
 
 \begin{align}
-    \sum_{i=1}^{|\mathbf{o}|-1} (\alpha_{t i} \; \beta_{t i}) &= \sum_{i=1}^{|\mathbf{o}|-1} \alpha_{|\mathbf{o}|-1 i} \\
-    &= \mathbbm{1}^T \; \alpha_{|\mathbf{o}|-1}
+    \sum_{i=1}^{|\mathbf{o}|-1} (\pmb{\alpha}_{t i} \; \pmb{\beta}_{t i}) &= \sum_{i=1}^{|\mathbf{o}|-1} \pmb{\alpha}_{|\mathbf{o}|-1 i} \\
+    &= \mathbbm{1}^T \; \pmb{\alpha}_{|\mathbf{o}|-1}
 \end{align}
 
-Here $\mathbbm{1}^T$ is a row vector of ones, and $\alpha_{|\mathbf{o}|-1}$ is the last column of the matrix ${\alpha_t}_{T \;\in 0\dots|\mathbf{o}|-1}$.
+Here $\mathbbm{1}^T$ is a row vector of ones, and $\pmb{\alpha}_{|\mathbf{o}|-1}$ is the last column of the matrix $\pmb{\alpha}_{ti}$.
 
 So we get:
 
 \begin{equation}
-{\gamma}
-    _t = (\mathbbm{1}^T \; \alpha_{|\mathbf{o}|-1})^{-1} \cdot \alpha_t \; \circ \; \beta_t
+\pmb{\gamma}
+    _t = (\mathbbm{1}^T \; \pmb{\alpha}_{|\mathbf{o}|-1})^{-1} \cdot \pmb{\alpha}_t \; \circ \; \pmb{\beta}_t
     \label{eq:gamma-matrix-ones}
 \end{equation}
 
 \begin{equation}
-{\xi}
-    _t = ((\mathbbm{1}^T \; \alpha_{|\mathbf{o}|-1})^{-1} \cdot \; {P}) \; \circ \;(\alpha_t \otimes (\beta_{t+1} \; \circ \; {\omega}_{t+1}))
+\pmb{\xi}
+    _t = ((\mathbbm{1}^T \; \pmb{\alpha}_{|\mathbf{o}|-1})^{-1} \cdot \; \pmb{P}) \; \circ \;(\pmb{\alpha}_t \otimes (\pmb{\beta}_{t+1} \; \circ \; \pmb{\omega}_{t+1}))
     \label{eq:xi-matrix-ones}
 \end{equation}
 
-The resulting vectors ${\gamma}_t$ and ${\xi}_t$ for each time step $t$ are then related to $\gamma_s(t)$ and $\xi_{ss'}(t)$ for some $s, s'$ by:
+The resulting vectors $\pmb{\gamma}_t$ and $\pmb{\xi}_t$ for each time step $t$ are then related to $\gamma_s(t)$ and $\xi_{ss'}(t)$ for some $s, s'$ by:
 
 \begin{align}
-{\gamma}
-    _t = \begin{bmatrix}
-             \gamma_{s_0}(t)       \\
-             \vdots                \\
-             \gamma_{s_{|S|-1}}(t) \\
+\pmb{\gamma}_t = 
+    \begin{bmatrix}
+        \gamma_{s_0}(t)       \\
+        \vdots                \\
+        \gamma_{s_{|S|-1}}(t) \\
     \end{bmatrix}, \;
-    {\xi}_t = \begin{bmatrix}
-                  \xi_{s_0 s_0}(t)      & \cdots & \xi_{s_0 s_{|S|-1}}(t)      \\
-                  \vdots                & \ddots & \vdots                      \\
-                  \xi_{s_{|S|-1}s_0}(t) & \cdots & \xi_{s_{|S|-1}s_{|S|-1}}(t) \\
+\pmb{\xi}_t = 
+    \begin{bmatrix}
+        \xi_{s_0 s_0}(t)      & \cdots & \xi_{s_0 s_{|S|-1}}(t)      \\
+        \vdots                & \ddots & \vdots                      \\
+        \xi_{s_{|S|-1}s_0}(t) & \cdots & \xi_{s_{|S|-1}s_{|S|-1}}(t) \\
     \end{bmatrix}
 \end{align}
 
 We can update the parameters with matrix operations as follows:
 
 \begin{equation}
-{P}
-    = (\mathbbm{1} \oslash \gamma) \bullet \xi
+\pmb{P}
+    = (\mathbbm{1} \oslash \pmb{\gamma}) \bullet \pmb{\xi}
     \label{eq:transition-probabilities-update}
 \end{equation}
 
 \begin{equation}
-{\omega}
-    _s(o) = (\mathbbm{1} \oslash \gamma) \bullet (\sum_{t=1}^{|\mathbf{o}|-1} \gamma_t \otimes \mathbbm{1}_{yt}^{|\mathbf{o}|-1})
+\pmb{\omega}
+    _s(o) = (\mathbbm{1} \oslash \pmb{\gamma}) \bullet (\sum_{t=1}^{|\mathbf{o}|-1} \pmb{\gamma}_t \otimes \mathbbm{1}_{yt}^{|\mathbf{o}|-1})
     \label{eq:omega-update}
 \end{equation}
 
 \begin{equation}
-{\pi}
-    = {\gamma}_1
+\pmb{\pi}
+    = \pmb{\gamma}_1
     \label{eq:initial-probabilities-update}
 \end{equation}
 
 Where $\oslash$ denotes Hadamard division (elementwise division) product and $\bullet$ denotes the Katri-Rao product (column-wise Kronecker product).
-In the formulas above, $\mathbbm{1}$ denotes a column vector of ones, $\mathbbm{1}_{yt}$ denotes a row vector of ones, $\gamma$ and $\xi$ are the sum of the respective vectors over all time steps $t$:
+In the formulas above, $\mathbbm{1}$ denotes a column vector of ones, $\mathbbm{1}_{yt}$ denotes a column vector that is $|\mathcal{L}|$ long, with all elements set to zero except for the element at index where $o_t = l$ which is set to one.
+
+$\gamma$ and $\xi$ are the sum of the respective vectors over all time steps $t$:
 \begin{align}
-    \gamma = \sum_{t=1}^{|\mathbf{o}|-1} \gamma_t, \;
-    \xi = \sum_{t=1}^{|\mathbf{o}|-1} \xi_t
+    \pmb{\gamma} = \sum_{t=1}^{|\mathbf{o}|-1} \pmb{\gamma}_t 
+    \text{ and } 
+    \pmb{\xi} = \sum_{t=1}^{|\mathbf{o}|-1} \pmb{\xi}_t
 \end{align} 
 
