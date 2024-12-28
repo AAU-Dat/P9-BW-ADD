@@ -129,7 +129,7 @@ Before starting the Baum-Welch algorithm, we need to initialize the model parame
 Since the algorithm is designed to converge iteratively toward a locally optimal parameter set, the initial estimates do not need to be exact.
 However, reasonable initialization can accelerate convergence and improve numerical stability~\cite{benyacoub2015initial}.
 
-As we are working with \glspl{hmm} we dont have any prior knowledge of the model parameters.
+As we work with models that we have no prior knowledge of, meaning we dont know the number of observations, or what states that generated the observations, we cannot initialize th model parameters based on some domain knowledge.
 Therefore we need to initialize the parameters based on some strategy. 
 A common approach to initialize these parameters is as one of the following strategies:
 

@@ -16,16 +16,17 @@ Their hierarchical structure supports compact, symbolic representations and effi
 
 Advantages of \glspl{add}:
 \begin{itemize}
-\item Compact Representation: Reduces memory usage by capturing redundancies.
-\item Canonical Form: Simplifies equivalence checking and ensures consistency.
-\item Efficient Symbolic Operations: Enables scalable handling of complex models.
+\item Compact Representation: \glspl{add} exploit redundancies in data, providing a compact representation for many functions. Shared subgraphs reduce memory usage, especially when storing large, structured data, such as matrices.
+\item Canonical Form: For a fixed variable ordering, \glspl{add} are canonical. This property simplifies equivalence checking and ensures consistency in symbolic manipulations.
+\item Efficient Operations: Operations such as addition and multiplication can be performed directly on \glspl{add}, often avoiding explicit enumeration of the underlying data.
 \end{itemize}
+
 
 Disadvantages of \glspl{add}:
 \begin{itemize}
-\item Variable Ordering Sensitivity: Poor ordering can increase size significantly.
-\item Construction Overhead: Higher setup cost compared to simpler structures.
-\item Limited Efficiency for Dense or Random Data: Performs poorly on unstructured data.
+\item Variable Ordering Sensitivity: The size and efficiency of \glspl{add} depend heavily on the chosen variable ordering. A suboptimal ordering can lead to exponentially larger diagrams, reducing performance.
+\item Overhead in Construction: Constructing an \gls{add} involves significant overhead compared to simpler data structures like arrays or hash tables, particularly for small datasets, where the benefits of compactness may not be realized.
+\item Complexity for Certain Functions: While \glspl{add} work well for structured data, highly unstructured or random data can result in large, inefficient diagrams. In such cases, other data structures may be more suitable.
 \end{itemize}
 
 \glspl{add} can symbolically encode row and column indices as binary variables, enabling efficient storage and manipulation of matrix data.
