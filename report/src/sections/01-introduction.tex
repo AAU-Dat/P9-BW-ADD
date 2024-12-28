@@ -39,10 +39,29 @@ This makes the algorithm computationally expensive for large models, as the memo
 Addressing these challenges requires innovative techniques, such as symbolic representations, which reduce memory consumption while preserving accuracy.
 
 \subsection{Related Works}\label{subsec:related-works}
-Jajapy~\cite{reynouard2023jajapy} is a Python-based tool designed for estimating parameters in parametric models using the Baum-Welch algorithm.
-It employs a matrix representation of the model and implements the necessary operations for parameter estimation through standard matrix computations.
+%PRISM
+PRISM~\cite{kwiatkowska2011prism} is a widely used probabilistic model checker designed to verify the correctness of Markov models.
+PRISM has developed a language for specifying models and properties, called the PRISM Language, which is widely used in the field of probabilistic model checking.
 
-While accessible and straightforward, Jajapy is hindered by the space complexity inherent in its recursive-based calculation.
+When models are specified in the PRISM Language, PRISM can provide a symbolic representation such as \glspl{add} to represent and manipulate the models efficiently, enabling the verification of properties like reachability and safety.
+
+However, PRISM does not support parameter estimation, making it unsuitable for tasks requiring the inference of model parameters from observed data.
+
+%Storm
+Storm~\cite{hensel2021probabilistic} is another state-of-the-art probabilistic model checker that shares many similarities with PRISM.
+Like PRISM, it can provide a symbolic representations to handle large models efficiently and focuses on verifying properties of Markov models.
+
+It has a parser to read models specified in the PRISM Language, making it easy to use for users familiar with PRISM.
+Storm has been optimized for scalability and flexibility, supporting a wide range of model types and verification tasks.
+
+Additionally, Storm is open-source and has a large user base, making it a popular choice for probabilistic model checking.
+Despite these strengths, Storm also lacks support for parameter estimation, limiting its utility for learning model parameters from data.
+
+%Jajapy
+Jajapy~\cite{reynouard2023jajapy} is a Python-based tool designed for estimating parameters in parametric models using the Baum-Welch algorithm.
+It employs a matrix representation of the model and implements the necessary operations for parameter estimation through standard matrix computations without standard matrix libraries.
+
+While accessible and straightforward, Jajapy is hindered by the space complexity inherent in its iterative-based calculation.
 This limitation makes it computationally expensive for large-scale models, as memory requirements grow quadratically with the number of states in the system.
 
 %P7 - what is it, what does it do, what are the limitations
@@ -52,24 +71,22 @@ By employing \gls{add}-based computations, SUDD provides a significant improveme
 
 However, the implementation is limited to a subset of the Baum-Welch algorithm, focusing primarily on forward-backward computations without addressing the full parameter estimation process.
 
-In this paper, we extend the work of SUDD by utilizing \glspl{add} to represent the full Baum-Welch algorithm.
-Our approach not only inherits the scalability benefits of \glspl{add} but also implements the complete parameter estimation process.
-Additionally, we compare our implementation with both the original Jajapy, SUDD and an extended version of SUDD using the log-semiring framework, which improves numerical stability in computations.
-
-PRISM~\cite{kwiatkowska2011prism} is a widely used probabilistic model checker designed to verify the correctness of Markov models.
-It employs symbolic representations such as \glspl{add} to efficiently represent and manipulate large-scale models, enabling the verification of properties like reachability and safety.
-
-For example, PRISM can determine whether a traffic light system will always cycle back to green after being red or verify that conflicting light signals are avoided.
-However, PRISM does not support parameter estimation, limiting its use to model verification rather than learning the parameters required for accurate system predictions.
-
-Storm~\cite{hensel2021probabilistic} is another state-of-the-art probabilistic model checker that shares many similarities with PRISM\@.
-Like PRISM, it uses symbolic representations to handle large models efficiently and focuses on verifying properties of Markov models.
-Storm has been optimized for scalability and flexibility, supporting a wide range of model types and verification tasks.
-Despite these strengths, Storm also lacks support for parameter estimation, making it unsuitable for tasks requiring the inference of model parameters from observed data.
+Also the update step in the Baum-Welch algorithm requires SUDD with an explicit state space representation of the model, which limits the scalability of the algorithm.
 
 Our work bridges the gap between parameter estimation tools (e.g.\ Jajapy and SUDD) and model checking tools (e.g.\ PRISM and Storm).
-By integrating scalable symbolic representations into the full Baum-Welch algorithm, we provide a method that not only estimates parameters efficiently but also enables the accurate modeling of complex systems.
+We do this by extending Storm by integrating the Baum-Welch algorithm for with symbolic representations to improve the runtime performance of parameter estimation for Markov models primarily \glspl{hmm}.
+
 This integration of parameter learning with symbolic computation addresses a critical limitation in the current landscape of tools for Markov models.
+As a result, Storm can now be used to estimate parameters for \glspl{hmm} from data, enabling the accurate modeling of complex systems.
+
+%In this paper, we extend the work of SUDD by utilizing \glspl{add} in all the steps of the Baum-Welch algorithm to improve the runtime performance of parameter estimation for \gls{hmm}.
+%Our approach is to extend Storm with parameter estimation capabilities, by integrating the Baum-Welch algorithm with symbolic representations to improve the runtime performance of parameter estimation for \glspl{hmm}.
+
+
+% Our approach not only inherits the scalability benefits of \glspl{add} but also implements the complete parameter estimation process.
+% Additionally, we compare our implementation with both the original Jajapy, SUDD and an extended version of SUDD using the log-semiring framework, which improves numerical stability in computations.
+
+%By integrating scalable symbolic representations into the full Baum-Welch algorithm, we provide a method that not only estimates parameters efficiently but also enables the accurate modeling of complex systems.
 
 
 %Model checking
