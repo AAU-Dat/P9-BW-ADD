@@ -72,25 +72,10 @@ The sum of all elements in $\pmb{\pi}$ is equal to one, reflecting the fact that
 \]
 
 \subsection{Observations and Hidden States}\label{subsec:observations-hidden-states}
+An \gls{hmm} gives rise to observations, based its execution.
+A multiset of observations, denoted as  $\mathcal{O} = {O_1, O_2, \ldots, O_N}$, where each $O_i$ is an observation sequence of labels $\mathbf{O} = o_1, o_2, \ldots, o_{|\mathbf{O}|-1}$, can be used to estimate the parameters of the \gls{hmm} using the \gls{bw} algorithm.
 
-
-%% TODO: Add description of paths, observations, sequences of labels, and Giovannis comment on The Baum Welch Algorithm.
-
-
-
-An \gls{hmm} operates on a multiset of observations, denoted as  $\mathcal{O} = {O_1, O_2, \ldots, O_N}$, where each $O_i$ is a observation sequence of labels $\mathbf{O} = o_1, o_2, \ldots, o_{|\mathbf{O}|-1}$.
-
-
-
-
-%The task is to infer the sequence of hidden states $S = s_1, s_2, \ldots, s_{|\mathbf{O}|-1}$ that most likely generated these observations.
-
-%This involves maximizing the probability of the hidden states $S$ conditioned on the observed sequence $O$.
-%In essence, the observations are the labels for which we seek the corresponding hidden state sequence, representing the most probable path that generated these observations.
-
-This problem is commonly approximated using the Baum-Welch algorithm, a widely used method for estimating the probabilities of an \gls{hmm} and finding the most likely hidden state sequence.
-
-%Baum-Welch for HMM mathamatically
+By parameters of the \gls{hmm} is meant the emission function, transition function, and initial distribution.
 
 \subsection{The Baum-Welch Algorithm}\label{subsec:baum-welch}
 The Baum-Welch algorithm is a fundamental method for estimating the parameters of a \gls{hmm} given a sequence of observations.
@@ -108,8 +93,8 @@ It consists of the following steps:
     \item \textbf{Iteration:} Repeat the E-step and M-step until convergence, i.e., when the change in likelihood between iterations falls below a predefined threshold.
 \end{enumerate}
 
-The Baum Welch algorithm seeks to estimate the parameters $\tau$, $\pi$, and $\omega$ of a \gls{hmm} model $\mathcal{M}$ so that it maximises the likelihood function $l(\mathcal{M} | O)$.
-That is, the probability that the \gls{hmm} $\mathcal{M}$ has independently generated each observation sequence $O_1, \ldots, O_N$. 
+The Baum Welch algorithm seeks to estimate the parameters $\tau$, $\pi$, and $\omega$ of a \gls{hmm} model $\mathcal{M}$ so that it maximizes the likelihood function $l(\mathcal{M} | O)$.
+That is, the probability that the \gls{hmm} $\mathcal{M}$ has independently generated each observation sequence $O_1, \ldots, O_N$.
 
 Starting with an initial hypothesis $\textbf{x}_0 = (\pi, P, \omega)$, the algorithm produces a sequence of parameter estimates $\textbf{x}_1, \textbf{x}_2, \ldots$, where each new estimate improves upon the previous one.
 The process terminates when the improvement in likelihood is sufficiently small, satisfying the convergence criterion:
@@ -129,8 +114,8 @@ Before starting the Baum-Welch algorithm, we need to initialize the model parame
 Since the algorithm is designed to converge iteratively toward a locally optimal parameter set, the initial estimates do not need to be exact.
 However, reasonable initialization can accelerate convergence and improve numerical stability~\cite{benyacoub2015initial}.
 
-As we work with models that we have no prior knowledge of, meaning we dont know the number of observations, or what states that generated the observations, we cannot initialize th model parameters based on some domain knowledge.
-Therefore we need to initialize the parameters based on some strategy. 
+As we work with models that we have no prior knowledge of, meaning we don't know the number of observations, or what states that generated the observations, we cannot initialize th model parameters based on some domain knowledge.
+Therefore, we need to initialize the parameters based on some strategy.
 A common approach to initialize these parameters is as one of the following strategies:
 
 \begin{enumerate}
@@ -295,7 +280,7 @@ Given a \gls{hmm} $\mathcal{M}$ with parameters $\pmb{\omega}$, $\pmb{P}$, and $
     \end{cases}
 \end{equation}
 
-Here $\circ$ represents the Hadamard (point-wise) matrix multiplication, $\pmb{P}^\top$ denotes the transpose of the matrix $\pmb{P}$, and $\mathbbm{1}$ is a column vector of ones, and $\pmb{\omega}_t$ is the coloumn vector that represents the label we are observing at time $t$ of matrix $\pmb{\omega}$.
+Here $\circ$ represents the Hadamard (point-wise) matrix multiplication, $\pmb{P}^\top$ denotes the transpose of the matrix $\pmb{P}$, and $\mathbbm{1}$ is a column vector of ones, and $\pmb{\omega}_t$ is the column vector that represents the label we are observing at time $t$ of matrix $\pmb{\omega}$.
 The resulting vectors $\pmb{\alpha}_t$ and $\pmb{\beta}_t$ for each time step $t$ are then related to $\alpha_s(t)$ and $\beta_s(t)$ for some $s$ by:
 
 \begin{align}
@@ -313,21 +298,23 @@ The resulting vectors $\pmb{\alpha}_t$ and $\pmb{\beta}_t$ for each time step $t
 \end{align}
 
 We introduce $\pmb{\alpha}_{t i}$ and $\pmb{\beta}_{t i}$ as the combined matrix for $\alpha$ and $\beta$ respectively, $\pmb{\alpha}_t$ and $\pmb{\beta}_t$.
+
 \begin{equation}
     \pmb{\alpha}_{t i} = 
         \begin{bmatrix}
-            \alpha_{s_0t_{0}}  & \cdots & \alpha_{s_{|S|-1}t_{|\textbf{o}|-1}} \\
+            \alpha_{s_0 t_{0}}  & \cdots & \alpha_{s_{|S|-1}t_{|\textbf{o}|-1}} \\
             \vdots               & \ddots & \vdots                      \\
-            \alpha_{s_0t_{0}}  & \cdots & \alpha_{s_{|S|-1}t_{|\textbf{o}|-1}}
+            \alpha_{s_0 t_{0}}  & \cdots & \alpha_{s_{|S|-1}t_{|\textbf{o}|-1}}
         \end{bmatrix}
         \text{ and }
     \pmb{\beta}_{t i} = 
         \begin{bmatrix}
-            \beta_{s_0t_{0}}  & \cdots & \beta_{s_{|S|-1}t_{|\textbf{o}|-1}} \\
+            \beta_{s_0 t_{0}}  & \cdots & \beta_{s_{|S|-1}t_{|\textbf{o}|-1}} \\
             \vdots               & \ddots & \vdots                      \\
-            \beta_{s_0t_{0}}  & \cdots & \beta_{s_{|S|-1}t_{|\textbf{o}|-1}}
-        \end{bmatrix}
+            \beta_{s_0 t_{0}}  & \cdots & \beta_{s_{|S|-1}t_{|\textbf{o}|-1}}
+        \end{bmatrix}\label{eq:forward-backward-matrix}
 \end{equation}
+
 $\gamma$ and $\xi$ can be expressed in terms of matrix operations as follows:
 
 \begin{equation}
