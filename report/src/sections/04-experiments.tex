@@ -1,5 +1,5 @@
 \section{Experiments}\label{sec:experiments}
-In this section, we describe the experiment conducted to evaluate the proposed symbolic implementation of the Baum-Welch algorithm in CuPAAL.
+This section describes the experiment to evaluate the proposed symbolic implementation of the Baum-Welch algorithm in CuPAAL.
 The experiment is designed to compare CuPAAL with two other implementations: Jajapy, the original matrix-based implementation, and SUDD, a hybrid symbolic and matrix-based implementation.
 The experiment is conducted to answer the following research question:
 
@@ -10,8 +10,8 @@ The experiment is conducted to answer the following research question:
 This question evaluates the computational efficiency of the symbolic implementation in CuPAAL. The insights gained will highlight the strengths and potential trade-offs of symbolic approaches to the Baum-Welch algorithm.
 
 \subsection{Experimental Setup}
-The experiment evaluates how each implementation scales with an increasing number of model states. We conduct a single experiment to evaluate the proposed method.
-The experiment is conducted on a machine with the specifications shown in Table \ref{tab:machine-specs}. 
+The experiment evaluates how each implementation scales with increasing the model states. We conduct a single experiment to evaluate the proposed method.
+The experiment is conducted on a machine with the specifications in \autoref{tab:machine-specs}. 
 \begin{table}
 \centering
 \caption{Machine Specifications from AAU Strato}
@@ -34,11 +34,11 @@ We use the following implementations for comparison:
 \item \textbf{CuPAAL}: The fully symbolic implementation proposed in this work.
 \end{itemize}
 
-The chosen implementations represent a progression from fully matrix-based to fully symbolic approaches, providing a comprehensive comparison of methodologies.
+The chosen implementations progress from fully matrix-based to fully symbolic approaches, providing a comprehensive comparison of methodologies.
 
 \subsection{Experiment dataset}
-The experiment uses synthetic datasets, The dataset has 5 different labels \{"A", "B", "C", "D", "E"\} and the same obserbation sequence for all runs of the experiment. 
-We use 10 observations sequences of length 10.
+The experiment uses synthetic datasets; The dataset has five different labels \{"A", "B", "C", "D", "E"\} and the same observation sequence for all runs of the experiment. 
+We use 10 observation sequences of length 10.
 The number of states in the model is varied from 20 to 1020, with increments of 100 states.
 The initial model is generated with random parameters, and the observation sequence is consistent across all runs.
 All implementations are tested on the same dataset to ensure fair comparison.
