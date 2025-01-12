@@ -103,7 +103,7 @@ The Baum-Welch algorithm is a fundamental method for estimating the parameters o
 These parameters include the emission matrix $\omega$, the transition matrix $P$, and the initial state distribution $\pi$.
 The algorithm is widely recognized as the standard approach for training \glspl{hmm} and was chosen for this project because it can estimate these parameters without prior knowledge of the hidden states that generated the observations.
 
-The Baum-Welch algorithm applies the Expectation-Maximization (EM) framework to iteratively improve the likelihood of the observed data under the current model parameters.
+The Baum-Welch algorithm applies the Expectation-Maximization (EM) framework to iteratively improve the likelihood of the observed data under the current model parameters. It does so untill it reaches a set convergence value, which indicates how much the model improves after each iteration.
 It consists of the following steps:
 
 \begin{enumerate}
