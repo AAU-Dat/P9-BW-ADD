@@ -1,6 +1,6 @@
 \section{Experiments}\label{sec:experiments}
 This section describes the experiment to evaluate the proposed symbolic implementation of the Baum-Welch algorithm in CuPAAL.
-The experiment is designed to compare CuPAAL with two other implementations: Jajapy, the original matrix-based implementation, and SUDD, a hybrid symbolic and matrix-based implementation.
+The experiment is designed to compare CuPAAL with one other implementation: Jajapy, the original matrix-based implementation.
 The experiment is conducted to answer the following research question:
 
 \begin{itemize}
@@ -10,7 +10,7 @@ The experiment is conducted to answer the following research question:
 This question evaluates the computational efficiency of the symbolic implementation in CuPAAL. The insights gained will highlight the strengths and potential trade-offs of symbolic approaches to the Baum-Welch algorithm.
 
 \subsection{Experimental Setup}
-The experiment evaluates how each implementation scales with increasing the model states. We conduct a single experiment to evaluate the proposed method.
+The experiment evaluates how each implementation scales with increasing model states. We conduct a single experiment to evaluate the proposed method.
 The experiment is conducted on a machine with the specifications in \autoref{tab:machine-specs}. 
 \begin{table}
 \centering
@@ -41,6 +41,8 @@ The experiment uses synthetic datasets; The dataset has five different labels \{
 We use 10 observation sequences of length 10.
 The number of states in the model is varied from 20 to 1020, with increments of 100 states.
 The initial model is generated with random parameters, and the observation sequence is consistent across all runs.
+The model always starts in the same initial state, and the transition matrix and emission matrix are generated randomly.
+Where the emission matrix is generated such that one state can emit max three different labels.
 All implementations are tested on the same dataset to ensure fair comparison.
 
 \subsection{Experimental Procedure}
@@ -62,5 +64,12 @@ Results will be visualized using plots to illustrate trends and highlight differ
 The runtime is the primary evaluation metric, as it directly reflects the computational efficiency of each implementation when handling larger models. By plotting runtime against the number of states, we aim to identify patterns and scalability limits for each approach.
 
 \subsection{Reproducibility}
-To ensure reproducibility, all datasets, source code, and experiment configurations will is publicly available~\cite{p7}\footnote{The specific link \url{https://github.com/AAU-Dat/P7-sudd/blob/P9-experiments/scaling_experiment.py}}. 
+To ensure reproducibility, all datasets, source code, and experiment configurations will is publicly available in the reposetory here~\cite{p7}\footnote{The specific link \url{https://github.com/AAU-Dat/P7-sudd/blob/P9-experiments/scaling_experiment.py}}. 
 Hardware specifications and software dependencies are documented to facilitate replication.
+
+\begin{figure}
+    \centering
+    \input{figures/scalability_graph.tex}
+    \caption{Scalability of Baum-Welch Implementations}
+    \label{fig:scalability}
+\end{figure}
