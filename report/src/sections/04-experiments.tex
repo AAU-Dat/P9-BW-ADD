@@ -63,6 +63,10 @@ Results will be visualized using plots to illustrate trends and highlight differ
 \subsection{Discussion of Metrics and Methods}
 The runtime is the primary evaluation metric, as it directly reflects the computational efficiency of each implementation when handling larger models. By plotting runtime against the number of states, we aim to identify patterns and scalability limits for each approach.
 
+We wanted to track the memory consumption of the implementations, as this is a critical factor in the scalability of the Baum-Welch algorithm, and symbolic approaches are expected to be more memory-efficient.
+However, tracking memory consumption in the CuPAAL implementation is challenging due to the use of the CUDD library.
+As a result, we focus on runtime as the primary metric, as it provides a clear and comparable measure of computational efficiency.
+
 \subsection{Reproducibility}
 To ensure reproducibility, all datasets, source code, and experiment configurations will is publicly available in the reposetory here~\cite{p7}\footnote{The specific link \url{https://github.com/AAU-Dat/P7-sudd/blob/P9-experiments/scaling_experiment.py}}. 
 Hardware specifications and software dependencies are documented to facilitate replication.
