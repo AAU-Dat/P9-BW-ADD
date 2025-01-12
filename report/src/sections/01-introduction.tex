@@ -28,14 +28,14 @@ The results demonstrate the feasibility of handling large-scale models with impr
 
 \subsection{Related Works}\label{subsec:related-works}
 Several tools have been developed for parameter estimation in Markov models. 
-Jajapy is a Python-based tool that uses the Baum-Welch algorithm to estimate parameters in various models, including \glspl{hmm}. 
+Jajapy is a Python-based tool that uses the Baum-Welch algorithm to estimate parameters in various models, including \glspl{hmm}~\cite{reynouard2023jajapy}. 
 It employs a matrix representation of the model and implements the necessary operations for parameter estimation through standard matrix computations without standard matrix libraries.
 
 While accessible and straightforward, Jajapy is hindered by the space complexity inherent in its iterative-based calculation.
 This limitation makes it computationally expensive for large-scale models, as memory requirements grow quadratically with the number of states in the system.
 While versatile, Jajapy relies on matrix representations, resulting in quadratic space complexity, which limits its scalability for large models.
 
-SUDD builds upon the limitations of Jajapy by introducing a symbolic representation for the forward-backward algorithm for calculating \glspl{pctmc}.
+SUDD builds upon the limitations of Jajapy by introducing a symbolic representation for the forward-backward algorithm for calculating \glspl{pctmc}~\cite{p7}.
 Specifically, it leverages \glspl{add} to reduce memory consumption and improve the runtime performance of the Baum-Welch algorithm.
 By employing \gls{add}-based computations, SUDD significantly improves scalability, making it feasible to handle larger models.
 
