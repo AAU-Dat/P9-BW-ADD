@@ -1,86 +1,75 @@
 \section{Experiments}\label{sec:experiments}
-In this section, we describe the experiments conducted to evaluate the proposed symbolic implementation of the Baum-Welch algorithm in CuPAAL. 
-The experiments are designed to compare CuPAAL with two other implementations: Jajapy, the original matrix-based implementation, and SUDD, a hybrid symbolic and matrix-based implementation.
-The experiments are conducted to answer the following research questions:
+This section describes the experiment to evaluate the proposed symbolic implementation of the Baum-Welch algorithm in CuPAAL.
+The experiment is designed to compare CuPAAL with one other implementation: Jajapy, the original matrix-based implementation.
+The experiment is conducted to answer the following research question:
 
 \begin{itemize}
-    \item \textbf{Question 1:} How does the symbolic CuPAAL implementation compare to Jajapy and SUDD in terms of parameter estimation accuracy and runtime?
-    \item \textbf{Question 2:} How does the scalability of the symbolic CuPAAL implementation compare to Jajapy and SUDD as the number of model states increases?
+\item \textbf{Question:} How does the scalability of the symbolic CuPAAL implementation compare to Jajapy and SUDD as the number of model states increases?
 \end{itemize}
 
-These questions evaluate both the computational efficiency and accuracy of the symbolic implementation in CuPAAL. The insights gained will highlight the strengths and potential trade-offs of symbolic approaches to the Baum-Welch algorithm.
+This question evaluates the computational efficiency of the symbolic implementation in CuPAAL. The insights gained will highlight the strengths and potential trade-offs of symbolic approaches to the Baum-Welch algorithm.
 
 \subsection{Experimental Setup}
-Two experiments are conducted to address the research questions.
+The experiment evaluates how each implementation scales with increasing model states. We conduct a single experiment to evaluate the proposed method.
+The experiment is conducted on a machine with the specifications in \autoref{tab:machine-specs}. 
+\begin{table}
+\centering
+\caption{Machine Specifications from AAU Strato}
+\label{tab:machine-specs}
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Component} & \textbf{Specification} \\
+        \midrule
+        CPU & AMD EPYC 16-core \\
+        RAM & 64 GB \\
+        DISK & 50 GB \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
-\textbf{Experiment 1: Parameter Estimation Accuracy.} This experiment compares the runtime, parameter estimation accuracy, and convergence properties of the Baum-Welch implementations.
+We use the following implementations for comparison:
 
-\textbf{Experiment 2: Scalability.} This experiment evaluates how each implementation scales with an increasing number of model states.
-We conduct two experiments to evaluate the proposed method.
-
-All experiments are conducted on a machine with INSERT\_SPECS\_FOR\_MACHINE\_HERE.
-The experiments are all run 10 times to ensure consitency, with the results averaged to account for any variance in runtime and estimation accuracy.
-We use the following implementations for the experiments:
 \begin{itemize}
-    \item \textbf{Jajapy}: The original implementation of the Baum-Welch algorithm~\cite{reynouard2023jajapy}.
-    \item \textbf{SUDD}: The SUDD implementation of the Baum-Welch algorithm~\cite{p7}.
-    \item \textbf{SUDD\_log}: The SUDD implementation of the Baum-Welch algorithm using a logsemiring for numerical stability.
-    \item \textbf{CuPAAL}: The symbolic implementation of the Baum-Welch algorithm proposed in the paper.
+\item \textbf{Jajapy}: A matrix-based implementation of the Baum-Welch algorithm \cite{reynouard2023jajapy}.
+\item \textbf{CuPAAL}: The fully symbolic implementation proposed in this work.
 \end{itemize}
 
-The chosen implementations represent a progression from fully matrix-based to hybrid, to fully symbolic approaches, providing a comprehensive comparison of methodologies.
+The chosen implementations progress from fully matrix-based to fully symbolic approaches, providing a comprehensive comparison of methodologies.
 
-\subsection{Experiment 1: Parameter Estimation Accuracy}
-The first experiment measures runtime, accuracy, and convergence properties of the Baum-Welch algorithm across implementations.
-We use the following models for the experiment:
-\begin{itemize}
-    \item FIND THE MODELS USED IN THE EXPERIMENT HERE
-\end{itemize} 
-We generate observation sequences from each model and use the Baum-Welch algorithm to estimate the parameters of the model. 
-We make 100 observations with a sequence length of 30 for each model.
+\subsection{Experiment dataset}
+The experiment uses synthetic datasets; The dataset has five different labels \{"A", "B", "C", "D", "E"\} and the same observation sequence for all runs of the experiment. 
+We use 10 observation sequences of length 10.
+The number of states in the model is varied from 20 to 1020, with increments of 100 states.
+The initial model is generated with random parameters, and the observation sequence is consistent across all runs.
+The model always starts in the same initial state, and the transition matrix and emission matrix are generated randomly.
+Where the emission matrix is generated such that one state can emit max three different labels.
+All implementations are tested on the same dataset to ensure fair comparison.
 
-The experiment is made with the following steps:
-\begin{enumerate}
-    \item Load the model.
-    \item Generate an observation sequence from the model.
-    \item Generate initial parameters.
-    \item Use each implementation of the Baum-Welch algorithm to estimate model parameters, recording parameter estimates and runtime.
-    \item Repeat steps 2 to 4 ten times, averaging results.
-    \item Compare the estimated parameters with the true parameters.
-\end{enumerate}
-All the implementations are tested with the same observation sequences and initial parameters to ensure a fairness.
-
-We use the following evaluation metrics to compare the Baum-Welch implementations:
-\begin{itemize}
-    \item \textbf{Relative parameter error}: Accuracy of the estimated parameters compared to the true parameters.
-    Calculated as $\frac{|r - e|}{e}$, where $r$ is the real parameter and $e$ is the expected value of the parameter.
-    \item \textbf{Relative formula error}: Accuracy of the estimated formulas using Storm by providing estimated parameters and checking the formula error.
-    \item \textbf{Runtime}: Total computation time for parameter estimation.
-    \item \textbf{Iterations}: The number of iterations required to converge.
-\end{itemize}
-
-We use the relative parameter error and relative formula error to compare the accuracy of the estimated parameters and formulas across implementations, this will give us an idea of how accurate the Baum-Welch algorithm is in each implementation.
-
-We use the runtime to compare the computational efficiency of the Baum-Welch algorithm across implementations.
-We use the number of iterations to ensure that all implementations have converged to the same solution, meaning that the comparison is fair.
-
-The results are presented in tables to facilitate a direct comparison of performance across models and between implementations.
-
-\subsection{Scalability experiment}
-The second experiment assesses scalability by increasing the number of states in a model \textit{MODEL NAME HERE} from 2 to 10,000. 
-Observation sequences are generated with the same settings as Experiment 1, and the process is repeated as follows:
+\subsection{Experimental Procedure}
+The experiment assesses how the runtime of each implementation changes as the number of states in a synthetic model increases from 20 to 1020. 
+The process is repeated as follows:
 
 \begin{enumerate}
-    \item Load the model.
-    \item Generate an observation sequence from the model.
-    \item Generate initial parameters.
-    \item Use each implementation of the Baum-Welch algorithm to estimate model parameters, recording runtime.
-    \item Repeat steps 2 to 4 ten times, averaging results.
-    \item Increase the number of states in the model and repeat the entire process.
+\item Load the initial model and observation sequence.
+\item Use each implementation of the Baum-Welch algorithm to estimate model parameters, recording runtime.
+\item Increase the number of states in the model and run the Baum-Welch algorithm again.
 \end{enumerate}
 
-Scalability is evaluated by examining runtime trends as model size increases. 
-This gives insight into how each implementation scales with larger models and is critical for understanding the practical applicability of symbolic versus matrix-based implementations for large-scale problems.
+Scalability is evaluated by examining runtime trends as model size increases.
+This provides insight into how each implementation scales with larger models and is critical for understanding the practical applicability of symbolic versus matrix-based implementations for large-scale problems.
 
 Results will be visualized using plots to illustrate trends and highlight differences in scalability between implementations.
 
+\subsection{Discussion of Metrics and Methods}
+The runtime is the primary evaluation metric, as it directly reflects the computational efficiency of each implementation when handling larger models. By plotting runtime against the number of states, we aim to identify patterns and scalability limits for each approach.
+
+\subsection{Reproducibility}
+To ensure reproducibility, all datasets, source code, and experiment configurations will is publicly available in the reposetory here~\cite{p7}\footnote{The specific link \url{https://github.com/AAU-Dat/P7-sudd/blob/P9-experiments/scaling_experiment.py}}. 
+Hardware specifications and software dependencies are documented to facilitate replication.
+
+\begin{figure}
+    \centering
+    \input{figures/scalability_graph.tex}
+    \caption{Scalability of Baum-Welch Implementations}
+    \label{fig:scalability}
+\end{figure}

@@ -1,14 +1,14 @@
 \section{Implementation}\label{sec:implementation}
 In this section, we will discuss the implementation of the project.
 We will start by discussing \glspl{add} and their advantages and disadvantages.
-How we transition from vectors and matrices to \glspl{add} will be discussed.
+We will discuss how we transition from vectors and matrices to \glspl{add}.
 We will then discuss the CUDD library and the Storm model checker.
 Finally, we will discuss the implementation of the matrix operations using \glspl{add}.
 
 
 \subsection{Algebraic Decision Diagrams}\label{subsec:algebraic-decision-diagrams}
 \acrfullpl{add} generalize \glspl{bdd}~\cite{bahar1997algebric}.
-Unlike \glspl{bdd} which are limited binary values (\{0,1\})~\cite{bryant1986graph}, \glspl{add} extend this framework by allowing terminal nodes to store arbitrary values, such as integers or real numbers. 
+Unlike \glspl{bdd}, which are limited binary values (\{0,1\}), \glspl{add} extend this framework by allowing terminal nodes to store arbitrary values, such as integers or real numbers. 
 This flexibility makes them well-suited for applications like probabilistic model checking, optimization, and symbolic matrix operations.
 
 In an \gls{add}, each path from the root to a terminal node represents a unique variable assignment, with terminal nodes storing the associated function values.
@@ -16,17 +16,17 @@ Their hierarchical structure supports compact, symbolic representations and effi
 
 Advantages of \glspl{add}:
 \begin{itemize}
-\item Compact Representation: \glspl{add} exploit redundancies in data, providing a compact representation for many functions. Shared subgraphs reduce memory usage, especially when storing large, structured data, such as matrices.
-\item Canonical Form: For a fixed variable ordering, \glspl{add} are canonical. This property simplifies equivalence checking and ensures consistency in symbolic manipulations.
-\item Efficient Operations: Operations such as addition and multiplication can be performed directly on \glspl{add}, often avoiding explicit enumeration of the underlying data.
+\item \textbf{Compact Representation:} \glspl{add} exploit data redundancies, providing a compact representation for many functions. Shared subgraphs reduce memory usage, especially when storing large, structured data, such as matrices.
+\item \textbf{Canonical Form:} For a fixed variable ordering, \glspl{add} are canonical. This property simplifies equivalence checking and ensures consistency in symbolic manipulations.
+\item \textbf{Efficient Operations:} Operations such as addition and multiplication can be performed directly on \glspl{add}, often avoiding explicit enumeration of the underlying data.
 \end{itemize}
 
 
 Disadvantages of \glspl{add}:
 \begin{itemize}
-\item Variable Ordering Sensitivity: The size and efficiency of \glspl{add} depend heavily on the chosen variable ordering. A suboptimal ordering can lead to exponentially larger diagrams, reducing performance.
-\item Overhead in Construction: Constructing an \gls{add} involves significant overhead compared to simpler data structures like arrays or hash tables, particularly for small datasets, where the benefits of compactness may not be realized.
-\item Complexity for Certain Functions: While \glspl{add} work well for structured data, highly unstructured or random data can result in large, inefficient diagrams. In such cases, other data structures may be more suitable.
+\item \textbf{Variable Ordering Sensitivity:} The size and efficiency of \glspl{add} depend heavily on the chosen variable ordering. A suboptimal ordering can lead to exponentially larger diagrams, reducing performance.
+\item \textbf{Overhead in Construction:} Constructing an \gls{add} involves significant overhead compared to simpler data structures like arrays or hash tables, particularly for small datasets, where the benefits of compactness may not be realized.
+\item \textbf{Complexity for Certain Functions:} While \glspl{add} work well for structured data, highly unstructured or random data can result in large, inefficient diagrams. In such cases, other data structures may be more suitable.
 \end{itemize}
 
 \glspl{add} can symbolically encode row and column indices as binary variables, enabling efficient storage and manipulation of matrix data.
@@ -39,10 +39,10 @@ The first step in the implementation is to transition from vectors and matrices 
 This conversion leverages the compact and efficient representation of \glspl{add} to perform operations symbolically.
 
 To convert a vector into an \gls{add}, we encode the indices as binary variables and the values as terminal nodes.
-It is important to note that all the variables in the \gls{add} has to be consistent, that is the number of variables in the \gls{add} has to be the same for all the nodes in the \gls{add}.
+It is important to note that all the variables in the \gls{add} have to be consistent; that is, the number of variables in the \gls{add} has to be the same for all the nodes in the \gls{add}.
 
-When a matrix is represented as an \gls{add}, the matrix has to be square, as the \gls{add} representation requires a square matrix, if the matrix is not square, it has to be padded with zeros to make it square.
-This is because in our implementation, we use the CUDD library, which requires the matrices to be square to be represented as \glspl{add}.
+When a matrix is represented as an \gls{add}, it has to be square. The \gls{add} representation requires a square matrix, so if it is not square, it has to be padded with zeros to make it square.
+This is because our implementation uses the CUDD library, which requires the matrices to be square to be represented as \glspl{add}.
 
 \subsubsection{Vector to ADD}
 We will illustrate the conversion from a vector to an \gls{add} using an example.
@@ -77,13 +77,12 @@ The binary representation of the vector $V$ entries is shown in \autoref{tab:vec
         \bottomrule
     \end{tabular}
 \end{table}
-
 The binary encodings determine the structure of the decision diagram, where each entry in the vector is stored as a terminal node.
-The paths to these nodes are dictated by the binary representation of their indices.
+The binary representation of their indices dictates the paths to these nodes.
 The root node represents the first bit of the binary encoding, with subsequent layers corresponding to the remaining bits.
 
 The \gls{add} representation of the vector $V$ is shown in \autoref{fig:add_vector}.
-For matrices represented as \glspl{add}, the structure is similar to vectors, but with two sets of binary variables for row and column indices.
+The structure of matrices represented as \glspl{add} is similar to vectors but has two sets of binary variables for row and column indices.
 The terminal nodes store the matrix entries, with paths determined by the binary representation of the row and column indices.
 The \gls{add} variables are interleaved, with the row and column indices alternating in the path from the root to the terminal nodes.
 This is the way the CUDD library represents matrices as \glspl{add}.
@@ -100,22 +99,23 @@ The Colorado University Decision Diagram (CUDD) library~\cite{somenzi1997cudd} i
 In this project, the CUDD library stores \glspl{add} and performs operations on them.
 Its optimized algorithms and efficient memory management allow us to handle large and complex matrices symbolically, leading to significant performance improvements over traditional methods.
 
-The CUDD library is implemented in C, ensuring high-performance execution, but it also ensures it can be used in C++ programs.
+The CUDD library is implemented in C, ensuring high-performance execution ensuring it can be used in C++ programs.
 
 \subsection{Storm}\label{subsec:storm}
-
 Storm is a versatile, open-source probabilistic model checking tool designed to verify the correctness and properties of stochastic models~\cite{hensel2021probabilistic}. 
 It supports a wide range of probabilistic models, including \glspl{mc} and \glspl{mdp}.
 
-It does not include \glspl{hmm} in its supported models, but a \gls{hmm} can be enoded as an \gls{mc}~\cite{rabiner1989tutorial}.
+It does not include \glspl{hmm} in its supported models, but a \gls{hmm} can be encoded as a \gls{mc}~\cite{rabiner1989tutorial}.
+We can also implement a \gls{mc} as a \gls{hmm}, where the emission matrix is treated as a constant and each row represents a Dirac distribution (a.k.a. indicator vector) pointed at the state label. 
+
 Storm allows users to analyze models efficiently by computing various quantitative properties, such as probabilities, expected rewards, or long-run averages.
 
 The main purpose of this project is to provide data-driven modeling tools for formal verification.
-The Storm model checker is widely recognized as a state-of-the-art verification tool for probabilistic models, known for its efficiency and scalability.
-For this reason, in this project we have chosen integrate our symbolic implementation of the Baum Welch algorithm within Stom. 
+The Storm model checker is widely recognized as a state-of-the-art verification tool for probabilistic models. It is known for its efficiency and scalability.
+For this reason, we have chosen to integrate our symbolic implementation of the Baum Welch algorithm within Stom in this project. 
 
-Storm uses the CUDD library for the symbolic representation of models, which makes it a natural choice for our implementation.
-This translate into working directly with the symbolic representation of the models provided by the parsers available in Storm that, in principle could be direcly used (off the shelf) by Storm for verification purposes.
+Storm uses the CUDD library to represent models symbolically, which makes it a natural choice for our implementation.
+This translates into working directly with the symbolic representation of the models provided by the parsers available in Storm, which could, in principle, be directly used (off the shelf) by Storm for verification purposes.
 
 \subsection{Matrix operations using ADDs}\label{subsec:matrix-operations-using-adds}
 The matrix operations are implemented using \glspl{add}.
@@ -221,11 +221,11 @@ The Hadamard division is implemented in CUDD by \textit{Cudd\_addApply(DdManager
 
 \subsubsection{Kronecker product}
 The Kronecker product is implemented by symbolically expanding the indices and terminal nodes of the two matrices.
-This operation results in a new \gls{add} with dimensions equal to the sum of the dimensions of the input matrices. 
+This operation results in a new \gls{add} with dimensions equal to the product of the dimensions of the input matrices. 
 The Kronecker product generalizes the outer product, multiplying each element of the first matrix by the entire second matrix.
 
 For a specific entry in the first matrix $A$ at row $i$ and column $j$, with value $a_{ij}$, the second matrix $B$ is scaled by $a_{ij}$, and its indices are adjusted as follows:
-and its indices are adjusted as follows:
+
 \begin{enumerate}
 \item Multiply the values of $B$ by $a_{ij}$.
 \item The row indices of $B$ are shifted by $i \times \text{rows}(B)$ in the new \gls{add}.

@@ -1,0 +1,20 @@
+\begin{tikzpicture}
+    \begin{axis}[
+        title={Scalability of Baum-Welch Implementations},
+        xlabel={Number of States},
+        ylabel={Runtime (s)},
+        xmin=0, xmax=1050,
+        xtick={20,220,420,620,820,1020},
+        legend pos=north west,
+        ymajorgrids=true,
+        grid style=dashed,
+    ]
+    \addplot[
+        color=red,
+        mark=square,
+        line width=1pt
+    ]
+    table {figures/jajapy_scalability.data};
+    \legend{Jajapy}
+    \end{axis}
+\end{tikzpicture}
