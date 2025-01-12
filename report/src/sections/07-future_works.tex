@@ -1,0 +1,27 @@
+\section{Future Works}\label{sec:future_works}
+This section outlines potential future works and extensions of the symbolic Baum-Welch algorithm.
+
+Since no experiments were conducted on the implementation, this is something that would be a good starting point for future work, as we could compare the performance of the symbolic approach to the recursive Jajapy implementation.
+This comparison would assess the scalability of the symbolic implementation as the number of model states increases. 
+Runtime and memory usage would be core parameters to evaluate, providing insights into the computational efficiency of the symbolic approach in the context of the Baum-Welch algorithm.
+Additionally, we intend to test the symbolic approach on concrete models of varying sizes and complexities. 
+
+To deepen our analysis, we would compare the symbolic implementation with a C++-based recursive implementation of the Baum-Welch algorithm. 
+In \cite{p7} the authors implemented the forward-backward algorithm in C and a symbolic approach in C, which showed that the symbolic approach was only a little faster than the C implementation.
+Therefore it would be interesting to compare the full symbolic approach to a recursive approach in C++.
+By benchmarking both implementations within the same programming language, we could better understand the symbolic approach's performance.
+
+A key aspect in our project was integrating the symbolic Baum-Welch algorithm into the Storm model checker. 
+Leveraging the Storm Parser Library, we planed to enable the parsing of models and observation sequences for the Baum-Welch algorithm.
+This integration would expand the algorithm's accessibility and applicability, as Storm is widely used in model-checking research and practice.
+
+We would also explore extending the symbolic approach to \glspl{mdp}. 
+Given the close relationship between \glspl{mdp} and \glspl{hmm}, this extension would allow the symbolic Baum-Welch algorithm to estimate \gls{mdp} parameters. 
+Such advancements would broaden its utility in diverse applications.
+
+Another area of improvement would implementing the Baum-Welch algorithm using sparse matrices. 
+We would evaluate their respective runtime and memory efficiency by comparing this traditional approach to the symbolic implementation. 
+
+Finally, we would investigate alternative symbolic representations beyond \glspl{add}. 
+Options like Multi-valued Decision Diagrams (MDDs), which support multiple edges per node.
+Comparative experiments will assess these representations runtime and memory usage against \glspl{add}, offering further insights into their relative strengths and weaknesses.
