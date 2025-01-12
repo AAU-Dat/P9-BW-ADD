@@ -1,7 +1,7 @@
 \section{Introduction}\label{sec:introduction}
 \glspl{hmm} are probabilistic models widely used to model systems with hidden states. 
-Applications span speech recognition~\cite{chavan2013overview} and bioinformatics~\cite{ciocchetta2009bio}, where systems exhibit stochastic behavior. 
-\glspl{hmm} rely on the Markov property, which assumes that the system's future depends only on its current state~\cite{markov1962theory}. 
+Applications span speech recognition, bioinformatics and finance~\cite{chavan2013overview,ciocchetta2009bio, mamon2007hidden}, where systems exhibit stochastic behavior. 
+\glspl{hmm} rely on the Markov property, which assumes that the system's future depends only on its current state~\cite{baum1966statistical}. 
 This memory-less behavior simplifies analysis and makes \glspl{hmm} particularly effective in modeling systems where the underlying states are not directly observable.
 
 Parameter estimation is a critical task in analyzing \glspl{hmm}, as the accuracy of model predictions depends heavily on the quality of the estimated parameters~\cite{bacci2023mm}. 
@@ -11,40 +11,34 @@ However, traditional algorithm implementations rely on matrix representations of
 In probabilistic verification, tools such as PRISM~\cite{kwiatkowska2011prism} and Storm~\cite{hensel2021probabilistic} provide state-of-the-art model-checking capabilities for Markov models. 
 These tools efficiently verify properties such as reachability and safety using symbolic representations, such as \glspl{add}, to handle large state spaces. 
 Despite their advanced capabilities, these tools lack native support for parameter estimation, which is crucial for learning models from data. 
-Conversely, tools like Jajapy and SUDD focus on parameter estimation but lack deep integration with symbolic model-checking frameworks.
+Conversely, tools like Jajapy~\cite{reynouard2023jajapy} and SUDD~\cite{p7} focus on parameter estimation but lack integration with symbolic model-checking frameworks.
 
-This paper addresses this gap by extending the Storm model checker to include parameter estimation for \glspl{hmm} using the Baum-Welch algorithm. 
-By leveraging \glspl{add} in all algorithm steps, we achieve significant improvements in runtime performance and scalability compared to matrix-based approaches. 
+By leveraging \glspl{add} in all algorithm steps for the Baum-Welch algorithm, we achieve significant improvements in runtime performance and scalability compared to matrix-based approaches. 
 Our work builds on the symbolic techniques introduced in SUDD but expands their application to the entire parameter estimation process for \glspl{hmm}. 
 
 Our contributions are as follows:
 \begin{itemize}
-    \item We implement the complete Baum-Welch algorithm symbolically, including forward-backward computations and parameter updates, eliminating the need for explicit state-space representations.
+    \item We implement the complete Baum-Welch algorithm symbolically, including forward-backward computations and parameter updates.
     \item We provide a comparative evaluation of our approach against Jajapy.
 \end{itemize}
-
-This integration of parameter learning and symbolic computation enables Storm to estimate parameters for \glspl{hmm} from data accurately while maintaining the scalability benefits of symbolic representations.
-The results demonstrate the feasibility of handling large-scale models with improved performance and numerical robustness.
 
 \subsection{Related Works}\label{subsec:related-works}
 Several tools have been developed for parameter estimation in Markov models. 
 Jajapy is a Python-based tool that uses the Baum-Welch algorithm to estimate parameters in various models, including \glspl{hmm}~\cite{reynouard2023jajapy}. 
-It employs a matrix representation of the model and implements the necessary operations for parameter estimation through standard matrix computations without standard matrix libraries.
+It employs a matrix representation of the model and implements the necessary operations for parameter estimation through standard matrix computations without standard matrix libraries, such as NumPy~\cite{harris2020array}.
 
 While accessible and straightforward, Jajapy is hindered by the space complexity inherent in its iterative-based calculation.
 This limitation makes it computationally expensive for large-scale models, as memory requirements grow quadratically with the number of states in the system.
-While versatile, Jajapy relies on matrix representations, resulting in quadratic space complexity, which limits its scalability for large models.
+While versatile, Jajapy relies on matrix representations, resulting in quadratic space complexity~\cite{davis2004comparing}.
 
-SUDD builds upon the limitations of Jajapy by introducing a symbolic representation for the forward-backward algorithm for calculating \glspl{pctmc}~\cite{p7}.
+SUDD builds upon the limitations of Jajapy by introducing a symbolic representation for the forward-backward algorithm for calculating \glspl{pctmc}, it does not handle the update step in the Baum-Welch algorithm~\cite{p7}.
 Specifically, it leverages \glspl{add} to reduce memory consumption and improve the runtime performance of the Baum-Welch algorithm.
 By employing \gls{add}-based computations, SUDD significantly improves scalability, making it feasible to handle larger models.
 
-However, the implementation is limited to a subset of the Baum-Welch algorithm, focusing primarily on forward-backward computations without addressing the full parameter estimation process. 
-
-Also, the update step in the Baum-Welch algorithm requires SUDD with an explicit state space representation of the model, which limits the algorithm's scalability.
+However, the update step in the Baum-Welch algorithm requires SUDD to give an explicit state space representation of the model, which limits the algorithm's scalability.
 
 Our work extends the capabilities of SUDD by implementing the complete Baum-Welch algorithm for \glspl{hmm} using symbolic representations.
-By integrating the Baum-Welch algorithm with symbolic representations, we provide a method that estimates parameters efficiently and enables the accurate modeling of complex systems.
+Here by we provide a method that estimates parameters efficiently and enables the accurate modeling of complex systems.
 
 %In this paper, we extend the work of SUDD by utilizing \glspl{add} in all the steps of the Baum-Welch algorithm to improve the runtime performance of parameter estimation for \gls{hmm}.
 %Our approach is to extend Storm with parameter estimation capabilities, by integrating the Baum-Welch algorithm with symbolic representations to improve the runtime performance of parameter estimation for \glspl{hmm}.
