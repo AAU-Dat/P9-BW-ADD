@@ -1,11 +1,11 @@
 \section{Preliminaries}\label{sec:preliminaries}
-In this section, we introduce the concepts and definitions essential for understanding the subsequent sections.
+This section introduces the concepts and definitions essential for understanding the subsequent sections.
 We begin by defining the key concepts of a \gls{hmm} and then describe how it can be represented using matrices.
 
 We then introduce the Baum-Welch algorithm, which estimates the parameters of a \gls{hmm} from observed data.
 We describe all the steps involved in the Baum-Welch algorithm, namely the forward-backward algorithm and the parameter's update.
 
-Finally, we describe how the Baum-Welch algorithm can be implemented using matrix operations.
+Finally, we describe how the Baum-Welch algorithm can be implemented using matrix operations..
 
 \subsection{Hidden Markov Models}\label{subsec:hmm}
 %definition of HMM
@@ -13,7 +13,7 @@ Baum and Petrie introduced \glspl{hmm} in 1966~\cite{baum1966statistical}.
 \glspl{hmm} are a class of probabilistic models widely used to describe sequences of observations dependent on some underlying hidden states.
 These models consist of two main components: observations and hidden states.
 The observations are the visible data emitted by the model, while the hidden states represent the underlying process that generates these observations.
-\glspl{hmm} have applications in fields such as speech recognition~\cite{chavan2013overview}, bioinformatics~\cite{de2007hidden}, and natural language processing~\cite{murveit1990integrating}.
+\glspl{hmm} have applications in speech recognition\cite{chavan2013overview}, bioinformatics~\cite{de2007hidden}, and natural language processing~\cite{murveit1990integrating}.
 \gls{hmm} was chosen as the model of choice for this project due to its versatility and ability to model complex systems.
 
 \begin{definition}[Hidden Markov Model]
@@ -101,15 +101,16 @@ These observed sequences serve as the input for parameter estimation in the \gls
 \subsection{The Baum-Welch Algorithm}\label{subsec:baum-welch}
 The Baum-Welch algorithm is a fundamental method for estimating the parameters of a \gls{hmm} given a sequence of observations.
 These parameters include the emission matrix $\pmb{\omega}$, the transition matrix $\pmb{P}$, and the initial state distribution $\pmb{\pi}$.
-The algorithm is widely recognized as the standard approach for training \glspl{hmm} and was chosen for this project because it can estimate these parameters without prior knowledge of the hidden states that generated the observations~\cite{levinson1983introduction}.
+The algorithm is widely recognized as the standard approach for training \glspl{hmm}.
+It was chosen for this project because it can estimate these parameters without prior knowledge of the hidden states that generated the observations~\cite{levinson1983introduction}.
 
-The Baum-Welch algorithm applies the Expectation-Maximization (EM) framework to iteratively improve the likelihood of the observed data under the current model parameters. It does so untill it reaches a set convergence value, which indicates how much the model improves after each iteration.
+The Baum-Welch algorithm applies the Expectation-Maximization (EM) framework to iteratively improve the likelihood of the observed data under the current model parameters. It does so until it reaches a set convergence value, which indicates how much the model improves after each iteration.
 It consists of the following steps:
 
 \begin{enumerate}
     \item \textbf{Initialization:} Begin with a given initial estimates for the \gls{hmm} parameters $(\pmb{\pi}, \pmb{P}, \pmb{\omega})$.
     \item \textbf{Expectation Step (E-step):} Compute the expected counts of the latent variables, i.e., the hidden states, based on the observation sequence and the current model parameters.
-    That is we compute the probabilities of observing the sequence up to time $t$, given that the \gls{hmm} is in state $s$ at time $t$ and the probabilities of observing the sequence from time $t+1$ to the end, given that the \gls{hmm} is in state $s$ at time $t$.
+    That is, we compute the probabilities of observing the sequence up to time $t$, given that the \gls{hmm} is in state $s$ at time $t$ and the probabilities of observing the sequence from time $t+1$ to the end, given that the \gls{hmm} is in state $s$ at time $t$.
     \item \textbf{Maximization Step (M-step):} Update the \gls{hmm} parameters $(\pmb{\pi}, \pmb{P}, \pmb{\omega})$ to maximize the likelihood of the observed data based on the expected counts computed in the E-step.
     \item \textbf{Iteration:} Repeat the E-step and M-step until convergence, i.e., when the change in likelihood between iterations falls below a predefined threshold.
 \end{enumerate}
@@ -117,7 +118,7 @@ It consists of the following steps:
 The Baum Welch algorithm seeks to estimate the parameters $\pmb{\tau}$, $\pmb{\pi}$, and $\pmb{\omega}$ of a \gls{hmm} model $\mathcal{M}$, so that it maximizes the likelihood function $\mathfrak{l}(\mathcal{M} | O)$.
 That is, the probability that the \gls{hmm} $\mathcal{M}$ has independently generated each observation sequence $O_1, \cdots, O_N$.
 
-Starting with an initial hypothesis $\textbf{x}_0 = (\pmb{\pi}, \pmb{P}, \pmb{\omega})$, the algorithm produces a sequence of parameter estimates $\textbf{x}_1, \textbf{x}_2, \cdots$, where each new estimate improves upon the previous one.
+Starting with initial hypothesis $\textbf{x}_0 = (\pmb{\pi}, \pmb{P}, \pmb{\omega})$, the algorithm produces a sequence of parameter estimates $\textbf{x}_1, \textbf{x}_2, \cdots$, where each new estimate improves upon the previous one.
 The process terminates when the improvement in likelihood is sufficiently small, satisfying the convergence criterion:
 
 \[
@@ -138,7 +139,7 @@ However, reasonable initialization can accelerate convergence and improve numeri
 As we work with models that we have no prior knowledge of, meaning we do not know the number of observations or what states generated the observations, we cannot initialize the model parameters based on domain knowledge.
 Therefore, we need to initialize the parameters based on some strategy.
 If we set a probability to zero, we see in parameter estimation (\autoref{eq:xi}) that the probability will remain zero. 
-Therefore if no domain knowledge is available, it is better to initialize the parameters with non-zero values.
+Therefore, if no domain knowledge is available, it is better to initialize the parameters with non-zero values.
 A common approach to initialize these parameters is as one of the following strategies:
 
 \begin{enumerate}
@@ -157,9 +158,9 @@ A common approach to initialize these parameters is as one of the following stra
 \end{enumerate}
 
 We initialize the parameters using random initialization, as it provides a diverse set of initial values that can help avoid local optima.
-The uniform initialization is the worst choice as it provides the least amount of information. 
-With uniform initialization, any transition is equally likely to be chosen to explain an observation, making the latent states indistinguishable from each other. 
-Therefore it is not recommended for practical use.
+The uniform initialization is the worst choice as it provides the least information. 
+With uniform initialization, any transition is equally likely to be chosen to explain an observation, making the latent states indistinguishable. 
+Therefore, it is not recommended for practical use.
 
 These initialization strategies provide a starting point for the Baum-Welch algorithm, which iteratively refines the model parameters based on the observed data.
 
@@ -196,12 +197,12 @@ Formally $\pmb{\omega}_{s, o_t} = \mathfrak{l}(o_t \mid s, \mathcal{M}) = \maths
 
 The forward-backward algorithm computes the forward and backward variables for each state $s$ and time $t$ in the observation sequence $\mathbf{o}$, providing a comprehensive view of the likelihood of the observed data under the model.
 
-In preparation for later discussions, we would like to draw attention to the fact that the above recurrences can be solved using dynamic programming requiring one to use $\Theta(|S|\times|(|\mathbf{o}|-1)|)$ space.
+In preparation for later discussions, we would like to draw attention to the fact that the above recurrences can be solved using dynamic programming, which requires $\Theta(|S| \times |\mathbf{o}|)$ space.
 
 \subsection{Update Step}\label{subsec:update-algorithm}
 %Update of HMM
 The update step refines the parameter values of the \gls{hmm} model based on the observed data and the forward and backward variables computed in the forward-backward algorithm.
-Given the forward and backward variables $\alpha_s(t)$ and $\beta_s(t)$, the update step aims to maximize the likelihood of the observed data by adjusting the parameter values.
+Given the forward and backward variables $\alpha_s(t)$ and $\beta_s(t)$, the update step adjusts the parameter values to maximize the likelihood of the observed data.
 
 The update step iteratively refines the parameter values until convergence is reached.
 
@@ -236,8 +237,8 @@ The terms $\gamma_s(t)$ and $\xi_{ss'}(t)$ are normalized to ensure they represe
 For $\gamma_s(t)$, this involves dividing by the total probability across all states at time $t$, while for $\xi_{ss'}(t)$, normalization occurs over all possible transitions at time $t$.
 
 \subsubsection{Parameter Update}
-The parameter update step refines the parameter values of the model based on the earlier computed intermediate variables $\gamma_s(t)$ and $\xi_{ss'}(t)$.
-The update step aims to maximize the expected likelihood of the observed data given the model $\mathcal{M}$ by adjusting the parameter values.
+The parameter update step refines the models parameter values based on the intermediate variables $\gamma_s(t)$ and $\xi_{ss'}(t)$.
+THe update step adjusts the parameter values to maximize the likelihood of the observed data given the model $\mathcal{M}$.
 
 Once $\gamma_s(t)$ and $\xi_{ss'}(t)$ are computed for all states $s, s'$ and all time steps $t$ for every observation sequence, the model parameters can be updated to maximize the expected log-likelihood.
 

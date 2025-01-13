@@ -11,20 +11,36 @@
 %Jajapy implementation in storm
 
 \section{Discussion}\label{sec:discussion}
+This section will cover the paper's discussion. 
+This paper aimed to study how implementing a symbolic representation of the Baum-Welch algorithm could impact the expected runtime and model accuracy. 
+This work extends the study conducted in~\cite{p7} by developing an entirely symbolic representation using \glspl{add} at every point of the Baum-Welch algorithm where matrices are traditionally used.
 
-This section will cover the paper's discussion. This paper aimed to study how implementing a symbolic representation of the Baum-Welch algorithm could impact the expected runtime and model accuracy. This work extends the study conducted in~\cite{p7} by developing an entirely symbolic representation using \glspl{add} at every point of the Baum-Welch algorithm where matrices are traditionally used.
+Unfortunately, no significant findings were achieved in our study. Several factors contributed to this outcome. 
+One such factor was the issue of extending Storms implementation of CUDD to handle operations, which required computing the Baum-Welch algorithm using \glspl{add}. 
+Initially, we aimed to read files representing our data and create models using Storm. 
+However, this process proved more difficult than expected. 
+The Storm library proved particularly challenging to navigate. 
+Although its extensive documentation was initially considered beneficial, it often led to confusion and hindered progress. 
+As a result, initial models were instead written manually, and random values were used as data for creating these models and observed data. 
+If we had used manual initialization of models earlier, further testing and experimentation could have been conducted, leading to a more complete implementation.
 
-Unfortunately, no significant findings were achieved in our study. Several factors contributed to this outcome. One such factor was the issue of extending Storms implementation of CUDD to handle operations, required to compute the Baum-Welch algorithm using \glspl{add}. Initially, we aimed to read files representing our data and create models from these using Storm. However, this process proved more difficult than expected. The Storm library proved particularly challenging to navigate. Although its extensive documentation was initially considered beneficial, it often led to confusion and hindered progress. As a result, initial models were instead written manually, and random values were used as data for creating these models and observed data. If we had used manual initialization of models ealier, further testing and experimentation could have been conducted, leading to a more complete implementation.
+Furthermore, the library choice for manipulating \glspl{add} was not thoroughly considered, as we intended to extend the work in~\cite{p7}.
+Efforts should have been dedicated to evaluating alternative libraries that work with \glspl{add}. 
+Examples of such libraries include Sylvan, also written in C and provides parallel execution capabilities. 
+While CUDD worked effectively in~\cite{p7}, further consideration of alternative options could have yielded better results.
 
+While working on our implementation, we studied the symbolic implementation of the Forward-Backward algorithm in~\cite{p7}. 
+Here, we identified an error in the implementation that suggested significant runtime improvements. 
+This error involved a miscalculation caused by misaligned \gls{add} variables in the matrix multiplication of the forward step.
 
-Furthermore, the choice of library for manipulating \glspl{add} was not thoroughly considered, as we simply intended to extend the work in~\cite{p7}. Efforts should have been dedicated to evaluating alternative libraries that work with \glspl{add}. Examples of such libraries include Sylvan, also written in C and provides parallel execution capabilities. While CuDD worked effectively in~\cite{p7}, further consideration of alternative options could have yielded better results.
+Although the results and values remained correct, the computation time increased unnecessarily. 
+The paper~\cite{p7} had already demonstrated significant runtime improvements compared to the non-symbolic comparison implementations. 
+Removing this unnecessary calculation could further enhance runtime performance.
 
-While working on our implementation, we studied the symbolic implementation of the Forward-Backward algorithm in~\cite{p7}. Here, we identified an error in the implementation that suggested significant runtime improvements. This error involved a miscalculation caused by misaligned ADD variables in the matrix multiplication of the forward step.
+Additionally, the implementation in~\cite{p7} was only partially symbolic. While the Forward and Backward calculations used symbolic representations, other components relied on traditional matrices. 
+This resulted in frequent conversions between \glspl{add} and matrices, increasing computational overhead. 
+An entirely symbolic implementation would likely reduce this overhead and improve efficiency.
 
-Although the results and values remained correct, the computation time increased unnecessarily. The paper~\cite{p7} had already demonstrated significant runtime improvements compared to the non-symbolic comparison implementations. Removing this unnecessary calculation could further enhance runtime performance.
-
-Additionally, the implementation in~\cite{p7} was only partially symbolic. While the Forward and Backward calculations used symbolic representations, other components relied on traditional matrices. This resulted in frequent conversions between \glspl{add} and matrices, increasing computational overhead. An entirely symbolic implementation would likely reduce this overhead and improve efficiency.
-
-These observations motivates the continuation of studying symbolic representations of the Baum-Welch algorithm. They also highlight the potential for further performance improvements through error correction and adopting an entirely symbolic approach.
-
+These observations motivate the continuation of studying symbolic representations of the Baum-Welch algorithm. 
+They also highlight the potential for further performance improvements through error correction and adopting an entirely symbolic approach.
 
