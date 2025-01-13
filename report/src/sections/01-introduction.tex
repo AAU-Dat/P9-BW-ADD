@@ -13,19 +13,19 @@ These tools efficiently verify properties such as reachability and safety using 
 Despite their advanced capabilities, these tools lack native support for parameter estimation, which is crucial for learning models from data. 
 Conversely, tools like Jajapy~\cite{reynouard2023jajapy} and SUDD~\cite{p7} focus on parameter estimation but lack integration with symbolic model-checking frameworks.
 
-By leveraging \glspl{add} in all algorithm steps for the Baum-Welch algorithm, we achieve significant improvements in runtime performance and scalability compared to matrix-based approaches. 
-Our work builds on the symbolic techniques introduced in SUDD but expands their application to the entire parameter estimation process for \glspl{hmm}. 
+By leveraging \glspl{add} in all algorithm steps for the Baum-Welch algorithm, we achieve significant improvements in runtime performance and scalability compared to recursive-based approaches. 
+Our work builds on the symbolic techniques introduced in SUDD~\cite{p7} but expands their application to the entire parameter estimation process for \glspl{hmm}. 
 
-Our contributions are as follows:
+Our contribution are as follows:
 \begin{itemize}
     \item We implement the complete Baum-Welch algorithm symbolically, including forward-backward computations and parameter updates.
-    \item We provide a comparative evaluation of our approach against Jajapy.
+    %\item We provide a comparative evaluation of our approach against Jajapy.
 \end{itemize}
 
 \subsection{Related Works}\label{subsec:related-works}
 Several tools have been developed for parameter estimation in Markov models. 
 Jajapy is a Python-based tool that uses the Baum-Welch algorithm to estimate parameters in various models, including \glspl{hmm}~\cite{reynouard2023jajapy}. 
-It employs a matrix representation of the model and implements the necessary operations for parameter estimation through standard matrix computations without standard matrix libraries, such as NumPy~\cite{harris2020array}.
+It employs a matrix representation of the model and implements a iterative approach based on a recursive definition.
 
 While accessible and straightforward, Jajapy is hindered by the space complexity inherent in its iterative-based calculation.
 This limitation makes it computationally expensive for large-scale models, as memory requirements grow quadratically with the number of states in the system.

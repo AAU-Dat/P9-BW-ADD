@@ -247,7 +247,8 @@ For a specific entry in the first matrix $A$ at row $i$ and column $j$, with val
 
 Here rows($B$) and columns($B$) represents the number of rows and columns in matrix $B$, respectively.
 
-This operation is not natively supported in the CUDD library, therefore we implemented it explicitly as a custom function. 
+This operation is not natively supported in the CUDD library, we have not implemented it as a custom function.
+
 The Kronecker product of matrices $A$ and $B$ is:
 \[
     A \otimes B = \begin{bmatrix}
@@ -264,7 +265,7 @@ The Khatri-Rao product operation is implemented by combining rows of the first m
     \item The elements of row $i$ in the first matrix are multiplied element-wise with the entire row $i$ in the second matrix.
     \item The resulting row is constructed symbolically within the \gls{add}.   
 \end{enumerate}
-This operation is not natively supported in the CUDD library, therefore we implemented it explicitly as a custom function.
+This operation is not natively supported in the CUDD library, we have not implemented it as a custom function.
 The Khatri-Rao product of matrices $A$ and $B$ is:
 \[
     A \bullet B = \begin{bmatrix}

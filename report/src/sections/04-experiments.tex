@@ -1,18 +1,19 @@
 \section{Experiments}\label{sec:experiments}
-This section describes the experiment used to evaluate the proposed symbolic implementation of the Baum-Welch algorithm in CuPAAL.
-The experiment is designed to compare CuPAAL with another implementation: Jajapy, which uses a recursive approach to the Baum-Welch algorithm.
-The experiment is conducted to answer the following research question:
+This section describes the experiment that would be used to evaluate the proposed symbolic implementation of the Baum-Welch algorithm in CuPAAL.
+The experiment was designed to compare CuPAAL with another implementation: Jajapy, which uses a recursive approach to the Baum-Welch algorithm.
+The experiment would be conducted to answer the following research question:
 
 \begin{itemize}
 \item \textbf{Question:} How does the scalability of CuPAALs symbolic implementation compare to Jajapy as the number of model states increases?
 \end{itemize}
 
-This question is used to evaluate the computational efficiency of the symbolic implementation in CuPAAL. The insights gained will highlight the strengths and potential weknesses of the symbolic approach to the Baum-Welch algorithm.
+This question would evaluate the computational efficiency of the symbolic implementation in CuPAAL.
+The insights gained would highlight the strengths and potential weaknesses of the symbolic approach to the Baum-Welch algorithm.
 
 \subsection{Experimental Setup}
-The experiment evaluates how each implementation scales with increasing model states. 
-We conduct a single experiment to evaluate the proposed method.
-The machine used to conduct the experiment has the specifications seen in \autoref{tab:machine-specs}. 
+The experiment would evaluate how each implementation scales with increasing model states. 
+We would conduct a single experiment to evaluate the proposed method.
+The machine that would be used to conduct the experiment has the specifications seen in \autoref{tab:machine-specs}. 
 \begin{table}[htb!]
 \centering
 \caption{Machine Specifications from AAU Strato}
@@ -28,27 +29,27 @@ The machine used to conduct the experiment has the specifications seen in \autor
     \end{tabular}
 \end{table}
 
-The following implementations are used for comparison.
+The following implementations would used for comparison.
 
 \begin{itemize}
-\item \textbf{Jajapy}: A matrix-based implementation of the Baum-Welch algorithm \cite{reynouard2023jajapy}.
+\item \textbf{Jajapy}: A recursive implementation of the Baum-Welch algorithm~\cite{reynouard2023jajapy}.
 \item \textbf{CuPAAL}: The fully symbolic implementation proposed in this work.
 \end{itemize}
 
 The chosen implementations are either fully recursive to fully symbolic approaches, providing a comprehensive comparison of methodologies.
 
 \subsection{Experiment Dataset}
-The experiment uses synthetic datasets; The dataset has five different labels \{"A", "B", "C", "D", "E"\} and the same observation sequence for all runs of the experiment. 
-We use 1 observation sequence of length 20, as our implementation is not set up to handle multiple observation sequences.
-The number of states in the model is varied from 20 to 1020, with increments of 100 states.
-The initial model is generated with random parameters, and the observation sequence is the same for all runs of the experiment.
-The model always starts in the same initial state, and the transition matrix and emission matrix are generated randomly.
-Where the emission matrix is generated such that one state can emit a maximum of three different labels.
-All implementations are tested on the same dataset to ensure fair comparison.
+The experiment would use synthetic datasets; The dataset would have five different labels \{"A", "B", "C", "D", "E"\} and the same observation sequence for all runs of the experiment. 
+We would use 1 observation sequence of length 20, as our implementation is not set up to handle multiple observation sequences.
+The number of states in the model would be varied from 20 to 1020, with increments of 100 states.
+The initial model would be generated with random parameters, and the observation sequence would be the same for all runs of the experiment.
+The model would always start in the same initial state, and the transition matrix and emission matrix would be generated randomly.
+Where the emission matrix would be generated such that one state can emit a maximum of three different labels.
+All implementations would tested on the same dataset to ensure fair comparison.
 
 \subsection{Experimental Procedure}
-The experiment assesses how the runtime of each implementation changes as the number of states in a synthetic model incrementally increases from 20 to 1020. 
-The process is done as follows:
+The experiment would assesses how the runtime of each implementation changes as the number of states in a synthetic model incrementally increases from 20 to 1020. 
+The process would be done as follows:
 
 \begin{enumerate}
 \item Load the initial model and observation sequence.
@@ -57,20 +58,20 @@ The process is done as follows:
 \item Repeat steps 2-3 for each implementation until the maximum number of states is reached.
 \end{enumerate}
 
-Scalability is evaluated by examining runtime trends as model size increases.
-This provides insight into how each implementation scales with larger models and is critical for understanding the practical applicability of symbolic versus recursive-based implementations.
+The specific link for the experiment\footnote{\url{https://github.com/AAU-Dat/P7-sudd/blob/P9-experiments/scaling_experiment.py}}. 
 
-Results will be visualized using plots to illustrate trends and highlight differences in scalability between implementations.
+Scalability would be evaluated by examining runtime trends as model size increases.
+This would provide insight into how each implementation scales with larger models and is critical for understanding the practical applicability of symbolic versus recursive-based implementations.
+
+Results would be visualized using plots to illustrate trends and highlight differences in scalability between implementations.
 
 \subsection{Discussion of Metrics and Methods}
-The runtime is the primary evaluation metric, as it directly reflects the computational efficiency of each implementation when handling larger models. 
-By plotting runtime along side the number of states, we aim to identify patterns and scalability limits for each approach.
+The runtime would be the primary evaluation metric, as it directly reflects the computational efficiency of each implementation when handling larger models. 
+By plotting runtime along side the number of states, we would aim to identify patterns and scalability limits for each approach.
 
 We wanted to track the memory consumption of the implementations, as this is a critical factor in the scalability of the Baum-Welch algorithm, and symbolic approaches are expected to be more memory-efficient.
 However, tracking memory consumption is challenging, and is therefore left for future work.
 Instead we focus on runtime as the primary metric, as it provides a clear and comparable measure of computational efficiency.
-
-\footnote{The specific link \url{https://github.com/AAU-Dat/P7-sudd/blob/P9-experiments/scaling_experiment.py}}. 
 
 
 \begin{figure}[htb!]

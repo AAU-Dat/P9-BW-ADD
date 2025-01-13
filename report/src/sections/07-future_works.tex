@@ -1,6 +1,10 @@
 \section{Future Works}\label{sec:future_works}
 This section outlines potential future works and extensions of the symbolic Baum-Welch algorithm.
 
+Our first step would be to implement the Kronecker product and Katri-Rao product in the symbolic approach. 
+These operations are essential for the Baum-Welch algorithm, as they are used to update the transition and emission matrices.
+Implementing these operations would complete the symbolic approach, enabling the full Baum-Welch algorithm to be executed symbolically.
+
 Since no experiments were conducted on the implementation, this is something that would be a good starting point for future work, as we could compare the performance of the symbolic approach to the recursive Jajapy implementation.
 This comparison would assess the scalability of the symbolic implementation as the number of model states increases. 
 Runtime and memory usage would be core parameters to evaluate, providing insights into the computational efficiency of the symbolic approach in the context of the Baum-Welch algorithm.
