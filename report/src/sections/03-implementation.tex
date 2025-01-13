@@ -2,46 +2,54 @@
 In this section, we will discuss the implementation of the project.
 We will start by discussing \glspl{add} and their advantages and disadvantages.
 We will discuss how we transition from vectors and matrices to \glspl{add}.
-We will then discuss the CUDD library and the Storm model checker.
+Then we will then discuss the CUDD library and the Storm model checker.
 Finally, we will discuss the implementation of the matrix operations using \glspl{add}.
-
 
 \subsection{Algebraic Decision Diagrams}\label{subsec:algebraic-decision-diagrams}
 \acrfullpl{add} generalize \glspl{bdd}~\cite{bahar1997algebric}.
-Unlike \glspl{bdd}, which are limited to binary values (\{0,1\}), \glspl{add} extend this framework by allowing terminal nodes to store arbitrary values, such as integers or real numbers. 
-This flexibility makes them well-suited for applications like probabilistic model checking, optimization, and symbolic matrix operations.
+Unlike \glspl{bdd}, which are limited to binary values (\{0,1\}), \glspl{add} extend this data structure by allowing terminal nodes to store arbitrary values, such as integers or real numbers.
+This flexibility makes them well-suited for applications like probabilistic model checking and optimization and for representing matrices.
 
 In an \gls{add}, each path from the root to a terminal node represents a unique variable assignment, with terminal nodes storing the associated function values.
 
 Advantages of \glspl{add}:
+
 \begin{itemize}
-\item \textbf{Compact Representation:} \glspl{add} exploit data redundancies, providing a compact representation for many functions. Shared subgraphs reduce memory usage, especially when storing large, structured data, such as matrices.
-\item \textbf{Canonical Form:} For a fixed variable ordering, \glspl{add} are canonical. This property simplifies equivalence checking and ensures consistency in symbolic manipulations.
-\item \textbf{Efficient Operations:} Operations such as addition and multiplication can be performed directly on \glspl{add}, often avoiding explicit enumeration of the underlying data.
+    \item \textbf{Compact Representation:} \glspl{add} exploit data redundancies, providing a compact representation for many functions.
+    Shared subgraphs reduce memory usage, especially when storing large, structured data, such as matrices.
+    \item \textbf{Canonical Form:} For a fixed variable ordering, \glspl{add} are canonical.
+    This property simplifies equivalence checking and ensures consistency in symbolic manipulations.
+    \item \textbf{Efficient Operations:} Operations such as addition and multiplication can be performed directly on \glspl{add}, often avoiding explicit enumeration of the underlying data.
 \end{itemize}
 
 
 Disadvantages of \glspl{add}:
+
 \begin{itemize}
-\item \textbf{Variable Ordering Sensitivity:} The size and efficiency of \glspl{add} depend heavily on the chosen variable ordering. A suboptimal ordering can lead to exponentially larger diagrams, reducing performance.
-\item \textbf{Overhead in Construction:} Constructing an \gls{add} involves significant overhead compared to simpler data structures like arrays or hash tables, particularly for small datasets, where the benefits of compactness may not be realized.
-\item \textbf{Complexity for Certain Functions:} While \glspl{add} work well for structured data, highly unstructured or random data can result in large, inefficient diagrams. In such cases, other data structures may be more suitable.
+    \item \textbf{Variable Ordering Sensitivity:} The size and efficiency of \glspl{add} depend heavily on the chosen variable ordering.
+    A suboptimal ordering can lead to exponentially larger diagrams, reducing performance.
+    \item \textbf{Overhead in Construction:} Constructing an \gls{add} involves significant overhead compared to simpler data structures like arrays or hash tables, particularly for small datasets, where the benefits of compactness may not be realized.
+    \item \textbf{Complexity for Certain Functions:} While \glspl{add} work well for structured data, highly unstructured or random data can result in large, inefficient diagrams.
+    In such cases, other data structures may be more suitable.
 \end{itemize}
 
 \glspl{add} can symbolically encode row and column indices as binary variables, enabling efficient storage and manipulation of matrix data.
 This approach is particularly advantageous for sparse or structured matrices, where patterns and redundancies can be exploited~\cite{bahar1997algebric}.
 
-In this work, \glspl{add} provide a foundation for symbolic matrix operations like addition, multiplication, and Kronecker product. Their compact representation and efficiency make them a powerful tool for handling complex, parameterized computations.
+In this work, \glspl{add} provide a foundation for symbolic matrix operations like addition, multiplication, and Kronecker product.
+Their compact representation and efficiency make them a powerful tool for handling complex parameterized computations.
 
 \subsection{Transition to ADDs}\label{subsec:transition-to-adds}
 The first step in the implementation is to transition from vectors and matrices to \glspl{add}.
 This conversion leverages the compact and efficient representation of \glspl{add} to perform operations symbolically.
 
 To convert a vector or matrix into an \gls{add}, we encode the indices as binary variables and the values as terminal nodes.
-It is important to note that all the variables in the \gls{add} have to be consistent; meaning a variable in the \gls{add} has to be in a consistent position in all the paths to the terminal nodes.
-When a matrix is represented as an \gls{add}, it has to be square. 
-The \gls{add} representation requires a square matrix, so if it is not square, it has to be padded with zeros to make it square.
-This is because our implementation uses the CUDD library, which requires the matrices to be square to be represented as \glspl{add}.
+It is important to note that all the variables in the \gls{add} have to be consistent, meaning a variable in the \gls{add} has to be in a consistent position in all the paths to the terminal nodes.
+
+When a matrix is represented as an \gls{add}, it has to be square to satisfy what is known as the power of 2 rule~\cite{bahar1997algebric}.
+This is due to the binary nature of the diagram and the interleaving of the row and column variables.
+This scheme for representing matrices as ADDs is called a partitioning of the matrix~\cite{bahar1997algebric}.
+For a complete discussion on how to pad matrices to obtain a square version see~\cite{bahar1997algebric}.
 
 \subsubsection{Vector to ADD}
 We will illustrate the conversion from a vector to an \gls{add} using an example.
@@ -54,13 +62,15 @@ Consider the following vector:
     \end{bmatrix}
 \]
 
-In an \gls{add}, each layer corresponds to one binary variable (or bit) in the encoding of an index. 
-For a vector of size $n$, where $n = 2^k$, the binary representation of the column indices requires $k$ bits each. 
+In an \gls{add}, each layer corresponds to one binary variable (or bit) in the encoding of an index.
+For a vector of size $n$, where $n = 2^k$, the binary representation of the column indices requires $k$ bits each.
 In the case of the vector $V$, the vector has 4 elements, so it requires $4 = 2^2$ bits to represent the indices.
 
 We can create the binary representation of the indices by using the binary representation of the numbers from 0 to $k$.
 
 The binary representation of the vector $V$ entries is shown in \autoref{tab:vector}.
+
+
 \begin{table}[htb!]
     \centering
     \caption{Binary encoding of a vector V of size 4}
@@ -69,13 +79,15 @@ The binary representation of the vector $V$ entries is shown in \autoref{tab:vec
         \toprule
         Vector Index & Value & Binary Encoding \\
         \midrule
-        0            & 1     & 00            \\
-        1            & 2     & 01            \\
-        2            & 3     & 10            \\
-        3            & 4     & 11            \\
+        0            & 1     & 00              \\
+        1            & 2     & 01              \\
+        2            & 3     & 10              \\
+        3            & 4     & 11              \\
         \bottomrule
     \end{tabular}
 \end{table}
+
+
 The binary encodings determine the structure of the decision diagram, where each entry in the vector is stored as a terminal node.
 The binary representation of their indices dictates the paths to these nodes.
 The root node represents the first bit of the binary encoding, with subsequent layers corresponding to the remaining bits.
@@ -84,7 +96,8 @@ The \gls{add} representation of the vector $V$ is shown in \autoref{fig:add_vect
 The structure of matrices represented as \glspl{add} is similar to vectors but has two sets of binary variables for row and column indices.
 The terminal nodes store the matrix entries, with paths determined by the binary representation of the row and column indices.
 The \gls{add} variables are interleaved, with the row and column indices alternating in the path from the root to the terminal nodes.
-This is the way the CUDD~\cite{somenzi1997cudd} library represents matrices as \glspl{add}.
+
+
 \begin{figure}[htb!]
     \centering
     \input{figures/vector_add_example_reduced}
@@ -92,53 +105,60 @@ This is the way the CUDD~\cite{somenzi1997cudd} library represents matrices as \
     \label{fig:add_vector}
 \end{figure}
 
+
 \subsection{CUDD}\label{subsec:cudd}
-The Colorado University Decision Diagram (CUDD) library~\cite{somenzi1997cudd} is a powerful tool for implementing and manipulating decision diagrams, including \glspl{bdd} and \glspl{add}. 
+The Colorado University Decision Diagram (CUDD) library~\cite{somenzi1997cudd} is a powerful tool for implementing and manipulating decision diagrams, including \glspl{bdd} and \glspl{add}.
 
 In this project, the CUDD library stores \glspl{add} and performs operations on them.
 Its optimized algorithms and efficient memory management allow us to handle large and complex matrices symbolically, leading to significant performance improvements over traditional methods.
 
-The CUDD library is implemented in C, ensuring high-performance execution. 
-Therefore it can be used in C++ programs, which we use for this paper.
+The CUDD library is implemented in C, ensuring high-performance execution.
+Therefore, it can be used in C++ programs, which we use for this paper.
 
 \subsection{Storm}\label{subsec:storm}
-Storm is a versatile, open-source probabilistic model checking tool designed to verify the correctness and properties of stochastic models~\cite{hensel2021probabilistic}. 
+Storm is a versatile, open-source probabilistic model checking tool designed to verify the correctness and properties of stochastic models~\cite{hensel2021probabilistic}.
 It supports a wide range of probabilistic models, including \glspl{mc} and \glspl{mdp}.
 
 It does not include \glspl{hmm} in its supported models, but a \gls{hmm} can be encoded as a \gls{mc}~\cite{rabiner1989tutorial}.
-We can also implement a \gls{mc} as a \gls{hmm}, where the emission matrix is treated as a constant and each row represents a Dirac distribution (a.k.a. indicator vector) pointed at the state label. 
+We can also implement a \gls{mc} as a \gls{hmm}, where the emission matrix is treated as a constant and each row represents a Dirac distribution (a.k.a. indicator vector) pointed at the state label.
 
 Storm allows users to analyze models efficiently by computing various quantitative properties, such as probabilities, expected rewards, or long-run averages.
 
 % The main purpose of this project is to provide data-driven modeling tools for formal verification.
-The Storm model checker is widely recognized as a state-of-the-art verification tool for probabilistic models. It is known for its efficiency and scalability.
-Storm uses the CUDD library to represent models symbolically.
+The Storm model checker is widely recognized as a state-of-
+the-art verification tool for probabilistic models.
+It is known for its efficiency and scalability.
+Storm uses the CUDD and Sylvan libraries to represent models symbolically, which users can choose when running the tool.
 % For this reason, we have chosen to integrate our symbolic implementation of the Baum Welch algorithm within Stom in this project. 
 
 %This translates into working directly with the symbolic representation of the models provided by the parsers available in Storm, which could, in principle, be directly used (off the shelf) by Storm for verification purposes.
 
 \subsection{Matrix Operations Using ADDs}\label{subsec:matrix-operations-using-adds}
-The matrix operations implemented are matrix transpose, matrix addition, matrix multiplication, Hadamard product, Hadamard division, Kronecker product and Khatri-Rao product.
-To show examples for each operation in the following subsections, we have two matrices $A$ and $B$, showed here:
+The matrix operations implemented are matrix transpose, matrix addition, matrix multiplication, Hadamard product, Hadamard division, Kronecker product, and Khatri-Rao product.
+To show examples for each operation in the following subsections, we have two matrices $A$ and $B$, shown here:
+
 \[
     A = \begin{bmatrix}
             1 & 2 \\
             3 & 4 \\
     \end{bmatrix}
-\text{ and }
+    \text{ and }
     B = \begin{bmatrix}
             5 & 6 \\
             7 & 8 \\
     \end{bmatrix}
 \]
 
-In CUDD a \textit{DdManager} is used to manage the \glspl{add} and the operations on them.
-A \textit{DdNode} is used to represent both the entire \gls{add} and the variables of the \gls{add}, which is the row and column indices in the \gls{add}.
+In CUDD a \textit{DdManager} manages the \glspl{add} and their operations.
+A \textit{DdNode} is used to represent the entire \gls{add} and the variables of the \gls{add}, which are the row and column indices in the \gls{add}.
 
 \subsubsection{Matrix Transpose}
-The matrix transpose operation is implemented by swapping the row and column variables in the \gls{add}. Specifically, for each path in the \gls{add} representing an entry $(i, j)$, the roles of the row index 
-$i$ and column index $j$ are exchanged. The terminal nodes (values of the matrix entries) remain unchanged.
+The matrix transpose operation is implemented by swapping the row and column variables in the \gls{add}.
+Specifically, for each path in the \gls{add} representing an entry $(i, j)$, the roles of the row index
+$i$ and column index $j$ are exchanged.
+The terminal nodes (values of the matrix entries) remain unchanged.
 The transpose of matrix $A$ is:
+
 \[
     A^T = \begin{bmatrix}
               1 & 3 \\
@@ -146,86 +166,97 @@ The transpose of matrix $A$ is:
     \end{bmatrix}
 \]
 
-In CUDD the function we use for transposing an \gls{add} is implemented as \textit{Cudd\_addSwapVariables(DdManager * dd, DdNode * f, DdNode ** x, DdNode ** y, int  n)}, where \textit{f} is the \gls{add} to be transposed, \textit{x} and \textit{y} are the set variables to be swapped and \textit{n} is the size of the variables to be swapped.
+In CUDD, the function we use for transposing an \gls{add} is implemented as \textit{Cudd\_addSwapVariables(DdManager * dd, DdNode * f, DdNode ** x, DdNode ** y, int n)}, where \textit{f} is the \gls{add} to be transposed, \textit{x} and \textit{y} are the set variables to be swapped and \textit{n} is the size of the variables to be swapped.
 
 \subsubsection{Matrix Addition}
-The matrix addition operation is implemented by adding the terminal nodes of two \glspl{add}, while keeping the structure of the row and column indices consistent. 
+The matrix addition operation is implemented by adding the terminal nodes of two \glspl{add} while keeping the structure of the row and column indices consistent.
 This process involves:
+
 \begin{enumerate}
     \item Traversing the paths of both \glspl{add} simultaneously.
     \item Summing the values at the terminal nodes where the row and column indices match.
 \end{enumerate}
+
 The resulting \gls{add} represents the element-wise sum of the two matrices.
 The sum of matrices $A$ and $B$ is:
+
 \[
     A + B = \begin{bmatrix}
-        6  & 8  \\
-        10 & 12 \\
+                6  & 8  \\
+                10 & 12 \\
     \end{bmatrix}
 \]
 
-In CUDD the function we use for adding two \glspl{add} is implemented as \textit{Cudd\_addApply(DdManager * dd, Cudd\_addPlus(), DdNode * f, DdNode * g)}, where \textit{f} and \textit{g} are the two \glspl{add} to be added and \textit{Cudd\_addPlus()} is the function that is used to add the two \glspl{add}.
+In CUDD, the function we use for adding two \glspl{add} is implemented as \textit{Cudd\_addApply(DdManager * dd, Cudd\_addPlus(), DdNode * f, DdNode * g)}, where \textit{f} and \textit{g} are the two \glspl{add} to be added and, \textit{Cudd\_addPlus()} is the function that is used to add the two \glspl{add}.
 
 \subsubsection{Scalar Product}
 The scalar product operation is implemented by multiplying each element in a matrix by a scalar value.
 The scalar product of matrix $A$ by a scalar 2 is:
-\[
-2 \times A = \begin{bmatrix}
-    2 & 4 \\
-    6 & 8 \\
-\end{bmatrix}
-\] 
 
-In CUDD the function we use for scalar multiplication is implemented as \textit{Cudd\_addApply(DdManager * dd, Cudd\_addTimes(), DdNode * f, DdNode * g)}, where \textit{f} is the \gls{add} to be multiplied by the scalar and \textit{g} is an \gls{add} representing the scalar value and \textit{Cudd\_addTimes()} is the function that is used to multiply the \gls{add} by the scalar. 
+\[
+    2 \times A = \begin{bmatrix}
+                     2 & 4 \\
+                     6 & 8 \\
+    \end{bmatrix}
+\]
+
+In CUDD, the function we use for scalar multiplication is implemented as \textit{Cudd\_addApply(DdManager * dd, Cudd\_addTimes(), DdNode * f, DdNode * g)}, where \textit{f} is the \gls{add} to be multiplied by the scalar, and \textit{g} is an \gls{add} representing the scalar value, and \textit{Cudd\_addTimes()} is the function that is used to multiply the \gls{add} by the scalar.
 
 \subsubsection{Matrix Multiplication}
-The matrix multiplication operation is implemented symbolically using the dot product of the row and column indices. 
-For an \gls{add} the process is as follows:
+The matrix multiplication operation is implemented symbolically using the dot product of the row and column indices.
+For an \gls{add}, the process is as follows:
+
 \begin{enumerate}
     \item For each pair of rows in the first matrix and columns in the second matrix, the corresponding elements are multiplied.
     \item The products are summed along the shared index, combining them into the final terminal nodes of the resulting \gls{add}.
 \end{enumerate}
+
 The hierarchical structure of the \gls{add} ensures that only relevant paths are explored.
 The product of matrices $A$ and $B$ is
+
 \[
     A \times B = \begin{bmatrix}
-        19 & 22 \\
-        43 & 50 \\
+                     19 & 22 \\
+                     43 & 50 \\
     \end{bmatrix}
 \]
 
-We use the function \textit{Cudd\_addMatrixMultiply(DdManager dd, DdNode A, DdNode B, DdNode **z, int nz)} in CUDD to multiply two \glspl{add}. 
-The function takes two \glspl{add} \textit{A} and \textit{B}. 
+We use the function \textit{Cudd\_addMatrixMultiply(DdManager dd, DdNode A, DdNode B, DdNode **z, int nz)} in CUDD to multiply two \glspl{add}.
+The function takes two \glspl{add} \textit{A} and \textit{B}.
 \textit{z} is the set of variables that are dependent on the columns in \textit{A} and the rows in \textit{B}.
 \textit{A} is assumed to have the same number of columns as \textit{B} has rows, \textit{nz} is the number of \textit{z} variables.
 We must rename the variables in the \glspl{add} to do the matrix multiplication, in this case, matrix \textit{A}'s column variables and matrix \textit{B}'s row variables.
 
 \subsubsection{Hadamard Product}\label{subsubsec:hadamard-product}
-The Hadamard product operation is implemented by pairwise multiplication on corresponding terminal nodes of two \glspl{add}, for each matching row-column index pair (i, j). This process involves:
+The Hadamard product operation is implemented by pairwise multiplication on corresponding terminal nodes of two \glspl{add} for each matching row-column index pair (i, j).
+This process involves:
+
 \begin{enumerate}
     \item The values from both \glspl{add} are multiplied.
     \item The resulting product is stored in the terminal node of the new \gls{add}.
 \end{enumerate}
+
 The structure of the indices remains unchanged.
 The Hadamard product of matrices $A$ and $B$ is:
+
 \[
     A \circ B = \begin{bmatrix}
-        5  & 12 \\
-        21 & 32 \\
+                    5  & 12 \\
+                    21 & 32 \\
     \end{bmatrix}
 \]
 
-In CUDD the function used for Hadamard product is implemented as \textit{Cudd\_addApply(DdManager * dd, Cudd\_addTimes(), DdNode * f, DdNode * g)}, where \textit{f} and \textit{g} are two \glspl{add} to be multiplied and \textit{Cudd\_addTimes()} is the function that is used to apply elementwise multiplication.
+In CUDD, the function used for Hadamard product is implemented as \textit{Cudd\_addApply(DdManager * dd, Cudd\_addTimes(), DdNode * f, DdNode * g)}, where \textit{f} and \textit{g} are two \glspl{add} to be multiplied and \textit{Cudd\_addTimes()} is the function that is used to apply elementwise multiplication.
 
 \subsubsection{Hadamard Division}
-The Hadamard division operation is implemented similar to the Hadamard product, but with division instead of multiplication. 
+The Hadamard division operation is implemented similar to the Hadamard product, but with division instead of multiplication.
 See~\autoref{subsubsec:hadamard-product} for more details.
 The Hadamard division of matrices $A$ and $B$ is:
 
 \[
     A \oslash B = \begin{bmatrix}
-        0.2    & 0.3333 \\
-        0.4286 & 0.5    \\
+                      0.2    & 0.3333 \\
+                      0.4286 & 0.5    \\
     \end{bmatrix}
 \]
 
@@ -233,16 +264,16 @@ The Hadamard division is implemented in CUDD by \textit{Cudd\_addApply(DdManager
 
 \subsubsection{Kronecker Product}\label{subsubsec:kronecker-product}
 The Kronecker product operation is implemented by symbolically expanding the indices and terminal nodes of two matrices.
-This operation results in a new \gls{add} with dimensions equal to the product of the dimensions of the input matrices. 
+This operation results in a new \gls{add} with dimensions equal to the product of the dimensions of the input matrices.
 The Kronecker product generalizes the outer product, multiplying each element of the first matrix by the entire second matrix.
 
 For a specific entry in the first matrix $A$ at row $i$ and column $j$, with value $a_{ij}$, the second matrix $B$ is scaled by $a_{ij}$, and its indices are adjusted as follows:
 
 \begin{enumerate}
-\item Multiply the values of $B$ by $a_{ij}$.
-\item The row indices of $B$ are shifted by $i \times \text{rows}(B)$ in the new \gls{add}.
-\item The column indices of $B$ are shifted by $j \times \text{columns}(B)$ in the new \gls{add}.
-\item The scaled values are stored in the new \gls{add}.
+    \item Multiply the values of $B$ by $a_{ij}$.
+    \item The row indices of $B$ are shifted by $i \times \text{rows}(B)$ in the new \gls{add}.
+    \item The column indices of $B$ are shifted by $j \times \text{columns}(B)$ in the new \gls{add}.
+    \item The scaled values are stored in the new \gls{add}.
 \end{enumerate}
 
 Here rows($B$) and columns($B$) represents the number of rows and columns in matrix $B$, respectively.
@@ -250,27 +281,33 @@ Here rows($B$) and columns($B$) represents the number of rows and columns in mat
 This operation is not natively supported in the CUDD library, we have not implemented it as a custom function.
 
 The Kronecker product of matrices $A$ and $B$ is:
+
 \[
     A \otimes B = \begin{bmatrix}
-        5  & 6  & 10 & 12 \\
-        7  & 8  & 14 & 16 \\
-        15 & 18 & 20 & 24 \\
-        21 & 24 & 28 & 32 \\
+                      5  & 6  & 10 & 12 \\
+                      7  & 8  & 14 & 16 \\
+                      15 & 18 & 20 & 24 \\
+                      21 & 24 & 28 & 32 \\
     \end{bmatrix}
 \]
 
 \subsubsection{Khatri-Rao Product}
-The Khatri-Rao product operation is implemented by combining rows of the first matrix with the corresponding rows of the second matrix. For each row index $i$:
+The Khatri-Rao product operation is implemented by combining rows of the first matrix with the corresponding rows of the second matrix.
+For each row index $i$:
+
 \begin{enumerate}
     \item The elements of row $i$ in the first matrix are multiplied element-wise with the entire row $i$ in the second matrix.
-    \item The resulting row is constructed symbolically within the \gls{add}.   
+    \item The resulting row is constructed symbolically within the \gls{add}.
 \end{enumerate}
+
 This operation is not natively supported in the CUDD library, we have not implemented it as a custom function.
 The Khatri-Rao product of matrices $A$ and $B$ is:
+
 \[
     A \bullet B = \begin{bmatrix}
-        5  & 6  & 10 & 12 \\
-        21 & 24 & 28 & 32 \\
+                      5  & 6  & 10 & 12 \\
+                      21 & 24 & 28 & 32 \\
     \end{bmatrix}
 \]
+
 The resulting \gls{add} has the dimensions equal to the sum of the dimensions of the two matrices, as in the Kronecker product, see \autoref{subsubsec:kronecker-product}.
