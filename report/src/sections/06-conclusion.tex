@@ -7,13 +7,13 @@
 
 \section{Conclusion}\label{sec:conclusion}
 
-In this paper we have attempted to develop and test a symbolic implementation of the Baum-Welch algorithm.
+In this paper, we have attempted to develop and test a symbolic implementation of the Baum-Welch algorithm.
 Although the implementation is almost complete, experiments have not yet been conducted.
-As such, it is not possible to conclude on any results.
+As such, it is not possible to draw any conclusions based on results.
 However, an error has been found in prior work~\cite{p7} in the forward step, indicating that a symbolic implementation has even better runtime than initially thought.
 
-Overall, we have made small steps toward a fully symbolic implementation of the Baum-Welch algorithm for \glspl{hmm}.
+We have made small steps toward an entirely symbolic implementation of the Baum-Welch algorithm for \glspl{hmm}.
 We have also described the necessary matrix calculation representations, most of which are remarkably similar to Markov Chains.
 
-We know that the Kronecker product is implementable in CUDD from~\cite{davidkebo-kronecker}, and by extension the Khatri-Rao product should be equally possible.
-Unfortunately our attempts so far have been unsuccessful.
+We know that the Kronecker product is implementable in CUDD from~\cite{davidkebo-kronecker}, and by extension, the Khatri-Rao product should be equally possible.
+Unfortunately, our attempts so far have been unsuccessful.

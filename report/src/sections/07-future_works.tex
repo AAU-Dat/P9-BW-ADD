@@ -4,39 +4,38 @@
 This section outlines potential future works and extensions of the symbolic Baum-Welch algorithm.
 
 \subsection{Issues With the Implementation}
-Our first step would be to implement the Kronecker product and Katri-Rao product in the symbolic approach. 
+Our first step would be implementing the Kronecker and Katri-Rao products using a symbolic approach. 
 These operations are essential for the Baum-Welch algorithm, as they are used to update the transition and emission matrices.
-Implementing these operations would complete the symbolic approach, enabling the full Baum-Welch algorithm to be executed symbolically.
+Implementing these operations would complete the symbolic approach, enabling the entire Baum-Welch algorithm to be executed symbolically.
 
-Following this, since no experiments were conducted on the implementation, this is something that would be a good starting point for future work, as we could compare the performance of the symbolic approach to the recursive Jajapy implementation.
+Following this, since no experiments were conducted on the implementation, this would be a good starting point for future work, as we could compare the performance of the symbolic approach to the recursive Jajapy implementation.
 This comparison would assess the scalability of the symbolic implementation as the number of model states increases. 
 
 Runtime and memory usage would be core parameters to evaluate, providing insights into the computational efficiency of the symbolic approach in the context of the Baum-Welch algorithm.
 Additionally, we intend to test the symbolic approach on concrete models of varying sizes and complexities. 
 
 To deepen our analysis, we would compare the symbolic implementation with a C++-based recursive implementation of the Baum-Welch algorithm. 
-In~\cite{p7} the authors implemented the forward-backward algorithm in C and a symbolic approach in C, which showed that the symbolic approach was only a little faster than the C implementation.
-Therefore it would be interesting to compare the full symbolic approach to a recursive approach in C++.
-By benchmarking both implementations within the same programming language, we could better understand the symbolic approach's performance.
+In~\cite{p7}, the authors implemented the forward-backward algorithm in C and a symbolic approach in C, which showed that the symbolic approach was only slightly faster than the C implementation.
+Therefore, comparing the complete symbolic approach to a recursive approach in C++ would be interesting.
+We could better understand the symbolic approach's performance by benchmarking both implementations within the same programming language.
 
-Numerical stability is a major concern in implementations of the Baum-Welch algorithm, as such mitigating steps must be taken.
+Numerical stability is a significant concern in implementations of the Baum-Welch algorithm, and steps must be taken to mitigate this.
 To do this, we suggest implementing the algorithm in the log semiring.
 
-One final improvement to the algorithm, would be extending it to handle multiple observation sequences, as is done in~\cite{reynouard2023jajapy}.
+One final improvement to the algorithm would be to extend it to handle multiple observation sequences, as is done in~\cite{reynouard2023jajapy}.
 
 \subsection{Storm}
-A key aspect in our project was integrating the symbolic Baum-Welch algorithm into the Storm model checker. 
-Leveraging the Storm Parser Library, we planed to enable the parsing of models and observation sequences for the Baum-Welch algorithm.
+A key aspect of our project was integrating the symbolic Baum-Welch algorithm into the Storm model checker. 
+We planned to leverage the Storm Parser Library to enable the parsing of models and observation sequences for the Baum-Welch algorithm.
 This integration would expand the algorithm's accessibility and applicability, as Storm is widely used in model-checking research and practice.
 
-Another area of improvement would implementing the Baum-Welch algorithm using sparse matrices, since we saw these in our work with Storm. 
+Another area of improvement would be implementing the Baum-Welch algorithm using sparse matrices since we saw these in our work with Storm. 
 We would evaluate their respective runtime and memory efficiency by comparing this traditional approach to the symbolic implementation. 
 
 \subsection{Modelling}
 We would also explore extending the symbolic approach to \glspl{mdp}. 
-Given the close relationship between \glspl{mdp} and \glspl{hmm}, this extension would allow the symbolic Baum-Welch algorithm to estimate \gls{mdp} parameters. 
+Given the close relationship between \glspl{mdp} and \glspl{hmm}, this extension would allow the symbolic Baum-Welch algorithm to estimate MDP parameters. 
 Such advancements would broaden its utility in diverse applications.
 
-Finally, we would investigate alternative symbolic representations beyond \glspl{add}. 
-Options like Multi-valued Decision Diagrams (MDDs), which support multiple edges per node.
-Comparative experiments will assess these representations runtime and memory usage against \glspl{add}, offering further insights into their relative strengths and weaknesses.
+Finally, we would investigate alternative symbolic representations beyond \glspl{add}. We would look into further options, such as Multi-valued Decision Diagrams (MDDs), which support multiple edges per node.
+Comparative experiments will assess these representations' runtime and memory usage against \glspl{add}, offering further insights into their relative strengths and weaknesses.
