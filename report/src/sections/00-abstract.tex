@@ -2,10 +2,14 @@
 %! Date = 29-12-2023
 \IEEEtitleabstractindextext{%
     \begin{abstract}
-        This is a placeholder abstract.
-        The whole template is used in semester projects at \gls{aau}.
+        The Baum-Welch algorithm is a cornerstone of parameter estimation for Hidden Markov Models (HMMs), which are widely used in fields such as speech recognition and bioinformatics.
+        Traditional implementations rely on matrix operations, which scale poorly for large models due to quadratic space complexity.
+        This paper introduces the framework for an entirely symbolic implementation of the Baum-Welch algorithm using Algebraic Decision Diagrams (ADDs).
+        By employing ADDs throughout the algorithm --- including forward-backward computations and parameter updates --- we expect a significant potential reduction in memory requirements and improved scalability.
+        This approach leverages symbolic computation to minimize overhead from explicit state space representations, paving the way for efficient parameter estimation in complex systems.
+        Preliminary findings and challenges in integrating this symbolic framework with tools like the Storm model checker are discussed.
     \end{abstract}
     \begin{IEEEkeywords}
-        Formal Verification, Parameter Estimation, Decision Diagram
+        Formal Verification, Parameter Estimation, Decision Diagram, Hidden Markov Model
     \end{IEEEkeywords}
 }
