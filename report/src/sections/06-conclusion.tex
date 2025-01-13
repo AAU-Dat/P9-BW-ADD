@@ -1,0 +1,19 @@
+% Potentially greater gains for a symbolic representation than initially thought
+% We have succesfully implemented baum-welch in c++
+% We have attempted to implement a symbolic implementation of Baum-Welch in c++
+% We have proven that it is both feasable and possible to implement symbolic BW
+    % Such as showing that it is possible to apply operations such as Khatri-Rao Product and Kronecker product, which were not implemented in CuDD
+% 
+
+\section{Conclusion}\label{sec:conclusion}
+
+In this paper we have attempted to develop and test a symbolic implementation of the Baum-Welch algorithm.
+Although the implementation is almost complete, experiments have not yet been conducted.
+As such, it is not possible to conclude on any results.
+However, an error has been found in prior work~\cite{p7} in the forward step, indicating that a symbolic implementation has even better runtime than initially thought.
+
+Overall, we have made small steps toward a fully symbolic implementation of the Baum-Welch algorithm for \glspl{hmm}.
+We have also described the necessary matrix calculation representations, most of which are remarkably similar to Markov Chains.
+
+We know that the Kronecker product is implementable in CUDD from~\cite{davidkebo-kronecker}, and by extension the Khatri-Rao product should be equally possible.
+Unfortunately our attempts so far have been unsuccessful.
