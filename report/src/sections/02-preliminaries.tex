@@ -12,7 +12,9 @@ Finally, we describe how the Baum-Welch algorithm can be implemented using matri
 Baum and Petrie introduced \glspl{hmm} in 1966~\cite{baum1966statistical}.
 \glspl{hmm} are a class of probabilistic models widely used to describe sequences of observations dependent on some underlying hidden states.
 These models consist of two main components: observations and hidden states.
+
 The observations are the visible data emitted by the model, while the hidden states represent the underlying process that generates these observations.
+
 \glspl{hmm} have applications in speech recognition\cite{chavan2013overview}, bioinformatics~\cite{de2007hidden}, and natural language processing~\cite{murveit1990integrating}.
 \gls{hmm} was chosen as the model of choice for this project due to its versatility and ability to model complex systems.
 
@@ -100,6 +102,7 @@ These observed sequences serve as the input for parameter estimation in the \gls
 
 \subsection{The Baum-Welch Algorithm}\label{subsec:baum-welch}
 The Baum-Welch algorithm is a fundamental method for estimating the parameters of a \gls{hmm} given a sequence of observations.
+
 These parameters include the emission matrix $\pmb{\omega}$, the transition matrix $\pmb{P}$, and the initial state distribution $\pmb{\pi}$.
 The algorithm is widely recognized as the standard approach for training \glspl{hmm}.
 It was chosen for this project because it can estimate these parameters without prior knowledge of the hidden states that generated the observations~\cite{levinson1983introduction}.
@@ -167,6 +170,7 @@ These initialization strategies provide a starting point for the Baum-Welch algo
 \subsection{Forward-Backward Algorithm}\label{subsec:forward-backwards_algorithm}
 %Forward-Backward algorithm
 For a given \gls{hmm} $\mathcal{M}$, the forward-backward algorithm computes the forward and backward variables, $\alpha_s(t)$ and $\beta_s(t)$, for each observation sequence $o_0, o_1, \cdots, o_{|\mathbf{o}|-1} = \mathbf{o} \in \mathcal{O}$.
+
 The forward variable $\alpha_s(t)$ represents the likelihood of observing the partial sequence $o_0, o_1, \cdots, o_t$ and being in state $s$ at time $t$, given the model $\mathcal{M}$.
 The backward variable $\beta_s(t)$ represents the likelihood of observing the partial sequence $o_{t+1}, o_{t+2}, \cdots, o_{|\mathbf{o}|-1}$ given state $s$ at time $t$ and the model $\mathcal{M}$.
 

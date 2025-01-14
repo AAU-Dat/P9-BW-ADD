@@ -2,7 +2,7 @@
 In this section, we will discuss the implementation of the project.
 We will start by discussing \glspl{add} and their advantages and disadvantages.
 We will discuss how we transition from vectors and matrices to \glspl{add}.
-Then we will then discuss the CUDD library and the Storm model checker.
+Then we will then discuss the \gls{cudd} library and the Storm model checker.
 Finally, we will discuss the implementation of the matrix operations using \glspl{add}.
 
 \subsection{Algebraic Decision Diagrams}\label{subsec:algebraic-decision-diagrams}
@@ -94,6 +94,7 @@ The root node represents the first bit of the binary encoding, with subsequent l
 
 The \gls{add} representation of the vector $V$ is shown in \autoref{fig:add_vector}.
 The structure of matrices represented as \glspl{add} is similar to vectors but has two sets of binary variables for row and column indices.
+
 The terminal nodes store the matrix entries, with paths determined by the binary representation of the row and column indices.
 The \gls{add} variables are interleaved, with the row and column indices alternating in the path from the root to the terminal nodes.
 
@@ -107,12 +108,12 @@ The \gls{add} variables are interleaved, with the row and column indices alterna
 
 
 \subsection{CUDD}\label{subsec:cudd}
-The Colorado University Decision Diagram (CUDD) library~\cite{somenzi1997cudd} is a powerful tool for implementing and manipulating decision diagrams, including \glspl{bdd} and \glspl{add}.
+The \gls{cudd} library~\cite{somenzi1997cudd} is a powerful tool for implementing and manipulating decision diagrams, including \glspl{bdd} and \glspl{add}.
 
-In this project, the CUDD library stores \glspl{add} and performs operations on them.
+In this project, the \gls{cudd} library stores \glspl{add} and performs operations on them.
 Its optimized algorithms and efficient memory management allow us to handle large and complex matrices symbolically, leading to significant performance improvements over traditional methods.
 
-The CUDD library is implemented in C, ensuring high-performance execution.
+The \gls{cudd} library is implemented in C, ensuring high-performance execution.
 Therefore, it can be used in C++ programs, which we use for this paper.
 
 \subsection{Storm}\label{subsec:storm}
@@ -128,7 +129,7 @@ Storm allows users to analyze models efficiently by computing various quantitati
 The Storm model checker is widely recognized as a state-of-
 the-art verification tool for probabilistic models.
 It is known for its efficiency and scalability.
-Storm uses the CUDD and Sylvan libraries to represent models symbolically, which users can choose when running the tool.
+Storm uses the \gls{cudd} and Sylvan libraries to represent models symbolically, which users can choose when running the tool.
 % For this reason, we have chosen to integrate our symbolic implementation of the Baum Welch algorithm within Stom in this project. 
 
 %This translates into working directly with the symbolic representation of the models provided by the parsers available in Storm, which could, in principle, be directly used (off the shelf) by Storm for verification purposes.
@@ -149,7 +150,7 @@ To show examples for each operation in the following subsections, we have two ma
     \end{bmatrix}
 \]
 
-In CUDD a \textit{DdManager} manages the \glspl{add} and their operations.
+In \gls{cudd} a \textit{DdManager} manages the \glspl{add} and their operations.
 A \textit{DdNode} is used to represent the entire \gls{add} and the variables of the \gls{add}, which are the row and column indices in the \gls{add}.
 
 \subsubsection{Matrix Transpose}
@@ -166,7 +167,7 @@ The transpose of matrix $A$ is:
     \end{bmatrix}
 \]
 
-In CUDD, the function we use for transposing an \gls{add} is implemented as \textit{Cudd\_addSwapVariables(DdManager * dd, DdNode * f, DdNode ** x, DdNode ** y, int n)}, where \textit{f} is the \gls{add} to be transposed, \textit{x} and \textit{y} are the set variables to be swapped and \textit{n} is the size of the variables to be swapped.
+In \gls{cudd}, the function we use for transposing an \gls{add} is implemented as \textit{Cudd\_addSwapVariables(DdManager * dd, DdNode * f, DdNode ** x, DdNode ** y, int n)}, where \textit{f} is the \gls{add} to be transposed, \textit{x} and \textit{y} are the set variables to be swapped and \textit{n} is the size of the variables to be swapped.
 
 \subsubsection{Matrix Addition}
 The matrix addition operation is implemented by adding the terminal nodes of two \glspl{add} while keeping the structure of the row and column indices consistent.
@@ -187,7 +188,7 @@ The sum of matrices $A$ and $B$ is:
     \end{bmatrix}
 \]
 
-In CUDD, the function we use for adding two \glspl{add} is implemented as \textit{Cudd\_addApply(DdManager * dd, Cudd\_addPlus(), DdNode * f, DdNode * g)}, where \textit{f} and \textit{g} are the two \glspl{add} to be added and, \textit{Cudd\_addPlus()} is the function that is used to add the two \glspl{add}.
+In \gls{cudd}, the function we use for adding two \glspl{add} is implemented as \textit{Cudd\_addApply(DdManager * dd, Cudd\_addPlus(), DdNode * f, DdNode * g)}, where \textit{f} and \textit{g} are the two \glspl{add} to be added and, \textit{Cudd\_addPlus()} is the function that is used to add the two \glspl{add}.
 
 \subsubsection{Scalar Product}
 The scalar product operation is implemented by multiplying each element in a matrix by a scalar value.
@@ -200,7 +201,7 @@ The scalar product of matrix $A$ by a scalar 2 is:
     \end{bmatrix}
 \]
 
-In CUDD, the function we use for scalar multiplication is implemented as \textit{Cudd\_addApply(DdManager * dd, Cudd\_addTimes(), DdNode * f, DdNode * g)}, where \textit{f} is the \gls{add} to be multiplied by the scalar, and \textit{g} is an \gls{add} representing the scalar value, and \textit{Cudd\_addTimes()} is the function that is used to multiply the \gls{add} by the scalar.
+In \gls{cudd}, the function we use for scalar multiplication is implemented as \textit{Cudd\_addApply(DdManager * dd, Cudd\_addTimes(), DdNode * f, DdNode * g)}, where \textit{f} is the \gls{add} to be multiplied by the scalar, and \textit{g} is an \gls{add} representing the scalar value, and \textit{Cudd\_addTimes()} is the function that is used to multiply the \gls{add} by the scalar.
 
 \subsubsection{Matrix Multiplication}
 The matrix multiplication operation is implemented symbolically using the dot product of the row and column indices.
@@ -221,9 +222,10 @@ The product of matrices $A$ and $B$ is
     \end{bmatrix}
 \]
 
-We use the function \textit{Cudd\_addMatrixMultiply(DdManager dd, DdNode A, DdNode B, DdNode **z, int nz)} in CUDD to multiply two \glspl{add}.
+We use the function \textit{Cudd\_addMatrixMultiply(DdManager dd, DdNode A, DdNode B, DdNode **z, int nz)} in \gls{cudd} to multiply two \glspl{add}.
 The function takes two \glspl{add} \textit{A} and \textit{B}.
 \textit{z} is the set of variables that are dependent on the columns in \textit{A} and the rows in \textit{B}.
+
 \textit{A} is assumed to have the same number of columns as \textit{B} has rows, \textit{nz} is the number of \textit{z} variables.
 We must rename the variables in the \glspl{add} to do the matrix multiplication, in this case, matrix \textit{A}'s column variables and matrix \textit{B}'s row variables.
 
@@ -246,7 +248,7 @@ The Hadamard product of matrices $A$ and $B$ is:
     \end{bmatrix}
 \]
 
-In CUDD, the function used for Hadamard product is implemented as \textit{Cudd\_addApply(DdManager * dd, Cudd\_addTimes(), DdNode * f, DdNode * g)}, where \textit{f} and \textit{g} are two \glspl{add} to be multiplied and \textit{Cudd\_addTimes()} is the function that is used to apply elementwise multiplication.
+In \gls{cudd}, the function used for Hadamard product is implemented as \textit{Cudd\_addApply(DdManager * dd, Cudd\_addTimes(), DdNode * f, DdNode * g)}, where \textit{f} and \textit{g} are two \glspl{add} to be multiplied and \textit{Cudd\_addTimes()} is the function that is used to apply elementwise multiplication.
 
 \subsubsection{Hadamard Division}
 The Hadamard division operation is implemented similar to the Hadamard product, but with division instead of multiplication.
@@ -260,11 +262,12 @@ The Hadamard division of matrices $A$ and $B$ is:
     \end{bmatrix}
 \]
 
-The Hadamard division is implemented in CUDD by \textit{Cudd\_addApply(DdManager * dd, Cudd\_addDivide(), DdNode * f, DdNode * g)}, where \textit{f} and \textit{g} are two \glspl{add} to be divided and \textit{Cudd\_addDivide()} is the function used to apply elementwise division.
+The Hadamard division is implemented in \gls{cudd} by \textit{Cudd\_addApply(DdManager * dd, Cudd\_addDivide(), DdNode * f, DdNode * g)}, where \textit{f} and \textit{g} are two \glspl{add} to be divided and \textit{Cudd\_addDivide()} is the function used to apply elementwise division.
 
 \subsubsection{Kronecker Product}\label{subsubsec:kronecker-product}
 The Kronecker product operation is implemented by symbolically expanding the indices and terminal nodes of two matrices.
 This operation results in a new \gls{add} with dimensions equal to the product of the dimensions of the input matrices.
+
 The Kronecker product generalizes the outer product, multiplying each element of the first matrix by the entire second matrix.
 
 For a specific entry in the first matrix $A$ at row $i$ and column $j$, with value $a_{ij}$, the second matrix $B$ is scaled by $a_{ij}$, and its indices are adjusted as follows:
@@ -278,7 +281,7 @@ For a specific entry in the first matrix $A$ at row $i$ and column $j$, with val
 
 Here rows($B$) and columns($B$) represents the number of rows and columns in matrix $B$, respectively.
 
-This operation is not natively supported in the CUDD library, we have not implemented it as a custom function.
+This operation is not natively supported in the \gls{cudd} library, we have not implemented it as a custom function.
 
 The Kronecker product of matrices $A$ and $B$ is:
 
@@ -300,7 +303,7 @@ For each row index $i$:
     \item The resulting row is constructed symbolically within the \gls{add}.
 \end{enumerate}
 
-This operation is not natively supported in the CUDD library, we have not implemented it as a custom function.
+This operation is not natively supported in the \gls{cudd} library, we have not implemented it as a custom function.
 The Khatri-Rao product of matrices $A$ and $B$ is:
 
 \[

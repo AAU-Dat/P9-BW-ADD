@@ -13,14 +13,17 @@
 \section{Discussion}\label{sec:discussion}
 This section will cover the paper's discussion. 
 This paper aimed to study how implementing a symbolic representation of the Baum-Welch algorithm could impact the expected runtime and model accuracy. 
+
 This work extends the study conducted in~\cite{p7} by developing an entirely symbolic representation using \glspl{add} at every point of the Baum-Welch algorithm where matrices are traditionally used.
 
 Unfortunately, no significant findings were achieved in our study. Several factors contributed to this outcome. 
 One such factor was the issue of extending Storms implementation of \gls{cudd} to handle operations, which required computing the Baum-Welch algorithm using \glspl{add}. 
-Initially, we aimed to read files representing our data and create models using Storm. 
+
+Initially, we aimed to read PRISM files representing our models using Storm. 
 However, this process proved more difficult than expected. 
 The Storm library proved particularly challenging to navigate. 
 Although its extensive documentation was initially considered beneficial, it often led to confusion and hindered progress. 
+
 As a result, initial models were instead written manually, and random values were used as data for creating these models and observed data. 
 If we had used manual initialization of models earlier, further testing and experimentation could have been conducted, leading to a more complete implementation.
 

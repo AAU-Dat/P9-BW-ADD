@@ -42,9 +42,11 @@ The chosen implementations are either fully recursive to fully symbolic approach
 The experiment would use synthetic datasets; The dataset would have five different labels \{"A", "B", "C", "D", "E"\} and the same observation sequence for all runs of the experiment. 
 We would use one observation sequence of length 20, as our implementation is not set up to handle multiple observation sequences.
 The number of states in the model would be varied from 20 to 1020, with increments of 100 states.
+
 The initial model would be generated with random parameters, and the observation sequence would be the same for all experiment runs.
 The model would start in the same initial state, generating the transition and emission matrices randomly.
 The emission matrix would be generated so that one state can emit a maximum of three different labels.
+
 All implementations would tested on the same dataset to ensure fair comparison.
 
 \subsection{Experimental Procedure}
@@ -72,12 +74,3 @@ By plotting runtime alongside the number of states, we would aim to identify pat
 We wanted to track the implementations' memory consumption, as this is a critical factor in the Baum-Welch algorithm's scalability, and symbolic approaches are expected to be more memory-efficient.
 However, tracking memory consumption is challenging and is therefore left for future work.
 Instead, we focus on runtime as the primary metric, as it provides a clear and comparable measure of computational efficiency.
-
-
-
-\begin{figure}[htb!]
-    \centering
-    \input{figures/scalability_graph.tex}
-    \caption{Scalability of Baum-Welch Implementations}
-    \label{fig:scalability}
-\end{figure}
