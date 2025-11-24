@@ -10,7 +10,7 @@ jobs:
       GH_TOKEN: ${{ secrets.PAT_FROM_DRP }} # secrets.GITHUB_TOKEN
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup GitHub Pages for repository
         run: gh api -X POST /repos/${{ github.repository }}/pages --input .github/configurations/pages.json
       - name: Setup ruleset for repository
