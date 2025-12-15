@@ -24,7 +24,7 @@ jobs:
           pdflatex -file-line-error -interaction=nonstopmode -synctex=0 -output-format=pdf -shell-escape main.tex
           pdflatex -file-line-error -interaction=nonstopmode -synctex=0 -output-format=pdf -shell-escape main.tex
       - name: Upload pdf artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: report
           path: ./report/src/main.pdf
